@@ -1,15 +1,114 @@
 {% extends "blog/base.html" %}
+<!--Content Page-->
 {% block content %}
-    {% for post in posts %}
+    {% for post in pages %}
     <article class="media content-section">
+      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
       <div class="media-body">
         <div class="article-metadata">
-          <a class="mr-2" href="#">{{ post.author }}</a>
-          <small class="text-muted">{{ post.date_posted }}</small>
+          <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
+          <small class="text-muted" style="float:right">{{ post.date_posted|date:"F d, Y" }}</small>
         </div>
-        <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-        <p class="article-content">{{ post.content }}</p>
+        <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
+        <div>
+
+          {% for topic in post.topics.all %}
+            <a href="{% url 'topic-posts' topic.title  %}" class="btn btn-primary btn-sm float-left mr-2"
+              style=" background-color: #e60000; border-color: #e60000; font-size:1.5vh;">
+            <b>{{topic.title}}</b></a>
+          {% endfor %}
+        </div>
+            {% if 'default.jpg' not in post.image.url%}
+          <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
+            {% endif %}
+        <p class="article-content" style=" font-size:1.8vh">{{ post.content }}</p>
       </div>
     </article>
     {% endfor %}
+    <!--Pagees Object-->
+    {% if pages.has_other_pages %}
+
+      {% if pages.has_previous %}
+        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{page_obj.previous_page_number}}"> < </a>
+      {% endif %}
+
+      {% for num in pages.paginator.page_range %}
+
+        {% if pages.number == num %}
+          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > pages.number|add:'-3' and num < pages.number|add:'+3' %}
+          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+
+      {% endfor %}
+
+      {% if pages.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ pages.next_page_number }}"> > </a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.num_pages }}">Last</a>
+      {% endif %}
+
+    {% endif %} <!--Big If-->
 {% endblock content %}
+
+<!--Profile Page-->
+{% block profile_home %}
+
+        <article class="media content-section">
+              <img class="rounded-circle article-img" src="{{user.profile.image.url}}">
+              <div class="media-body">
+                <b class="article-content" style="margin-right:2v">{{user.profile.nick}}</b>
+                <p class="text-secondary">~{{user.username}}</p>
+              </div>
+        </article>
+
+        <b> Friends </b>
+        <ul class="list-group" style="margin-bottom:2vh">
+      {% if user.profile.friends.all %}
+          {% for friend in user.profile.friends.all %}
+            <li class="list-group-item list-group-item">
+              <div class="media-body">
+              <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
+                <b class="article-content" style="">{{friend.nick}}</b>
+              </div>
+            </li>
+          {% endfor %}
+      {% else %}
+        You don't have any friends yet.
+      {% endif %}
+        </ul>
+
+        <b> Interests </b>
+        <ul class="list-group" style="margin-bottom:2vh">
+          {% if user.profile.following.all %}
+            {% for friend in user.profile.following.all %}
+              <li class="list-group-item list-group-item">
+                <div class="media-body">
+                <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
+                  <b class="article-content" style="">{{friend.nick}}</b>
+                </div>
+              </li>
+              {% endfor %}
+
+            {% else %}
+              You don't have any interests yet.
+            {% endif %}
+        </ul>
+
+    <b> Interested </b>
+    <ul class="list-group">
+      {% if user.profile.followers.all %}
+        {% for friend in user.profile.followers.all %}
+          <li class="list-group-item list-group-item">
+            <div class="media-body">
+            <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
+              <b class="article-content" style="">{{friend.nick}}</b>
+            </div>
+          </li>
+        {% endfor %}
+
+      {% else %}
+        No one is interested in you yet.
+      {% endif %}
+    </ul>
+{% endblock profile_home %}

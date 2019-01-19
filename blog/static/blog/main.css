@@ -2,7 +2,7 @@
 body {
   background: #fafafa;
   color: #333333;
-  margin-top: 5rem;
+  margin-top: 3rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -14,7 +14,7 @@ ul {
 }
 
 .bg-steel {
-  background-color: #5f788a;
+  background-color: #a300cc;
 }
 
 .site-header .navbar-nav .nav-link {
@@ -82,4 +82,29 @@ a.article-title:hover {
 
 .account-heading {
   font-size: 2.5rem;
+}
+
+/* Extra shite*/
+
+.thumbnail {
+    position: relative;
+}
+
+.caption {
+    position: absolute;
+    top: 45%;
+    left: 0;
+    width: 50%;
+}
+
+.body_alt {
+  background: #fafafa;
+  color: #333333;
+  margin-top: 2rem;
+}
+
+.carousel-capstion {
+  left:25vh;
+  right:26vh;
+
 }
