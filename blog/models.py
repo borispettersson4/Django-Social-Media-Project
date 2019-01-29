@@ -15,15 +15,19 @@ class Topic(models.Model):
         return reverse('post-detail',kwargs={'pk' : self.pk})
 
 class Post(models.Model):
-    title = models.CharField(max_length = 100)
+    title = models.CharField(max_length = 100,blank=True)
     image = models.ImageField(default = 'default.jpg', upload_to='post_pics')
     content = models.TextField(max_length = 500)
     date_posted = models.DateTimeField(default = timezone.now)
     author = models.ForeignKey(User, on_delete = models.CASCADE)
     topics = models.ManyToManyField(Topic, blank=True, symmetrical=False)
+    people = models.ManyToManyField(User, blank=True,related_name='people', symmetrical=False)
+    reply = models.ForeignKey("self", on_delete = models.CASCADE, blank=True, default = "self")
+
+
 
     def __str__(self):
-        return (self.title)
+        return (f"{self.author} : {self.content}")
 
     def get_absolute_url(self):
         return reverse('post-detail',kwargs={'pk' : self.pk})
@@ -59,3 +63,21 @@ class Comment(models.Model):
     def create_self(self, author, post, image, content):
         obj = self.create(author=author, post=post, image=image, content=content)
         return obj
+
+class Like(models.Model):
+    post = models.ForeignKey(Post, on_delete = models.CASCADE)
+    author = models.ForeignKey(User, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return (f"{self.post.title}")
+
+class Activity(models.Model):
+    author = models.ForeignKey(User, on_delete = models.CASCADE)
+    post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None)
+    message = models.TextField(max_length = 40)
+    link = models.TextField(max_length = 100, blank=True)
+    date = models.DateTimeField(default = timezone.now)
+    type = models.IntegerField(default=0)
+
+    def __str__(self):
+        return (f"{self.author}")

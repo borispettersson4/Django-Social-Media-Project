@@ -1,4 +1,11 @@
 {% load static %}
+{% load filters %}
+
+{% load staticfiles %}
+
+<script src="{% static "js/jquery-1.11.1.js" %}"></script>
+<script src="{% static "js/rango-jquery.js" %}"></script>
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
@@ -19,11 +26,32 @@
     {% endif %}
   </head>
   <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+    {# Imports #}
+    <!--Chart JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js" type="text/javascript"></script>
+
+    <!--Angular JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js" type="text/javascript"></script>
+
+    <!--JQuery-->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <!--Javascript File-->
+    <script src="{% static "js/main.js" %}" type="text/javascript"></script>
+
+    {% block js_code %}{% endblock %}
   <!-- Navigation Bar -->
   <header class="site-header">
-    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
       <div class="container">
-        <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">MANGO</a>
+        <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">MANGO Post</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
@@ -39,9 +67,23 @@
             <a class="nav-item nav-link" href="{% url 'login' %}">Sign In</a>
             <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
             {% else %}
-            <a class="nav-item nav-link" href="{% url 'profile' %}">Hi, {{user}}!</a>
-            <a class="nav-item nav-link" href="{% url 'post-create' %}">New Post</a>
-            <a class="nav-item nav-link" href="{% url 'logout' %}">Log Out</a>
+            <div class="dropdown">
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: 5vh; height: 5vh; border: 0.3vh solid #FFFFFF; cursor:pointer;"
+                src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                href="#"/>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">Action</a>
+                  <a class="dropdown-item" href="{% url 'user-posts' user.username %}">View Profile</a>
+                  <a class="dropdown-item" href="{% url 'profile' %}">Edit Profile</a>
+                  <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
+                </div>
+              </div>
+
+            <a href="{% url 'post-create' %}">
+              <img class="rounded-circle article-img mr-2" style=" width: 5vh; height: 5vh; border: 0.3vh solid #FFFFFF; "
+              src="{% static 'resources/post_nav.png' %}" onmouseover="{% static 'resources/post_nav_alt.png' %}"></img>
+            </a>
+            {# <button type="button" class="btn btn-primary btn-9g round">Round</button> #}
             {% endif %}
           </div>
         </div>
@@ -54,11 +96,13 @@
   <main role="main" class="container">
     <div class="row">
       <!--Friends-->
-          <div class="col-md-3" style="margin-top: 2rem;">
+      {% if 'post' not in request.path %}
+        <div class="col-md-3" style="margin-top: 2rem;">
           {% block left %}{% endblock %}
         </div>
+      {% endif %}
       <!--Content-->
-      <div class="col-md-6">
+      <div class="col-md-6" style="margin-top: 2rem;">
 
         {% if messages %}
         {% for msg in messages %}
@@ -67,19 +111,26 @@
         </div>
         {% endfor %}
         {% endif %}
-        <div style="margin-top: 2rem;">
-          {% block content %}{% endblock %}
-        </div>
+
+        {% block content %}{% endblock %}
+
       </div>
-      <div class="col-md-3" style="margin-top: 2rem;">
-          {% block right %}{% endblock %}
+      {% if 'post' not in request.path %}
+        <div class="col-md-3" style="margin-top: 2rem;">
+      {% else %}
+        <div class="col-md-6" style="margin-top: 2rem;">
+      {% endif %}
+        {% block right %}{% endblock %}
       </div>
+
     </div>
   </main>
 
-      <!-- Bootstrap JS -->
-      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+      <!--Modals go here-->
+
+      <!-- Modal -->
+
+  {% block modal %}{% endblock %}
+
   </body>
 </html>

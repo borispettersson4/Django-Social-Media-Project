@@ -1,0 +1,180 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+<div style="background-color:#eedfff;">
+<form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post">
+{% csrf_token %}
+<article class="media content-section mb-0">
+  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
+  <div class="media-body">
+    <div class="article-metadata mb-0">
+      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
+      <small class="text-muted" style="float:right">{{ obj.date_posted|date:"F d, Y" }}</small>
+    </div>
+    <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>
+    <div>
+      {% for topic in obj.topics.all %}
+        <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+          style="color:#e60000">
+        <b>#{{topic.title}}</b></a>
+      {% endfor %}
+      {% for person in obj.people.all %}
+        <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+          style="color:#0071e6">
+        <b>@{{person.username}}</b></a>
+      {% endfor %}
+    </div>
+        {% if 'default.jpg' not in obj.image.url%}
+      <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{obj.image.url}}">
+        {% endif %}
+    <p class="article-content" style="">{{ obj.content }}</p>
+
+{#This is the part where the image information is done#}
+  <div class="" style="text-align:right">
+    {% if obj|has_comment:user%}
+      <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
+    {% else %}
+      <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
+    {% endif %}
+    <a>{{obj.comment_set.count}}</a>
+
+    {% if obj|has_like:user%}
+    <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+    {% else %}
+    <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+    {% endif %}
+    <a>{{obj.like_set.count}}</a>
+</div>
+</article>
+</form>
+    <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form">
+      {% csrf_token %}
+      <fieldset class="form-group" style="text-align:center; margin:1vh;">
+        <main role="main" class="container" style="">
+          <div class="row">
+              <div class="col-md-0" style="margin-left:2.25vh;">
+                <img class="rounded-circle article-img" style=" width: 4vh; height: 4vh;" src="{{user.profile.image.url}}">
+              </div>
+            <div class="col-md-0" style="margin-left:0px">
+              <textarea class="textbox_big"  style="width:50vh; height:15vh; border-radius: 0.5rem; overflow:hidden;"></textarea>
+              <textarea class="textbox_small"
+              style="width:50vh; height:4%; color:#c4c4c4; border-radius: 1rem; overflow:hidden; float:left;"> What do you think of this post?</textarea>
+              <img id="output" class="img_display"/>
+            </div>
+          </div>
+        </main>
+        <script>
+          $(document).ready(function() {
+            $(".textbox_big").hide();
+            $(".post_comment").hide();
+            $(".post_image").hide();
+            $(".file_uploader").hide();
+            $(".output_img").hide();
+            $(document).on('click', '.textbox_small' , function() {
+              event.preventDefault();
+              $(".textbox_small").hide();
+              $(".textbox_big").show();
+              $(".post_comment").show();
+              $(".post_image").show();
+            });
+          });
+        </script>
+      </fieldset>
+          </form>
+      <form name="upload_img" enctype="multipart/form-data" id="upload_img">
+        <div class="form-group">
+          <div class="">
+          <label for="file_upload" class="post_image" accept="image/*" onchange="loadFile(event)" style="">
+          <a style="font-size:1.7vh; color:#a300cc; float:right;">Use # to add topics and @ to tag people.<a/>
+            <image class="float-left" src="{% static 'resources/image_upload.png' %}"
+            style="text-align:left; cursor:pointer; width:4vh; height:4vh; margin-left:10vh; visibility: hidden;"></image>
+            <image class="output_img float-left" src="" id="output_image"
+            style="text-align:left; cursor:pointer; width:4vh; height:4vh; margin-left:1vh; visibility: hidden;"></image>
+          </label>
+          <button class="btn btn-outline-info post_comment float-right"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:5vh; border-radius: 1rem;"
+          type="submit" post_id={{obj.id}}>Reply</button>
+          </div>
+        </div>
+            <input type="file" accept="image/*" onchange="preview_image(event)" id="file_upload" class="file_uploader">
+        </form>
+    <script>
+    function preview_image(event)
+    {
+     var reader = new FileReader();
+     reader.onload = function()
+     {
+      var output = document.getElementById('output_image');
+      output.src = reader.result;
+     }
+     reader.readAsDataURL(event.target.files[0]);
+     $(".output_img").show();
+    }
+    </script>
+
+    <div id="reply_display">
+    {% include 'blog/replies.html' %}
+    </div>
+    <!--Comments-->
+
+    </div>
+
+
+    {# Jquery script #}
+
+    <script>
+      $(document).ready(function(event) {
+          $(document).on('click', '.post_comment' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          /*    var form = new FormData(document.getElementById('comment_form'));
+              var file = document.getElementById('file_upload').files[0];
+              if (file) {
+                form.append('file_upload', file);
+              } */
+              var post_id = $(this).attr('post_id');
+              var content_text = $('.textbox_big').val();
+
+              $(".textbox_big").hide();
+              $('.textbox_big').val('');
+              $(".post_comment").hide();
+              $(".post_image").hide();
+              $(".file_uploader").hide();
+              $(".output_img").hide();
+              $(".textbox_SMALL").show();
+              $.ajax({
+                type: "POST",
+                url: "{% url 'blog-home' %}",
+                data : { 'id':post_id, 'content': content_text,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Comment"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#reply_display').html(response['form']);
+                  console.log("success");
+                },
+                error : function(rs, e) {
+                  $('#reply_display').html("an error occured");
+                  console.log(rs.responseText);
+                }
+              });
+          });
+          return false;
+      });
+    </script>
+
+<script>
+function getCookie(c_name)
+{
+    if (document.cookie.length > 0)
+    {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1)
+        {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) c_end = document.cookie.length;
+            return unescape(document.cookie.substring(c_start,c_end));
+        }
+    }
+    return "";
+ }
+</script>

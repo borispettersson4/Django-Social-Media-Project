@@ -3,5 +3,7 @@ from .models import *
 
 admin.site.register(Post)
 admin.site.register(Comment)
+admin.site.register(Like)
 admin.site.register(Topic)
+admin.site.register(Activity)
 # Register your models here.

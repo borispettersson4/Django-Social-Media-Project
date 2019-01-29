@@ -1,184 +1,303 @@
 {% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
 {% block overhead %}
 
-    {% for obj in posts|slice:":1"%}
       <div class="thumbnail">
-       <img class="img-fluid mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{obj.author.profilesettings.coverImage.url}}">
+       <img class="img-fluid mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
         <div class="carousel-caption" style="">
-            <img class="rounded-circle article-img mr-2" style=" width: 15vh; height: 15vh; border: 0.5vh solid #FFFFFF;" src="{{obj.author.profile.image.url}}">
+            <img class="rounded-circle article-img mr-2" style=" width: 15vh; height: 15vh; border: 0.5vh solid #FFFFFF;" src="{{profile.user.profile.image.url}}">
             <div class="mb-0">
-              <b><a class="mr-2" style="font-size:3vh;">{{ obj.author.profile.nick }}</a></b>
+              <b><a class="mr-2" style="font-size:3vh;">{{ profile.user.profile.nick }}</a></b>
             </div>
             <div class="mb-0">
-              <a class="text mr-2" style="font-size:2.25vh;">{{ obj.author.username }}</a>
+              <a class="text mr-2" style="font-size:2.25vh;">{{ profile.user.username }}</a>
             </div>
 
             <div>
               <main role="main" class="col">
-
-                    <button type="button" class="btn btn-primary ml-2 float-left" style="  background-color: #a300cc; border-color: #a300cc;">Message</button>
-                    <button type="button" class="btn btn-primary float-right ml-2" style="  background-color: #a300cc; border-color: #a300cc;">Follow</button>
-                    <button type="button" class="btn btn-primary float-right ml-2" style="  background-color: #a300cc; border-color: #a300cc;">Add Friend</button>
-
+                {% if request.user.username in request.path %}
+                <button type="button" class="btn btn-primary float-right ml-2" style=" background-color: #a300cc; border-color: #a300cc;"
+                href="{% url 'profile' %}"> Edit Profile </button>
+                {% else %}
+                <button type="button" class="btn btn-primary ml-2 float-left" style="  background-color: #a300cc; border-color: #a300cc;">Send Message</button>
+                <button type="button" class="btn btn-primary float-right ml-2" style="  background-color: #a300cc; border-color: #a300cc;">Follow</button>
+                <button type="button" class="btn btn-primary float-right ml-2" style="  background-color: #a300cc; border-color: #a300cc;">Add Friend</button>
+                {% endif %}
               </main>
 
             </div>
         </div>
 
        </div>
-    {% endfor %}
 
-
-
-{% endblock %}
+{% endblock overhead %}
 
 {% block content %}
-    {% for post in posts %}
+<script>
+  $(document).ready(function(event) {
+      $(document).on('click', '.updateButton' , function(event) {
+        event.preventDefault();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#post_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+</script>
+    {% for post in pages %}
+    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#exampleModalCenter"
+    member_id = {{post.id}} style="text-align:left; border:none; width:100%; background:none;">
     <article class="media content-section">
       <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-          <small class="text-muted" style="float:right">{{ post.date_posted|date:"F d, Y" }}</small>
+          {% if post.reply != post %}
+          <a class="mr-2" href="{% url 'user-posts' post.reply.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
+          {% endif %}
+          <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
+
+            <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
+            src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" href="#">Hide Post</a>
+              <a class="dropdown-item" href="">Copy Post Link</a>
+              <a class="dropdown-item" href="">Embed Post</a>
+              <a class="dropdown-item" href="">Report Post</a>
+            </div>
         </div>
         <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
+        <div>
+
+          {% for topic in post.topics.all %}
+            <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+              style="color:#a300cc">
+            <b>#{{topic.title}}</b></a>
+          {% endfor %}
+
+          {% for person in post.people.all %}
+            <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+              style="color:#0071e6">
+            <b>@{{person.username}}</b></a>
+          {% endfor %}
+        </div>
             {% if 'default.jpg' not in post.image.url%}
           <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
             {% endif %}
-        <p class="article-content" style=" font-size:1.8vh">{{ post.content }}</p>
-      </div>
+        <p class="article-content" style="">{{ post.content }}</p>
+
+{#This is the part where the image information is done#}
+      <div class="" style="text-align:right">
+        {% if post|has_comment:user%}
+          <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
+        {% else %}
+          <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
+        {% endif %}
+        <a>{{post.comment_set.count}}</a>
+
+        {% if post|has_like:user%}
+        <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+        {% else %}
+        <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+        {% endif %}
+        <a>{{post.like_set.count}}</a>
+    </div>
     </article>
+  </button>
     {% endfor %}
     <!--Pagees Object-->
-    {% if is_paginated %}
+    {% if pages.has_other_pages %}
 
-      {% if page_obj.has_previous %}
+      {% if pages.has_previous %}
         <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
         <a class="btn btn-outline-info mb-4" href="?page={{page_obj.previous_page_number}}"> < </a>
       {% endif %}
 
-      {% for num in page_obj.paginator.page_range %}
+      {% for num in pages.paginator.page_range %}
 
-        {% if page_obj.number == num %}
+        {% if pages.number == num %}
           <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'+3' %}
+        {% elif num > pages.number|add:'-3' and num < pages.number|add:'+3' %}
           <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
         {% endif %}
 
       {% endfor %}
 
-      {% if page_obj.has_next %}
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}"> > </a>
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+      {% if pages.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ pages.next_page_number }}"> > </a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.num_pages }}">Last</a>
       {% endif %}
 
     {% endif %} <!--Big If-->
 {% endblock content %}
 
 {% block left %}
+<b class="article article-content">"{{profile.user.profilesettings.quote}}"</b>
+<p>{{profile.user.profilesettings.about}}</p>
 
-  {% for obj in posts|slice:":1"%}
+<a><b> Pictures & Videos </b> <a class="float-right mr-0" href="?page=1">See All</a>
+  {% for post in images|slice:":6"%}
+      <img class="img-fluid mb-2 mt-2 rounded" style="width:10.3vh; height:10.3vh" alt="Responsive image" src="{{post.image.url}}">
+  {% endfor %}
+<p></p>
 
-        <b> Friends </b>
-        <ul class="list-group" style="margin-bottom:2vh">
-      {% if obj.author.profile.friends.all %}
-          {% for friend in obj.author.profile.friends.all %}
-            <li class="list-group-item list-group-item">
-              <div class="media-body">
-              <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                <b class="article-content" style="">{{friend.nick}}</b>
-              </div>
-            </li>
-          {% endfor %}
-      {% else %}
-        This person does not have any friends yet.
-      {% endif %}
-        </ul>
-
-        <b> Interests </b>
-        <ul class="list-group" style="margin-bottom:2vh">
-          {% if obj.author.profile.following.all %}
-            {% for friend in obj.author.profile.following.all %}
-              <li class="list-group-item list-group-item">
-                <div class="media-body">
-                <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                  <b class="article-content" style="">{{friend.nick}}</b>
-                </div>
-              </li>
-              {% endfor %}
-
-            {% else %}
-              This person does not have any interests yet.
-            {% endif %}
-        </ul>
-
-    <b> Interested </b>
-    <ul class="list-group">
-      {% if obj.author.profile.followers.all %}
-        {% for friend in obj.author.profile.followers.all %}
-          <li class="list-group-item list-group-item">
-            <div class="media-body">
-            <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-              <b class="article-content" style="">{{friend.nick}}</b>
-            </div>
-          </li>
-        {% endfor %}
-
-      {% else %}
-        This person does not have any interested people yet.
-      {% endif %}
-    </ul>
-
-    {% endfor %}
+<a><b> Recent Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
+<ul class="list-group" style="margin-bottom:2vh">
+{% if activities %}
+    {% for activity in activities|slice:":5"%}
+    <li class="list-group-item list-group-item">
+      <div class="input-block-level media-body" href="#">
+        <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{activity.author.profile.image.url}}">
+          <b>{{ activity.message }}</b>
+      </div>
+    </li>
+  {% endfor %}
+{% else %}
+This person has not done anything yet.
+{% endif %}
+</ul>
 {% endblock left %}
 
 
 
 {% block right %}
-<canvas id="myChart" style="max-width: 500px;"></canvas>
+<!--
+<main role="main" class="container">
+  <div class="row">
 
-<div class="col-md-5">
-  <canvas id="myChart"></canvas>
-</div>
+    <a class="h5"><b>{{profile.user.username}}'s Circle</b></a>
+    <div style="float:right">
+      <canvas id="social_circle" width="100%" height="100%"></canvas>
+    </div>
+
+  </div>
+
+</main> -->
+<script>
+  var pieData = [
+      {
+          value: {{followers_count}},
+          color:"#E65F5C",
+
+      },
+      {
+          value : {{following_count}},
+          color : "#6D72C3"
+      },
+      {
+          value : {{friends_count}},
+          color : "#59C3C3"
+      }
+  ];
+    // Get the context of the canvas element we want to select
+    var circle= document.getElementById("social_circle").getContext("2d");
+
+
+    new Chart(circle).Doughnut(data=pieData);
+</script>
+
+<main role="main" class="container mb-2">
+  <div class="row">
+    <div class="col-md-4" style="text-align:center">
+      <img src="{% static 'resources/post_big.png' %}" style="width: 60%; height: auto; text-align:center;"/>
+      <div class="h5" style="text-align:center"><b>{{user_posts}}</b></div>
+    </div>
+    <div class="col-md-4" style="text-align:center">
+      <img class="align-middle" src="{% static 'resources/heart_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
+      <div class="h5" style="text-align:center"><b>{{user_likes}}</b></div>
+    </div>
+    <div class="col-md-4" style="text-align:center">
+      <img src="{% static 'resources/comment_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
+      <div class="h5" style="text-align:center"><b>{{user_comments}}</b></div>
+    </div>
+  </div>
+  </main>
+
+      <a style="color:#59C3C3;">●</a>
+      <b> Friends {% if friends_count %} {{friends_count}} {% endif %}</b>
+      <ul class="list-group" style="margin-bottom:2vh">
+    {% if profile.user.profile.friends.all %}
+        {% for friend in profile.user.profile.friends.all|slice:":5"%}
+          <li class="list-group-item list-group-item">
+            <div class="media-body">
+            <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
+                <b class="article-content" style=""><a href="{% url 'user-posts' friend.user.username %}">{{friend.nick}}</a></b>
+            </div>
+          </li>
+        {% endfor %}
+    {% else %}
+      This person does not have any friends yet.
+    {% endif %}
+      </ul>
+
+      <a style="color:#6D72C3;">●</a>
+      <b> Interests {% if following_count %} {{following_count}} {% endif %}</b>
+      <ul class="list-group" style="margin-bottom:2vh">
+        {% if profile.user.profile.following.all %}
+          {% for friend in profile.user.profile.following.all|slice:":5"%}
+            <li class="list-group-item list-group-item">
+              <div class="media-body">
+              <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
+                <b class="article-content" style=""><a href="{% url 'user-posts' friend.user.username %}">{{friend.nick}}</a></b>
+              </div>
+            </li>
+            {% endfor %}
+
+          {% else %}
+            This person does not have any interests yet.
+          {% endif %}
+      </ul>
+
+  <a style="color:#E65F5C;">●</a>
+  <b> Interested {% if followers_count %}{{followers_count}} {% endif %}</b>
+  <ul class="list-group">
+    {% if profile.user.profile.followers.all%}
+      {% for friend in profile.user.profile.followers.all|slice:":5"%}
+        <li class="list-group-item list-group-item">
+          <div class="media-body">
+          <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
+                <b class="article-content" style=""><a href="{% url 'user-posts' friend.user.username %}">{{friend.nick}}</a></b>
+          </div>
+        </li>
+      {% endfor %}
+
+    {% else %}
+      This person does not have any interested people yet.
+    {% endif %}
+  </ul>
+
 {% endblock right %}
 
-<script>
-  var ctx = document.getElementById("myChart").getContext('2d');
-  var myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-      datasets: [{
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)'
-        ],
-        borderColor: [
-          'rgba(255,99,132,1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)'
-        ],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true
-          }
-        }]
-      }
-    }
-  });
+<!--JAVA SCRIPT FILES-->
 
-</script>
+{% block js_code %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block modal %}
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
+    <div class="modal-content">
+      {# --------------------------Start----------------------------- #}
+      <div id="post_display">
+      {% include 'blog/post.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+{% endblock modal %}

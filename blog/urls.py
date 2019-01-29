@@ -2,20 +2,22 @@ from django.urls import path
 from . import views
 from users import views as user_views
 from .views import *
+from django.conf.urls import url
 
 urlpatterns = [
     path('', views.home_view,name='blog-home'),
-    path('user/<str:username>', UserPostListView.as_view(),name='user-posts'),
+    url(r'^ajaxtest/', views.get_post, name='ajaxtest'),
+    path('<pk>', views.home_view,name='post-open'),
+    path('user/<str:username>', views.get_user_information,name='user-posts'),
     path('topic/<post_title>', views.getTopic,name='topic-posts'),
-    path('post/<pk>/', views.getPost,name='post-detail'),
+    path('post/item/<pk>/', views.getPost,name='post-detail'),
+
     path('post/<int:pk>/update', PostUpdateView.as_view(),name='post-update'),
     path('post/<int:pk>/delete', PostDeleteView.as_view(),name='post-delete'),
-    path('post/new/', PostCreateView.as_view(),name='post-create'),
-
-    path('comment/<int:pk>/update', CommentUpdateView.as_view(),name='comment-update'),
-    path('comment/<int:pk>/delete', CommentDeleteView.as_view(),name='comment-delete'),
-    path('comment/new', CommentCreateView.as_view(),name='comment-create'),
+    path('post/test', PostUpdateView.as_view(),name='post-open2'),
+    path('post/new', PostCreateView.as_view(),name='post-create'),
 
     path('about/', views.about,name='blog-about'),
+    path('test/', views.demo_piechart,name='test-page'),
 
 ]

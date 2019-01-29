@@ -1,30 +1,97 @@
 {% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
 <!--Content Page-->
 {% block content %}
+<script>
+  $(document).ready(function(event) {
+      $(document).on('click', '.updateButton' , function(event) {
+        event.preventDefault();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#post_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+</script>
+
     {% for post in pages %}
+    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#exampleModalCenter"
+    member_id = {{post.id}} style="text-align:left; border:none; width:100%; background:none;">
     <article class="media content-section">
       <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-          <small class="text-muted" style="float:right">{{ post.date_posted|date:"F d, Y" }}</small>
+          {% if post.reply != post %}
+          <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
+          {% endif %}
+          <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
+          <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
+          src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#">Hide Post</a>
+            <a class="dropdown-item" href="">Copy Post Link</a>
+            <a class="dropdown-item" href="">Embed Post</a>
+            <a class="dropdown-item" href="">Report Post</a>
+          </div>
         </div>
         <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
         <div>
 
           {% for topic in post.topics.all %}
-            <a href="{% url 'topic-posts' topic.title  %}" class="btn btn-primary btn-sm float-left mr-2"
-              style=" background-color: #e60000; border-color: #e60000; font-size:1.5vh;">
-            <b>{{topic.title}}</b></a>
+            <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+              style="color:#e60000">
+            <b>#{{topic.title}}</b></a>
+          {% endfor %}
+
+          {% for person in post.people.all %}
+            <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+              style="color:#0071e6">
+            <b>@{{person.username}}</b></a>
           {% endfor %}
         </div>
             {% if 'default.jpg' not in post.image.url%}
           <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
             {% endif %}
-        <p class="article-content" style=" font-size:1.8vh">{{ post.content }}</p>
-      </div>
+        <p class="article-content" style="">{{ post.content }}</p>
+
+{#This is the part where the image information is done#}
+      <div class="" style="text-align:right">
+        {% if post|has_comment:user%}
+          <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
+        {% else %}
+          <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
+        {% endif %}
+        <a>{{post.comment_set.count}}</a>
+
+        {% if post|has_like:user%}
+        <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+        {% else %}
+        <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+        {% endif %}
+        <a>{{post.like_set.count}}</a>
+    </div>
+
+    <!-- Button trigger modal -->
     </article>
+      </button>
+    </li>
     {% endfor %}
+</ul>
+
     <!--Pagees Object-->
     {% if pages.has_other_pages %}
 
@@ -52,14 +119,14 @@
 {% endblock content %}
 
 <!--Profile Page-->
-{% block profile_home %}
-
+{% block left %}
+          <img class="img-fluid mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
         <article class="media content-section">
-              <img class="rounded-circle article-img" src="{{user.profile.image.url}}">
-              <div class="media-body">
-                <b class="article-content" style="margin-right:2v">{{user.profile.nick}}</b>
-                <p class="text-secondary">~{{user.username}}</p>
-              </div>
+          <img class="rounded-circle article-img" src="{{user.profile.image.url}}">
+          <div class="media-body">
+            <b class="article-content" style="margin-right:2v">{{user.profile.nick}}</b>
+            <p class="text-secondary">~{{user.username}}</p>
+          </div>
         </article>
 
         <b> Friends </b>
@@ -111,4 +178,46 @@
         No one is interested in you yet.
       {% endif %}
     </ul>
-{% endblock profile_home %}
+{% endblock left %}
+
+{% block right %}
+<a><b> Recent Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
+<ul class="list-group" style="margin-bottom:2vh">
+{% if activities %}
+    {% for activity in activities|slice:":10"%}
+  <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
+    <li class="list-group-item list-group-item">
+      <div class="input-block-level media-body">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:3.5vh; height:3.5vh" src="{{activity.author.profile.image.url}}">
+        {% if activity.type == 1 %}
+        <img class="article-img mr-1" style="width:3vh; height:3vh" src="{% static 'resources/comment.png' %}">
+        {% else %}
+        <img class="article-img mr-1" style="width:3vh; height:3vh" src="{% static 'resources/heart_big.png' %}">
+        {% endif %}
+        <b class="article-title" style="text-decoration: none;">{{activity.post.author}}'s Post</b>
+      </div>
+    </li></a>
+  {% endfor %}
+{% else %}
+There are no recent activities from your circles.
+{% endif %}
+
+
+{% endblock right %}
+
+{# Modal scripts go here #}
+
+{% block modal %}
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
+    <div class="modal-content">
+      {# --------------------------Start----------------------------- #}
+      <div id="post_display">
+      {% include 'blog/post.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+{% endblock modal %}

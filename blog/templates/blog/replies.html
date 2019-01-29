@@ -1,0 +1,52 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+<ul class="list-group" style="margin-bottom:0vh">
+  {% for comment in replies %}
+  <li>
+  <article class="media content-section" style="margin-bottom:0vh">
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
+    <div class="media-body">
+      <div class="article-metadata">
+        <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author.profile.nick}}</a>
+        <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.author.username}}</a>
+        <small class="text-muted" style="float:RIGHT">{{ comment.date_posted|date:"F d, Y" }}</small>
+      </div>
+      {% for topic in comment.topics.all %}
+        <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+          style="color:#e60000">
+        <b>#{{topic.title}}</b></a>
+      {% endfor %}
+      {% for person in comment.people.all %}
+        <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+          style="color:#0071e6">
+        <b>@{{person.username}}</b></a>
+      {% endfor %}
+
+          {% if 'default.jpg' not in comment.image.url%}
+        <img class="img-fluid mb-2 mt-2" alt="Responsive image" src="{{comment.image.url}}">
+          {% endif %}
+      <p class="article-content">{{ comment.content }}</p>
+
+      {#This is the part where the image information is done#}
+        <div class="" style="text-align:right">
+          {% if obj|has_comment:user%}
+            <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
+          {% else %}
+            <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
+          {% endif %}
+          <a>{{obj.comment_set.count}}</a>
+
+          {% if obj|has_like:user%}
+          <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+          {% else %}
+          <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+          {% endif %}
+          <a>{{obj.like_set.count}}</a>
+      </div>
+    </div>
+  </article>
+  </li>
+  {% endfor %}
+</ul>

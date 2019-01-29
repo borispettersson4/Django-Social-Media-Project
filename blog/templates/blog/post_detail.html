@@ -1,8 +1,12 @@
-{% extends "blog/base.html" %}
+{% extends "blog/home.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
 {% block content %}
+    <div class="col-md-0" style="margin-top: 0rem;">
     <article class="media content-section">
-      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
+      <img class="rounded-circle article-img" style=" width: 8%; height:auto;" src="{{obj.author.profile.image.url}}">
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
@@ -19,14 +23,26 @@
               <img class="img-fluid mb-2 mt-2" alt="Responsive image" src="{{obj.image.url}}">
             {% endif %}
           <p class="article-content" style=" font-size:1.8vh">{{ obj.content }}</p>
-      </div>
+{#This is the part where the image information is done#}
+          <div class="" style="text-align:right">
+            {% if obj|has_comment:user%}
+              <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
+            {% else %}
+              <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
+            {% endif %}
+            <a>{{obj.comment_set.count}}</a>
 
+            {% if obj|has_like:user%}
+            <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+            {% else %}
+            <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+            {% endif %}
+            <a>{{obj.like_set.count}}</a>
+      </div>
     </article>
 
-    <h3>Post A Comment</h3>
-
-    <!--Comment Form-->
-
+    {% block post %}
+    <!--Comments-->
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       <fieldset class="form-group">
@@ -37,7 +53,6 @@
           <button class="btn btn-outline-info" type="submit">Post</button>
         </div>
     </form>
-
     <!--Comments-->
     {% for comment in comments %}
     {% if comment.post.id == obj.id %}
@@ -46,7 +61,7 @@
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author.username }}</a>
-          <small class="text-muted">{{ comment.date_posted|date:"F d, Y" }}</small>
+          <small class="text-muted" style="float:RIGHT">{{ comment.date_posted|date:"F d, Y" }}</small>
         </div>
             {% if 'default.jpg' not in comment.image.url%}
           <img class="img-fluid mb-2 mt-2" alt="Responsive image" src="{{comment.image.url}}">
@@ -56,67 +71,26 @@
     </article>
     {% endif %}
     {% endfor %}
+    {% endblock post %}
 
+    {% for activity in activities %}
+    <article class="media content-section">
+      <div class="media-body">
+
+          <a class="mr-2" href="{% url 'user-posts' activity.author.username %}">{{ activity.author.username }}</a>
+                  <a>{{ activity.message }}</a>
+          <small class="text-muted" style="float:RIGHT">{{ activity.date|date:"F d, Y" }}</small>
+        </div>
+
+    </article>
+    {% endfor %}
+</div>
 {% endblock content %}
 
-<!--Profile Page-->
-{% block profile_home %}
 
-        <article class="media content-section">
-              <img class="rounded-circle article-img" src="{{obj.author.profile.image.url}}">
-              <div class="media-body">
-                <b class="article-content" style="margin-right:2v">{{obj.author.profile.nick}}</b>
-                <p class="text-secondary">~{{obj.author.username}}</p>
-              </div>
-        </article>
+<!--Comment S-->
 
-        <b> Friends </b>
-        <ul class="list-group" style="margin-bottom:2vh">
-      {% if user.profile.friends.all %}
-          {% for friend in user.profile.friends.all %}
-            <li class="list-group-item list-group-item">
-              <div class="media-body">
-              <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                <b class="article-content" style="">{{friend.nick}}</b>
-              </div>
-            </li>
-          {% endfor %}
-      {% else %}
-        You don't have any friends yet.
-      {% endif %}
-        </ul>
 
-        <b> Interests </b>
-        <ul class="list-group" style="margin-bottom:2vh">
-          {% if user.profile.following.all %}
-            {% for friend in user.profile.following.all %}
-              <li class="list-group-item list-group-item">
-                <div class="media-body">
-                <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                  <b class="article-content" style="">{{friend.nick}}</b>
-                </div>
-              </li>
-              {% endfor %}
+{% block right %}
 
-            {% else %}
-              You don't have any interests yet.
-            {% endif %}
-        </ul>
-
-    <b> Interested </b>
-    <ul class="list-group">
-      {% if user.profile.followers.all %}
-        {% for friend in user.profile.followers.all %}
-          <li class="list-group-item list-group-item">
-            <div class="media-body">
-            <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-              <b class="article-content" style="">{{friend.nick}}</b>
-            </div>
-          </li>
-        {% endfor %}
-
-      {% else %}
-        No one is interested in you yet.
-      {% endif %}
-    </ul>
-{% endblock profile_home %}
+{% endblock right %}

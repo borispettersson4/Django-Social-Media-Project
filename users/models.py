@@ -9,7 +9,6 @@ class Profile(models.Model):
     badge = models.CharField(default = 'A', max_length = 1)
     following = models.ManyToManyField("self", related_name='followers', blank=True,  symmetrical=False)
     friends = models.ManyToManyField("self", related_name='friends', blank=True, symmetrical=True)
-    about = models.CharField(default = 'anonymous', max_length = 100)
 
     def __str__(self):
         return(f'{self.user.username} Profile')
@@ -30,6 +29,8 @@ class Profile(models.Model):
 class ProfileSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     coverImage = models.ImageField(default = 'default_cover.png', upload_to='cover_pics')
+    about = models.CharField(default = 'Write about yourself.', max_length = 160)
+    quote = models.CharField(default = 'Write an original idea!', max_length = 80)
 
     #To be continued...
 
@@ -44,6 +45,8 @@ class ProfileSettings(models.Model):
             output_size = (500,1200)
             img.thumbnail(output_size)
             img.save(self.coverImage.path)
+
+    #This is an activity post item that can be a like, post, or comment
 
 
 

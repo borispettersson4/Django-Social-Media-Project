@@ -1,0 +1,140 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chart.js demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+
+    <h1>Chart.js Sample</h1>
+
+    <canvas id="social_circle" width="600" height="400"></canvas>
+    <script>
+        var pieData = [
+            {
+                value: 20,
+                color:"#878BB6",
+
+            },
+            {
+                value : 10,
+                color : "#4ACAB4"
+            },
+            {
+                value : 10,
+                color : "#FF8153"
+            },
+            {
+                value : 30,
+                color : "#FFEA88"
+            }
+        ];
+
+        var pieOptions = {
+        responsive: true,
+        tooltip: {
+            enabled:true,
+        },
+        legend: {
+            position: 'top',
+        },
+        title: {
+            display: true,
+            text: 'Chart.js Doughnut Chart'
+        },
+        animation: {
+            animateScale: true,
+            animateRotate: true
+        }
+    }
+        // Get the context of the canvas element we want to select
+        var circle= document.getElementById("social_circle").getContext("2d");
+
+
+        new Chart(circle).Doughnut(data=pieData, options=pieOptions);
+
+    </script>
+</body>
+
+
+
+
+
+
+		var randomScalingFactor = function() {
+			return Math.round(Math.random() * 100);
+		};
+
+		var config = {
+			type: 'pie',
+			data: {
+				datasets: [{
+					data: [
+						randomScalingFactor(),
+						randomScalingFactor(),
+						randomScalingFactor(),
+						randomScalingFactor(),
+						randomScalingFactor(),
+					],
+					backgroundColor: [
+						window.chartColors.red,
+						window.chartColors.orange,
+						window.chartColors.yellow,
+						window.chartColors.green,
+						window.chartColors.blue,
+					],
+					label: 'Dataset 1'
+				}],
+				labels: [
+					'Red',
+					'Orange',
+					'Yellow',
+					'Green',
+					'Blue'
+				]
+			},
+			options: {
+				responsive: true
+			}
+		};
+
+		window.onload = function() {
+			var ctx = document.getElementById('chart-area').getContext('2d');
+			window.myPie = new Chart(ctx, config);
+		};
+
+		document.getElementById('randomizeData').addEventListener('click', function() {
+			config.data.datasets.forEach(function(dataset) {
+				dataset.data = dataset.data.map(function() {
+					return randomScalingFactor();
+				});
+			});
+
+			window.myPie.update();
+		});
+
+		var colorNames = Object.keys(window.chartColors);
+		document.getElementById('addDataset').addEventListener('click', function() {
+			var newDataset = {
+				backgroundColor: [],
+				data: [],
+				label: 'New dataset ' + config.data.datasets.length,
+			};
+
+			for (var index = 0; index < config.data.labels.length; ++index) {
+				newDataset.data.push(randomScalingFactor());
+
+				var colorName = colorNames[index % colorNames.length];
+				var newColor = window.chartColors[colorName];
+				newDataset.backgroundColor.push(newColor);
+			}
+
+			config.data.datasets.push(newDataset);
+			window.myPie.update();
+		});
+
+		document.getElementById('removeDataset').addEventListener('click', function() {
+			config.data.datasets.splice(0, 1);
+			window.myPie.update();
+		});
