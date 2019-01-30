@@ -9,6 +9,10 @@
   <div class="media-body">
     <div class="article-metadata mb-0">
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
+      {% if obj.reply != post %}
+      <small class="text-muted" style="">Replied to</small>
+      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.reply.author.username}}</a>
+      {% endif %}
       <small class="text-muted" style="float:right">{{ obj.date_posted|date:"F d, Y" }}</small>
     </div>
     <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>
@@ -29,22 +33,26 @@
         {% endif %}
     <p class="article-content" style="">{{ obj.content }}</p>
 
-{#This is the part where the image information is done#}
-  <div class="" style="text-align:right">
-    {% if obj|has_comment:user%}
-      <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
-    {% else %}
-      <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
-    {% endif %}
-    <a>{{obj.comment_set.count}}</a>
+    {#This is the part where the image information is done#}
+      <div class="" style="text-align:right">
+        {% if obj|has_reply:user%}
+        <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
+        class="updateButton" member_id = {{obj.id}}></img>
+        {% else %}
+          <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
+          class="updateButton" member_id = {{obj.id}}></img>
+        {% endif %}
+        <a>{{obj.post_set.count}}</a>
 
-    {% if obj|has_like:user%}
-    <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-    {% else %}
-    <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-    {% endif %}
-    <a>{{obj.like_set.count}}</a>
-</div>
+        {% if obj|has_like:user%}
+        <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px; border:none; cursor:pointer;"
+        class="likeButton" member_id = {{obj.id}}></img>
+        {% else %}
+        <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px; border:none; cursor:pointer;"
+        class="likeButton" member_id = {{obj.id}}></img>
+        {% endif %}
+        <a>{{obj.like_set.count}}</a>
+    </div>
 </article>
 </form>
     <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form">
@@ -85,15 +93,15 @@
         <div class="form-group">
           <div class="">
           <label for="file_upload" class="post_image" accept="image/*" onchange="loadFile(event)" style="">
-          <a style="font-size:1.7vh; color:#a300cc; float:right;">Use # to add topics and @ to tag people.<a/>
+          <a style="font-size:1.7vh; color:#a300cc; float:left; margin-left:10vh">Replying to @{{obj.author.username}}<a/>
             <image class="float-left" src="{% static 'resources/image_upload.png' %}"
             style="text-align:left; cursor:pointer; width:4vh; height:4vh; margin-left:10vh; visibility: hidden;"></image>
             <image class="output_img float-left" src="" id="output_image"
             style="text-align:left; cursor:pointer; width:4vh; height:4vh; margin-left:1vh; visibility: hidden;"></image>
           </label>
-          <button class="btn btn-outline-info post_comment float-right"
-          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:5vh; border-radius: 1rem;"
-          type="submit" post_id={{obj.id}}>Reply</button>
+          <button class="btn btn-outline-info post_comment updateButton float-right"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:4vh; border-radius: 10rem;"
+          type="submit" post_id={{obj.id}} member_id = {{obj.id}}>Reply</button>
           </div>
         </div>
             <input type="file" accept="image/*" onchange="preview_image(event)" id="file_upload" class="file_uploader">
@@ -145,7 +153,7 @@
               $.ajax({
                 type: "POST",
                 url: "{% url 'blog-home' %}",
-                data : { 'id':post_id, 'content': content_text,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Comment"},
+                data : { 'id': post_id, 'content': content_text,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Comment"},
                 dataType: 'json',
                 success : function(response) {
                   $('#reply_display').html(response['form']);
@@ -158,6 +166,52 @@
               });
           });
           return false;
+      });
+
+      $(document).ready(function(event) {
+          $(document).on('click', '.likeButton' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+              var member_id = $(this).attr('member_id');
+              $.ajax({
+                type: "POST",
+                url: "{% url 'blog-home' %}",
+                data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#post_display').html(response['form']);
+                  console.log("success");
+                },
+                error : function(rs, e) {
+                  $('#post_display').html("an error occured");
+                  console.log(rs.responseText);
+                }
+              });
+          });
+      });
+    </script>
+
+    <script>
+      $(document).ready(function(event) {
+        $(document).on('click', '.replyButton' , function(event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+            var member_id = $(this).attr('reply_id');
+            $.ajax({
+              type: "POST",
+              url: "{% url 'blog-home' %}",
+              data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post_Reply"},
+              dataType: 'json',
+              success : function(response) {
+                $('#reply_display').html(response['form']);
+                console.log("success :" + "Id is : " + member_id);
+              },
+              error : function(rs, e) {
+                $('#reply_display').html("an error occured");
+                console.log(rs.responseText);
+              }
+            });
+        });
       });
     </script>
 

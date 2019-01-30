@@ -108,3 +108,22 @@ a.article-title:hover {
   right:26vh;
 
 }
+
+/* Button Nav */
+.button-nav{
+  width: auto;
+  height: 5vh;
+  border: 0.3vh solid #FFFFFF;
+  color:#FFFFFF;
+  cursor:pointer;
+  border-radius: 25px;
+}
+
+.button-nav:hover{
+  width: auto;
+  height: 5vh;
+  border: 0.3vh solid #FFFFFF;
+  background-color:#FFFFFF;
+  cursor:pointer;
+  border-radius: 25px;
+}

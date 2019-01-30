@@ -10,7 +10,7 @@
     <div class="media-body">
       <div class="article-metadata">
         <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author.profile.nick}}</a>
-        <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.author.username}}</a>
+        <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
         <small class="text-muted" style="float:RIGHT">{{ comment.date_posted|date:"F d, Y" }}</small>
       </div>
       {% for topic in comment.topics.all %}
@@ -31,19 +31,23 @@
 
       {#This is the part where the image information is done#}
         <div class="" style="text-align:right">
-          {% if obj|has_comment:user%}
-            <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
+          {% if comment|has_reply:user%}
+          <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
+          class="updateButton" member_id = {{comment.id}}></img>
           {% else %}
-            <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
+            <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
+            class="updateButton" member_id = {{comment.id}}></img>
           {% endif %}
-          <a>{{obj.comment_set.count}}</a>
+          <a>{{comment.post_set.count}}</a>
 
-          {% if obj|has_like:user%}
-          <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+          {% if comment|has_like:user%}
+          <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px; cursor:pointer;"
+          class="replyButton" reply_id = {{comment.id}}></img>
           {% else %}
-          <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+          <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px; cursor:pointer;"
+          class="replyButton" reply_id = {{comment.id}}></img>
           {% endif %}
-          <a>{{obj.like_set.count}}</a>
+          <a>{{comment.like_set.count}}</a>
       </div>
     </div>
   </article>

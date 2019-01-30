@@ -165,6 +165,7 @@ def home_view(request, pk=1):
             'pages' : pages,
             'comments' : Comment.objects.all(),
             'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
@@ -181,8 +182,41 @@ def home_view(request, pk=1):
             html = render_to_string('blog/replies.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
-        if (request.POST.get('action') == "View_Post"):
+        elif (request.POST.get('action') == "View_Post"):
             html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Like_Post"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Like_Post_Reply"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/replies.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
     return render(request, 'blog/home.html', context)
@@ -238,7 +272,7 @@ def get_user_information(request, username=None):
             'page_obj': paginator,
             'pages' : pages,
             'comments' : Comment.objects.all(),
-            'replies' : Post.objects.filter(reply=obj),
+            'replies' : Post.objects.filter(Q(reply=obj)),
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,

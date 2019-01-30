@@ -27,9 +27,15 @@
   });
 </script>
 
+
     {% for post in pages %}
-    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#exampleModalCenter"
+    {% if post.reply != post %}
+    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#postModalCenter"
+    member_id = {{post.reply.id}} style="text-align:left; border:none; width:100%; background:none;">
+    {% else %}
+    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#postModalCenter"
     member_id = {{post.id}} style="text-align:left; border:none; width:100%; background:none;">
+    {% endif %}
     <article class="media content-section">
       <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
       <div class="media-body">
@@ -42,10 +48,13 @@
           <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
           src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="#">Hide Post</a>
+            {% if user == post.author %}
+            <a class="dropdown-item" href="#">Delete Post</a>
+            {% else %}
+            <a class="dropdown-item" href="">Report Post</a>
+            {% endif %}
             <a class="dropdown-item" href="">Copy Post Link</a>
             <a class="dropdown-item" href="">Embed Post</a>
-            <a class="dropdown-item" href="">Report Post</a>
           </div>
         </div>
         <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
@@ -68,22 +77,24 @@
             {% endif %}
         <p class="article-content" style="">{{ post.content }}</p>
 
-{#This is the part where the image information is done#}
-      <div class="" style="text-align:right">
-        {% if post|has_comment:user%}
-          <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
-        {% else %}
-          <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
-        {% endif %}
-        <a>{{post.comment_set.count}}</a>
+        {#This is the part where the image information is done#}
+          <div class="" style="text-align:right">
+            {% if post|has_reply:user%}
+            <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
+            class="updateButton" member_id = {{post.id}}></img>
+            {% else %}
+              <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
+              class="updateButton" member_id = {{post.id}}></img>
+            {% endif %}
+            <a>{{post.post_set.count}}</a>
 
-        {% if post|has_like:user%}
-        <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-        {% else %}
-        <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-        {% endif %}
-        <a>{{post.like_set.count}}</a>
-    </div>
+            {% if obj|has_like:user%}
+            <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+            {% else %}
+            <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
+            {% endif %}
+            <a>{{obj.like_set.count}}</a>
+        </div>
 
     <!-- Button trigger modal -->
     </article>
@@ -185,6 +196,7 @@
 <ul class="list-group" style="margin-bottom:2vh">
 {% if activities %}
     {% for activity in activities|slice:":10"%}
+      {% if activity.author != user  %}
   <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
     <li class="list-group-item list-group-item">
       <div class="input-block-level media-body">
@@ -197,6 +209,7 @@
         <b class="article-title" style="text-decoration: none;">{{activity.post.author}}'s Post</b>
       </div>
     </li></a>
+    {% endif %}
   {% endfor %}
 {% else %}
 There are no recent activities from your circles.
@@ -209,7 +222,7 @@ There are no recent activities from your circles.
 
 {% block modal %}
 
-<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
     <div class="modal-content">
       {# --------------------------Start----------------------------- #}

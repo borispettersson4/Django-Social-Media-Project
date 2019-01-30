@@ -21,6 +21,10 @@ def has_comment(post,user):
     return post.comment_set.filter(author=user)
 
 @register.filter
+def has_reply(post,user):
+    return post.post_set.filter(author=user)
+
+@register.filter
 def set_value(variable,value):
     request.session['post_id'] = value
     return None

@@ -73,10 +73,13 @@
             <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
             src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a class="dropdown-item" href="#">Hide Post</a>
+              {% if user == post.author %}
+              <a class="dropdown-item" href="#">Delete Post</a>
+              {% else %}
+              <a class="dropdown-item" href="">Report Post</a>
+              {% endif %}
               <a class="dropdown-item" href="">Copy Post Link</a>
               <a class="dropdown-item" href="">Embed Post</a>
-              <a class="dropdown-item" href="">Report Post</a>
             </div>
         </div>
         <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
