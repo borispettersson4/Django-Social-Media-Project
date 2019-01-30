@@ -1,8 +1,6 @@
-{% load static %}
-{% load filters %}
+{% extends "blog/base.html" %}
 {% load crispy_forms_tags %}
-
-
+{% block content %}
   <div class="content-section">
 
     <form method="POST" enctype="multipart/form-data">
@@ -18,3 +16,4 @@
     </form>
 
   </div> <!--Content Section Div-->
+{% endblock content %}
