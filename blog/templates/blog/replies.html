@@ -11,7 +11,18 @@
       <div class="article-metadata">
         <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author.profile.nick}}</a>
         <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
-        <small class="text-muted" style="float:RIGHT">{{ comment.date_posted|date:"F d, Y" }}</small>
+        <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
+        src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <small class="text-muted">{{ comment.date_posted|date:"F d, Y" }}</small>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          {% if user == comment.author %}
+          <a class="dropdown-item" href="#">Delete Post</a>
+          {% else %}
+          <a class="dropdown-item" href="">Report Post</a>
+          {% endif %}
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+        </div>
       </div>
       {% for topic in comment.topics.all %}
         <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
@@ -30,25 +41,31 @@
       <p class="article-content">{{ comment.content }}</p>
 
       {#This is the part where the image information is done#}
-        <div class="" style="text-align:right">
-          {% if comment|has_reply:user%}
-          <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
-          class="updateButton" member_id = {{comment.id}}></img>
-          {% else %}
-            <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
-            class="updateButton" member_id = {{comment.id}}></img>
-          {% endif %}
-          <a>{{comment.post_set.count}}</a>
+      <div class="" style="float:right">
+        <button class="updateButton" id="hidden_interact" member_id = {{comment.id}}
+        style="cursor:pointer; border-radius: 1rem;">
+        {% if comment|has_reply:user%}
+        <img src="{% static 'resources/comment_full.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% else %}
+        <img src="{% static 'resources/comment.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% endif %}
+        <a>{{comment.post_set.count}}</a>
+        </button>
 
-          {% if comment|has_like:user%}
-          <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px; cursor:pointer;"
-          class="replyButton" reply_id = {{comment.id}}></img>
-          {% else %}
-          <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px; cursor:pointer;"
-          class="replyButton" reply_id = {{comment.id}}></img>
-          {% endif %}
-          <a>{{comment.like_set.count}}</a>
-      </div>
+        <button class="replyLikeButton" id="hidden_interact" member_id = {{comment.id}}
+        style="cursor:pointer; border-radius: 1rem;">
+        {% if comment|has_like:user%}
+        <img src="{% static 'resources/heart_full.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% else %}
+        <img src="{% static 'resources/heart.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% endif %}
+        <a>{{comment.like_set.count}}</a>
+        </button>
+    </div>
     </div>
   </article>
   </li>

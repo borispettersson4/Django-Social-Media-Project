@@ -127,3 +127,26 @@ a.article-title:hover {
   cursor:pointer;
   border-radius: 25px;
 }
+
+#hidden_interact {
+  background:none;
+  border:none;
+}
+
+#hidden_interact:hover {
+  background-color:#efefef;
+}
+
+#hidden_interact:focus {outline:0;}
+
+#main_interact_big {
+  background-color:#a300cc;
+  color:#FFFFFF;
+}
+
+#main_interact_big:hover {
+  background-color:#FFFFFF;
+  color:#a300cc;
+}
+
+#main_interact_big:focus {outline:0;}

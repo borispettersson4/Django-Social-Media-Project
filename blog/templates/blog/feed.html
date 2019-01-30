@@ -1,0 +1,78 @@
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
+{% for post in pages %}
+
+<article class="media content-section">
+  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
+  <div class="media-body">
+    <div class="article-metadata">
+      <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
+      {% if post.reply != post %}
+      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
+      {% endif %}
+      <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
+      <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer "
+      src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        {% if user == post.author %}
+        <a class="dropdown-item" href="#">Delete Post</a>
+        {% else %}
+        <a class="dropdown-item" href="">Report Post</a>
+        {% endif %}
+        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" href="">Embed Post</a>
+      </div>
+    </div>
+    <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
+    <div>
+
+      {% for topic in post.topics.all %}
+        <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+          style="color:#e60000">
+        <b>#{{topic.title}}</b></a>
+      {% endfor %}
+
+      {% for person in post.people.all %}
+        <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+          style="color:#0071e6">
+        <b>@{{person.username}}</b></a>
+      {% endfor %}
+    </div>
+        {% if 'default.jpg' not in post.image.url%}
+      <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
+        {% endif %}
+    <p class="article-content" style="">{{ post.content }}</p>
+
+    {#This is the part where the image information is done#}
+      <div class="" style="float:right">
+        <button class="updateButton" id="hidden_interact" member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter"
+        style="cursor:pointer; border-radius: 1rem;">
+        {% if post|has_reply:user%}
+        <img src="{% static 'resources/comment_full.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% else %}
+        <img src="{% static 'resources/comment.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% endif %}
+        <a>{{post.post_set.count}}</a>
+        </button>
+
+        <button class="homeLikeButton" id="hidden_interact" member_id = {{post.id}}
+        style="cursor:pointer; border-radius: 1rem;">
+        {% if post|has_like:user%}
+        <img src="{% static 'resources/heart_full.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% else %}
+        <img src="{% static 'resources/heart.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        {% endif %}
+        <a>{{post.like_set.count}}</a>
+        </button>
+    </div>
+
+<!-- Button trigger modal -->
+</article>
+  </button>
+{% endfor %}

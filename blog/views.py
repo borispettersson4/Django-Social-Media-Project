@@ -180,11 +180,15 @@ def home_view(request, pk=1):
             new_activity = Activity(post=post, author=author, message="posted a comment")
             new_activity.save()
             html = render_to_string('blog/replies.html', sub_context, request=request)
-            return JsonResponse({'form':html})
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html3 = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
+
 
         elif (request.POST.get('action') == "View_Post"):
             html = render_to_string('blog/post.html', sub_context, request=request)
-            return JsonResponse({'form':html})
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
 
         elif (request.POST.get('action') == "Like_Post"):
             post = Post.objects.get(id=request.POST.get('id'))
@@ -200,7 +204,8 @@ def home_view(request, pk=1):
                 pass
 
             html = render_to_string('blog/post.html', sub_context, request=request)
-            return JsonResponse({'form':html})
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
 
         elif (request.POST.get('action') == "Like_Post_Reply"):
             post = Post.objects.get(id=request.POST.get('id'))
@@ -214,10 +219,28 @@ def home_view(request, pk=1):
                     likes.delete()
             except:
                 pass
-
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
             sub_context['replies'] = Post.objects.filter(reply=obj.reply)
             html = render_to_string('blog/replies.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Feed"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
+
 
     return render(request, 'blog/home.html', context)
 

@@ -4,16 +4,26 @@
 <div style="background-color:#eedfff;">
 <form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post">
 {% csrf_token %}
-<article class="media content-section mb-0">
+<article class="media content-section mb-0;">
   <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
   <div class="media-body">
     <div class="article-metadata mb-0">
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
       {% if obj.reply != post %}
-      <small class="text-muted" style="">Replied to</small>
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.reply.author.username}}</a>
       {% endif %}
-      <small class="text-muted" style="float:right">{{ obj.date_posted|date:"F d, Y" }}</small>
+      <small class="text-muted" style="">{{ obj.date_posted|date:"F d, Y" }}</small>
+      <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
+      src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        {% if user == obj.author %}
+        <a class="dropdown-item" href="#">Delete Post</a>
+        {% else %}
+        <a class="dropdown-item" href="">Report Post</a>
+        {% endif %}
+        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" href="">Embed Post</a>
+      </div>
     </div>
     <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>
     <div>
@@ -34,43 +44,47 @@
     <p class="article-content" style="">{{ obj.content }}</p>
 
     {#This is the part where the image information is done#}
-      <div class="" style="text-align:right">
-        {% if obj|has_reply:user%}
-        <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
-        class="updateButton" member_id = {{obj.id}}></img>
-        {% else %}
-          <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
-          class="updateButton" member_id = {{obj.id}}></img>
-        {% endif %}
-        <a>{{obj.post_set.count}}</a>
+    <div class="" style="float:right">
+      <button class="updateButton" id="hidden_interact" member_id = {{obj.id}} data-toggle="modal" data-target="#postModalCenter"
+      style="cursor:pointer; border-radius: 1rem;">
+      {% if obj|has_reply:user%}
+      <img src="{% static 'resources/comment_full.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% else %}
+      <img src="{% static 'resources/comment.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% endif %}
+      <a>{{obj.post_set.count}}</a>
+      </button>
 
-        {% if obj|has_like:user%}
-        <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px; border:none; cursor:pointer;"
-        class="likeButton" member_id = {{obj.id}}></img>
-        {% else %}
-        <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px; border:none; cursor:pointer;"
-        class="likeButton" member_id = {{obj.id}}></img>
-        {% endif %}
-        <a>{{obj.like_set.count}}</a>
-    </div>
+      <button class="postLikeButton" id="hidden_interact" member_id = {{obj.id}}
+      style="cursor:pointer; border-radius: 1rem;">
+      {% if obj|has_like:user%}
+      <img src="{% static 'resources/heart_full.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% else %}
+      <img src="{% static 'resources/heart.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% endif %}
+      <a>{{obj.like_set.count}}</a>
+      </button>
+  </div>
 </article>
 </form>
     <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form">
       {% csrf_token %}
       <fieldset class="form-group" style="text-align:center; margin:1vh;">
-        <main role="main" class="container" style="">
-          <div class="row">
-              <div class="col-md-0" style="margin-left:2.25vh;">
-                <img class="rounded-circle article-img" style=" width: 4vh; height: 4vh;" src="{{user.profile.image.url}}">
-              </div>
-            <div class="col-md-0" style="margin-left:0px">
-              <textarea class="textbox_big"  style="width:50vh; height:15vh; border-radius: 0.5rem; overflow:hidden;"></textarea>
-              <textarea class="textbox_small"
-              style="width:50vh; height:4%; color:#c4c4c4; border-radius: 1rem; overflow:hidden; float:left;"> What do you think of this post?</textarea>
-              <img id="output" class="img_display"/>
-            </div>
+
+          <div class="" style="">
+                <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.5vh;"
+                src="{{user.profile.image.url}}">
+                <textarea class="textbox_big"
+                style="width:80%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
+                <textarea class="textbox_small"
+                style="width:80%; height:4%; color:#c4c4c4; border-radius: 1rem; overflow:hidden;
+                float:left;"> What do you think of this post?</textarea>
           </div>
-        </main>
+
         <script>
           $(document).ready(function() {
             $(".textbox_big").hide();
@@ -156,7 +170,9 @@
                 data : { 'id': post_id, 'content': content_text,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Comment"},
                 dataType: 'json',
                 success : function(response) {
+                  $('#feed_display').html(response['main']);
                   $('#reply_display').html(response['form']);
+                  $('#post_display').html(response['post']);
                   console.log("success");
                 },
                 error : function(rs, e) {
@@ -169,7 +185,7 @@
       });
 
       $(document).ready(function(event) {
-          $(document).on('click', '.likeButton' , function(event) {
+          $(document).on('click', '.postLikeButton' , function(event) {
             event.preventDefault();
             event.stopImmediatePropagation();
               var member_id = $(this).attr('member_id');
@@ -179,6 +195,7 @@
                 data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post"},
                 dataType: 'json',
                 success : function(response) {
+                  $('#feed_display').html(response['main']);
                   $('#post_display').html(response['form']);
                   console.log("success");
                 },
@@ -193,16 +210,17 @@
 
     <script>
       $(document).ready(function(event) {
-        $(document).on('click', '.replyButton' , function(event) {
+        $(document).on('click', '.replyLikeButton' , function(event) {
           event.preventDefault();
           event.stopImmediatePropagation();
-            var member_id = $(this).attr('reply_id');
+            var member_id = $(this).attr('member_id');
             $.ajax({
               type: "POST",
               url: "{% url 'blog-home' %}",
               data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post_Reply"},
               dataType: 'json',
               success : function(response) {
+                $('#feed_display').html(response['main']);
                 $('#reply_display').html(response['form']);
                 console.log("success :" + "Id is : " + member_id);
               },

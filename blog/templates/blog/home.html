@@ -15,6 +15,7 @@
             data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
             dataType: 'json',
             success : function(response) {
+              $('#feed_display').html(response['main']);
               $('#post_display').html(response['form']);
               console.log("success");
             },
@@ -25,83 +26,34 @@
           });
       });
   });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.homeLikeButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Feed"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              $('#feed_display').html(response['main']);
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
 </script>
 
-
-    {% for post in pages %}
-    {% if post.reply != post %}
-    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#postModalCenter"
-    member_id = {{post.reply.id}} style="text-align:left; border:none; width:100%; background:none;">
-    {% else %}
-    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#postModalCenter"
-    member_id = {{post.id}} style="text-align:left; border:none; width:100%; background:none;">
-    {% endif %}
-    <article class="media content-section">
-      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-          {% if post.reply != post %}
-          <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
-          {% endif %}
-          <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
-          <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
-          src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {% if user == post.author %}
-            <a class="dropdown-item" href="#">Delete Post</a>
-            {% else %}
-            <a class="dropdown-item" href="">Report Post</a>
-            {% endif %}
-            <a class="dropdown-item" href="">Copy Post Link</a>
-            <a class="dropdown-item" href="">Embed Post</a>
-          </div>
-        </div>
-        <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
-        <div>
-
-          {% for topic in post.topics.all %}
-            <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
-              style="color:#e60000">
-            <b>#{{topic.title}}</b></a>
-          {% endfor %}
-
-          {% for person in post.people.all %}
-            <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
-              style="color:#0071e6">
-            <b>@{{person.username}}</b></a>
-          {% endfor %}
-        </div>
-            {% if 'default.jpg' not in post.image.url%}
-          <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
-            {% endif %}
-        <p class="article-content" style="">{{ post.content }}</p>
-
-        {#This is the part where the image information is done#}
-          <div class="" style="text-align:right">
-            {% if post|has_reply:user%}
-            <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
-            class="updateButton" member_id = {{post.id}}></img>
-            {% else %}
-              <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; border:none; cursor:pointer;"
-              class="updateButton" member_id = {{post.id}}></img>
-            {% endif %}
-            <a>{{post.post_set.count}}</a>
-
-            {% if obj|has_like:user%}
-            <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-            {% else %}
-            <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-            {% endif %}
-            <a>{{obj.like_set.count}}</a>
-        </div>
-
-    <!-- Button trigger modal -->
-    </article>
-      </button>
-    </li>
-    {% endfor %}
-</ul>
+<div id="feed_display">
+{% include 'blog/feed.html' %}
+</div>
 
     <!--Pagees Object-->
     {% if pages.has_other_pages %}

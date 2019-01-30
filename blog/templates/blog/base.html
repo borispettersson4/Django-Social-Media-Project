@@ -3,8 +3,8 @@
 
 {% load staticfiles %}
 
-<script src="{% static "js/jquery-1.11.1.js" %}"></script>
-<script src="{% static "js/rango-jquery.js" %}"></script>
+<script src="{% static 'js/jquery-1.11.1.js' %}"></script>
+<script src="{% static 'js/rango-jquery.js' %}"></script>
 
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
@@ -44,7 +44,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
     <!--Javascript File-->
-    <script src="{% static "js/main.js" %}" type="text/javascript"></script>
+    <script src="{% static 'js/main.js' %}" type="text/javascript"></script>
 
     {% block js_code %}{% endblock %}
   <!-- Navigation Bar -->
@@ -79,10 +79,11 @@
                 </div>
               </div>
 
-            <a href="{% url 'post-create' %}">
+
               <button class="btn btn-normal" style=" width: auto; height: 5vh; border: 0.3vh solid #FFFFFF;
-              color:#FFFFFF; cursor:pointer; border-radius: 25px;"><b>Post</b></button>
-            </a>
+              cursor:pointer; border-radius: 20px;" id="main_interact_big" data-toggle="modal"
+              data-target="#newPostModalCenter"><b>New Post</b></button>
+
             {# <button type="button" class="btn btn-primary btn-9g round">Round</button> #}
             {% endif %}
           </div>
