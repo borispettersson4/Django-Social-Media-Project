@@ -185,4 +185,16 @@ There are no recent activities from your circles.
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
+    <div class="modal-content">
+      {# --------------------------Start----------------------------- #}
+      <div id="new_post_display">
+      {% include 'blog/post_form.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
 {% endblock modal %}

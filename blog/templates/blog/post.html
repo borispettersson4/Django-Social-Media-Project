@@ -45,6 +45,15 @@
 
     {#This is the part where the image information is done#}
     <div class="" style="float:right">
+
+      {% if obj.reply != post %}
+      <button class="updateButton" id="hidden_interact" member_id = {{obj.reply.id}}
+      style="cursor:pointer; border-radius: 1rem;">
+      <img src="{% static 'resources/back.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      </button>
+      {% endif %}
+      
       <button class="updateButton" id="hidden_interact" member_id = {{obj.id}} data-toggle="modal" data-target="#postModalCenter"
       style="cursor:pointer; border-radius: 1rem;">
       {% if obj|has_reply:user%}
