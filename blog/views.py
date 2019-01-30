@@ -123,6 +123,17 @@ class PostModalView(DetailView):
 
 @login_required
 def home_view(request, pk=1):
+
+    if (request.method == 'POST'):
+        post_form = NewPostForm(request.POST, request.FILES, instance=request.user)
+        if(post_form.is_valid()):
+            con = post_form.cleaned_data.get('content')
+            new_post = Post(content=con, author=request.user)
+            new_post.save()
+    else:
+        post_form = NewPostForm(instance=request.user)
+
+
     posts = Post.objects.all().order_by('-date_posted')
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, 10)
@@ -132,8 +143,6 @@ def home_view(request, pk=1):
         pages = paginator.page(1)
     except EmptyPage:
         pages = paginator.page(paginator.num_pages)
-
-    image_form = NewImage(instance=request.user)
 
     context = {
             'posts': posts,
@@ -145,13 +154,7 @@ def home_view(request, pk=1):
             'activities' : Activity.objects.all(),
             'user' : request.user,
             'obj' : Post.objects.get(id=pk),
-            'image_form' : image_form}
-
-    if (request.method == 'POST'):
-        image_form = NewImage(request.POST, request.FILES, instance=request.user)
-        if (image_form.is_valid()):
-            image_form.save()
-            img = image_form.cleaned_data.get('image')
+            'post_form' : post_form}
 
 #When user clicks on a post
     if request.is_ajax():
@@ -169,7 +172,8 @@ def home_view(request, pk=1):
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
-            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id))}
+            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'post_form' : NewPostForm(instance=request.user)}
 
         if (request.POST.get('action') == "Comment"):
             cont = request.POST.get('content')
@@ -238,6 +242,10 @@ def home_view(request, pk=1):
                 pass
 
             sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "New_Post"):
             html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
 

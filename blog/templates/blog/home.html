@@ -49,6 +49,26 @@
           });
       });
   });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.newPostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "New_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
 </script>
 
 <div id="feed_display">
