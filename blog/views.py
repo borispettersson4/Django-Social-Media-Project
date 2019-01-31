@@ -29,7 +29,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
-import copy
+from django.utils.datastructures import *
 
 def home(request):
     context = {
@@ -244,7 +244,12 @@ def home_view(request, pk=1):
         post_form = NewPostForm(request.POST, request.FILES)
         if(post_form.is_valid()):
             con = post_form.cleaned_data.get('content')
-            new_post = Post(content=con, author=request.user, reply=None)
+            #Image filtering
+            try:
+                img = request.FILES['image']
+                new_post = Post(image=img, content=con, author=request.user, reply=None)
+            except MultiValueDictKeyError:
+                new_post = Post(content=con, author=request.user, reply=None)
             new_post.save()
             post_form = NewPostForm()
             return HttpResponseRedirect(request.path_info)

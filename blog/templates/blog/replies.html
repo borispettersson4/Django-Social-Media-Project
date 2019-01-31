@@ -2,10 +2,10 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
-<ul class="list-group" style="margin-bottom:0vh; border-bottom-radius: 0.5rem;">
+<ul class="list-group" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
   {% for comment in replies %}
   <li>
-  <article class="media content-section" style="margin-bottom:0vh; border-bottom-radius: 0.5rem;">
+  <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
     <div class="media-body">
       <div class="article-metadata">
@@ -13,7 +13,7 @@
         <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
         <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
         src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <small class="text-muted">{{ comment.date_posted|date:"F d, Y" }}</small>
+        <small class="text-muted">{{ comment.date_posted|date:"M d, Y" }}</small>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           {% if user == comment.author %}
           <a class="dropdown-item" href="#">Delete Post</a>

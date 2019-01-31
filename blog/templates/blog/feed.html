@@ -12,7 +12,7 @@
       {% if post.reply != None %}
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
       {% endif %}
-      <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
+      <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
 
       <button class="dropdown" id="hidden_interact" member_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
@@ -47,7 +47,8 @@
       {% endfor %}
     </div>
         {% if 'default.jpg' not in post.image.url%}
-      <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
+        <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
+        alt="Responsive image" src="{{post.image.url}}">
         {% endif %}
     <p class="article-content" style="">{{ post.content }}</p>
 

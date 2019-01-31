@@ -2,9 +2,9 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 <div style="background-color:#eedfff; border-radius: 0.5rem;">
-<form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-radius: 0.5rem;">
+<form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
 {% csrf_token %}
-<article class="media content-section mb-3;" style="border-radius: 0.5rem;">
+<article class="media content-section mb-3;" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
   <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
@@ -12,7 +12,7 @@
       {% if obj.reply != None %}
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.reply.author.username}}</a>
       {% endif %}
-      <small class="text-muted" style="">{{ obj.date_posted|date:"F d, Y" }}</small>
+      <small class="text-muted" style="">{{ obj.date_posted|date:"M d, Y" }}</small>
       <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
       src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -39,7 +39,8 @@
       {% endfor %}
     </div>
         {% if 'default.jpg' not in obj.image.url%}
-      <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{obj.image.url}}">
+      <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;" 
+      alt="Responsive image" src="{{obj.image.url}}">
         {% endif %}
     <p class="article-content" style="">{{ obj.content }}</p>
 
@@ -85,7 +86,7 @@
       <fieldset class="form-group" style="text-align:center; margin:1vh;">
 
           <div class="" style="">
-                <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.5vh;"
+                <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.3vh;"
                 src="{{user.profile.image.url}}">
                 <textarea class="textbox_big"
                 style="width:80%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
@@ -99,8 +100,6 @@
             $(".textbox_big").hide();
             $(".post_comment").hide();
             $(".post_image").hide();
-            $(".file_uploader").hide();
-            $(".output_img").hide();
             $(document).on('click', '.textbox_small' , function() {
               event.preventDefault();
               $(".textbox_small").hide();
@@ -113,21 +112,17 @@
       </fieldset>
           </form>
       <form name="upload_img" enctype="multipart/form-data" id="upload_img">
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom:3vh">
           <div class="">
           <label for="file_upload" class="post_image" accept="image/*" onchange="loadFile(event)" style="">
           <a style="font-size:1.7vh; color:#a300cc; float:left; margin-left:10vh">Replying to @{{obj.author.username}}<a/>
-            <image class="float-left" src="{% static 'resources/image_upload.png' %}"
-            style="text-align:left; cursor:pointer; width:4vh; height:4vh; margin-left:10vh; visibility: hidden;"></image>
-            <image class="output_img float-left" src="" id="output_image"
-            style="text-align:left; cursor:pointer; width:4vh; height:4vh; margin-left:1vh; visibility: hidden;"></image>
           </label>
           <button class="btn btn-outline-info post_comment updateButton float-right"
           style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:4vh; border-radius: 10rem;"
           type="submit" post_id={{obj.id}} member_id = {{obj.id}}>Reply</button>
           </div>
         </div>
-            <input type="file" accept="image/*" onchange="preview_image(event)" id="file_upload" class="file_uploader">
+
         </form>
     <script>
     function preview_image(event)
@@ -169,9 +164,6 @@
               $(".textbox_big").hide();
               $('.textbox_big').val('');
               $(".post_comment").hide();
-              $(".post_image").hide();
-              $(".file_uploader").hide();
-              $(".output_img").hide();
               $(".textbox_SMALL").show();
               $.ajax({
                 type: "POST",
