@@ -22,7 +22,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete = models.CASCADE)
     topics = models.ManyToManyField(Topic, blank=True, symmetrical=False)
     people = models.ManyToManyField(User, blank=True,related_name='people', symmetrical=False)
-    reply = models.ForeignKey("self", on_delete = models.CASCADE, blank=True, default = "self")
+    reply = models.ForeignKey("self", on_delete = models.CASCADE, blank=True, default = "self", null=True)
 
 
 
@@ -31,6 +31,12 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse('post-detail',kwargs={'pk' : self.pk})
+
+    def cast_empty_reference(self):
+        self.reply = self
+        super().save()
+
+
 
     def save(self):
         super().save()

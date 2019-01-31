@@ -4,17 +4,22 @@
 
 {% for post in pages %}
 
-<article class="media content-section">
+<article class="media content-section" style="border-radius: 0.5rem;">
   <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
-  <div class="media-body">
+  <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
       <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-      {% if post.reply != post %}
+      {% if post.reply != None %}
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
       {% endif %}
       <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
-      <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer "
-      src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+      <button class="dropdown" id="hidden_interact" member_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
+      style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+      <img src="{% static 'resources/more.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      </button>
+
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         {% if user == post.author %}
         <a class="dropdown-item" href="#">Delete Post</a>
@@ -24,6 +29,7 @@
         <a class="dropdown-item" href="">Copy Post Link</a>
         <a class="dropdown-item" href="">Embed Post</a>
       </div>
+
     </div>
     <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
     <div>

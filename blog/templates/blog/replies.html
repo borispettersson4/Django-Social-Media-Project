@@ -2,14 +2,14 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
-<ul class="list-group" style="margin-bottom:0vh">
+<ul class="list-group" style="margin-bottom:0vh; border-bottom-radius: 0.5rem;">
   {% for comment in replies %}
   <li>
-  <article class="media content-section" style="margin-bottom:0vh">
+  <article class="media content-section" style="margin-bottom:0vh; border-bottom-radius: 0.5rem;">
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
     <div class="media-body">
       <div class="article-metadata">
-        <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author.profile.nick}}</a>
+        <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{comment.author.profile.nick}}</a>
         <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
         <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
         src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

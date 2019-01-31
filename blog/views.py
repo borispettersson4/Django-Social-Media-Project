@@ -29,6 +29,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
+import copy
 
 def home(request):
     context = {
@@ -123,17 +124,7 @@ class PostModalView(DetailView):
 
 @login_required
 def home_view(request, pk=1):
-
-    if (request.method == 'POST'):
-        post_form = NewPostForm(request.POST, request.FILES, instance=request.user)
-        if(post_form.is_valid()):
-            con = post_form.cleaned_data.get('content')
-            new_post = Post(content=con, author=request.user)
-            new_post.save()
-    else:
-        post_form = NewPostForm(instance=request.user)
-
-
+    post_form = NewPostForm()
     posts = Post.objects.all().order_by('-date_posted')
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, 10)
@@ -173,7 +164,7 @@ def home_view(request, pk=1):
             'user' : request.user,
             'obj' : obj,
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
-            'post_form' : NewPostForm(instance=request.user)}
+            'post_form' : post_form}
 
         if (request.POST.get('action') == "Comment"):
             cont = request.POST.get('content')
@@ -248,6 +239,15 @@ def home_view(request, pk=1):
         elif (request.POST.get('action') == "New_Post"):
             html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
+
+    elif (request.method == 'POST'):
+        post_form = NewPostForm(request.POST, request.FILES)
+        if(post_form.is_valid()):
+            con = post_form.cleaned_data.get('content')
+            new_post = Post(content=con, author=request.user, reply=None)
+            new_post.save()
+            post_form = NewPostForm()
+            return HttpResponseRedirect(request.path_info)
 
 
     return render(request, 'blog/home.html', context)

@@ -14,6 +14,8 @@ from chartjs import *
 from django import template
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import *
+from django.db.models import Q
+
 register = template.Library()
 
 @register.filter
@@ -22,7 +24,11 @@ def has_comment(post,user):
 
 @register.filter
 def has_reply(post,user):
-    return post.post_set.filter(author=user)
+    return post.post_set.filter(Q(author=user))
+
+@register.filter
+def get_comment_set(post,user):
+    return post.post_set.filter(Q(author=user) & ~Q(reply=post)).count()
 
 @register.filter
 def set_value(variable,value):

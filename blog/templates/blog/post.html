@@ -1,15 +1,15 @@
 {% load static %}
 {% load filters %}
 {% load crispy_forms_tags %}
-<div style="background-color:#eedfff;">
-<form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post">
+<div style="background-color:#eedfff; border-radius: 0.5rem;">
+<form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-radius: 0.5rem;">
 {% csrf_token %}
-<article class="media content-section mb-0;">
+<article class="media content-section mb-3;" style="border-radius: 0.5rem;">
   <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
-  <div class="media-body">
-    <div class="article-metadata mb-0">
+  <div class="media-body" style="border-radius: 0.5rem;">
+    <div class="article-metadata">
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
-      {% if obj.reply != post %}
+      {% if obj.reply != None %}
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.reply.author.username}}</a>
       {% endif %}
       <small class="text-muted" style="">{{ obj.date_posted|date:"F d, Y" }}</small>
@@ -46,14 +46,14 @@
     {#This is the part where the image information is done#}
     <div class="" style="float:right">
 
-      {% if obj.reply != post %}
+      {% if obj.reply != None %}
       <button class="updateButton" id="hidden_interact" member_id = {{obj.reply.id}}
       style="cursor:pointer; border-radius: 1rem;">
       <img src="{% static 'resources/back.png' %}"
       style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
       {% endif %}
-      
+
       <button class="updateButton" id="hidden_interact" member_id = {{obj.id}} data-toggle="modal" data-target="#postModalCenter"
       style="cursor:pointer; border-radius: 1rem;">
       {% if obj|has_reply:user%}
@@ -80,7 +80,7 @@
   </div>
 </article>
 </form>
-    <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form">
+    <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form" style="border-radius: 0.5rem;">
       {% csrf_token %}
       <fieldset class="form-group" style="text-align:center; margin:1vh;">
 

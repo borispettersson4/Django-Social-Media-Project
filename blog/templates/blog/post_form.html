@@ -2,18 +2,45 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
-  <div class="content-section">
+  <div class="m-4" style="border-radius: 1rem;">
 
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       <fieldset class="form">
         <legend class="border-bottom mb-4">Create A Post</legend>
-        {{ post_form|crispy }}
+        {{ post_form }}
       </fieldset>
 
         <div class="form-group">
-          <button class="btn btn-outline-info" type="submit">Post</button>
+          <textarea name="content" class = "mb-3"
+          style="width:100%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
+
+          <button class="btn btn-outline-info mb-3"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; float:right; border-radius: 2rem;"
+          type="submit">Post</button>
+
         </div>
     </form>
 
   </div> <!--Content Section Div-->
+
+  <script>
+  function preview_image(event)
+  {
+   var reader = new FileReader();
+   reader.onload = function()
+   {
+    var output = document.getElementById('output_image');
+    output.src = reader.result;
+   }
+   reader.readAsDataURL(event.target.files[0]);
+   $(".output_img").show();
+  }
+  </script>
+
+  <script>
+    $(document).ready(function(event) {
+
+            $(".file_uploader").hide();
+    });
+  </script>

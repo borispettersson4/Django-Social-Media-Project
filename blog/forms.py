@@ -15,10 +15,9 @@ class ViewPostForm(PopRequestMixin, CreateUpdateAjaxMixin, forms.ModelForm):
         model = Post
         fields = ['content']
 
-class NewPostForm(PopRequestMixin, CreateUpdateAjaxMixin, forms.ModelForm):
-    class Meta:
-        model = Post
-        fields = ['content']
+class NewPostForm(forms.Form):
+    image = forms.ImageField(widget=forms.HiddenInput, required=False)
+    content = forms.CharField(widget=forms.HiddenInput)
 
 class NewImage(forms.ModelForm):
     class Meta:
