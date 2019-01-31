@@ -11,8 +11,13 @@
       <div class="article-metadata">
         <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{comment.author.profile.nick}}</a>
         <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
-        <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
-        src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+        <button class="dropdown" id="hidden_interact" member_id = {{comment.id}} aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="{% static 'resources/more.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
         <small class="text-muted">{{ comment.date_posted|date:"M d, Y" }}</small>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           {% if user == comment.author %}
