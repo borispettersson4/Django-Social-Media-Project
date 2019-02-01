@@ -4,7 +4,13 @@
 
 {% for post in pages %}
 <article class="" style="border-radius: 0.5rem; margin-bottom:0px">
-<article class="media content-section" style="border-radius: 0rem; margin-bottom:0px">
+  {% if forloop.last %}
+  <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+  {% elif forloop.first %}
+  <article class="media content-section" style="margin-bottom:0vh; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+  {% else %}
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+  {% endif %}
   <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">

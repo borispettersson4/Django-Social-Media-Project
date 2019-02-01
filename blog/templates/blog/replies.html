@@ -2,10 +2,15 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
-<ul class="list-group" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+<li class="list-group"
+style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: list-style-type: none;">
   {% for comment in replies %}
-  <li>
+  <ul style="padding-left:0vh;">
+  {% if forloop.last %}
   <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+  {% else %}
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+  {% endif %}
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
     <div class="media-body">
       <div class="article-metadata">
@@ -74,6 +79,6 @@
     </div>
     </div>
   </article>
-  </li>
+  </ul>
   {% endfor %}
-</ul>
+</li>
