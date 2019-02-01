@@ -13,8 +13,9 @@
 
 
         <div class="form-group">
-          <input name="image" type="file" accept="image/*" onchange="preview_image(event)">
-  
+          <p>Video or Image</p>
+          <input name="media" type="file" accept="video/* | image/*" onchange="preview_content(event)"
+          class="media" style="visibility:hidde">
           <textarea name="content" class = "mb-3"
           style="width:100%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
 
@@ -26,24 +27,3 @@
     </form>
 
   </div> <!--Content Section Div-->
-
-  <script>
-  function preview_image(event)
-  {
-   var reader = new FileReader();
-   reader.onload = function()
-   {
-    var output = document.getElementById('output_image');
-    output.src = reader.result;
-   }
-   reader.readAsDataURL(event.target.files[0]);
-   $(".output_img").show();
-  }
-  </script>
-
-  <script>
-    $(document).ready(function(event) {
-
-
-    });
-  </script>

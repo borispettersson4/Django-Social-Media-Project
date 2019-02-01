@@ -14,20 +14,21 @@
       {% endif %}
       <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
 
-      <button class="dropdown" id="hidden_interact" member_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
+      <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
       style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" href="">Embed Post</a>
         {% if user == post.author %}
-        <a class="dropdown-item" href="#">Delete Post</a>
+        <a class="dropdown-item" id = "delete_btn" style="color:red;"
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
         {% else %}
         <a class="dropdown-item" href="">Report Post</a>
         {% endif %}
-        <a class="dropdown-item" href="">Copy Post Link</a>
-        <a class="dropdown-item" href="">Embed Post</a>
       </div>
 
     </div>
@@ -49,6 +50,12 @@
         {% if 'default.jpg' not in post.image.url%}
         <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
         alt="Responsive image" src="{{post.image.url}}">
+        {% elif post.video %}
+        <video width="100%" height="auto"preload="auto" loop style ="border-radius: 1rem;"
+          class="mb-2" controls>
+          <source src="{{post.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+          Your browser does not support the video tag.
+        </video>
         {% endif %}
     <p class="article-content" style="">{{ post.content }}</p>
 

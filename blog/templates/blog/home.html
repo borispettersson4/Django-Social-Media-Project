@@ -8,6 +8,8 @@
   $(document).ready(function(event) {
       $(document).on('click', '.updateButton' , function(event) {
         event.preventDefault();
+              $('#loading').show();
+              $('#post_display').hide();
           var member_id = $(this).attr('member_id');
           $.ajax({
             type: "POST",
@@ -15,8 +17,9 @@
             data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
             dataType: 'json',
             success : function(response) {
-              $('#feed_display').html(response['main']);
               $('#post_display').html(response['form']);
+              $('#loading').hide();
+              $('#post_display').show();
               console.log("success");
             },
             error : function(rs, e) {
@@ -54,10 +57,11 @@
       $(document).on('click', '.newPostButton' , function(event) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
           $.ajax({
             type: "POST",
             url: "{% url 'blog-home' %}",
-            data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "New_Post"},
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "New_Post"},
             dataType: 'json',
             success : function(response) {
               $('#feed_display').html(response['form']);
@@ -69,6 +73,7 @@
           });
       });
   });
+
 </script>
 
 <div id="feed_display">
@@ -201,6 +206,12 @@ There are no recent activities from your circles.
       <div id="post_display">
       {% include 'blog/post.html' %}
       </div>
+
+      <div id="loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
       {# --------------------------END----------------------------- #}
     </div>
   </div>
@@ -208,10 +219,22 @@ There are no recent activities from your circles.
 
 <div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
-    <div class="modal-content" style="border-radius: 1rem;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
       {# --------------------------Start----------------------------- #}
-      <div id="new_post_display">
+      <div id="new_post_display" >
       {% include 'blog/post_form.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deletePostModalCenter" tabindex="-1" role="dialog" aria-labelledby="deletePostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="delete_post_display" >
+      {% include 'blog/post_confirm_delete.html' %}
       </div>
       {# --------------------------END----------------------------- #}
     </div>

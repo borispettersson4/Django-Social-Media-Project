@@ -1,19 +1,63 @@
-{% extends "blog/base.html" %}
-{% block content %}
+
   <div class="content-section">
 
     <form method="POST">
       {% csrf_token %}
       <fieldset class="form-group">
         <legend class="border-bottom mb-4">Delete Post</legend>
-        <h2> Are you sure you want to delete "{{object.title}}" </h2>
+        <h3> Are you sure you want to delete the post: "{{object.title}}" ? </h3>
       </fieldset>
 
         <div class="form-group">
-          <button class="btn btn-outline-danger" type="submit">Yes, Delete</button>
-          <a class="btn btn-outline-secondary" href="{% url 'post-detail' object.id %}">Go Back</a>
+          <button class="deleteConfirmButton" type="submit" data-toggle="modal"
+          data-target="#deletePostModalCenter"> Yes, Delete</button>
+          <a class="btn btn-outline-secondary" href="{% url 'post-detail' obj.id %}">Go Back</a>
         </div>
     </form>
 
   </div> <!--Content Section Div-->
-{% endblock content %}
+
+<script>
+  var delete_btn;
+
+  $(document).ready(function(event) {
+    $(document).on('click', '.dropdown' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      delete_btn = $(this).attr('select_id');
+    });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.deleteConfirmButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        var member_id = delete_btn;
+
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Delete_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#reply_display').html(response['post']);
+              $('#post_display').html(response['form']);
+              $('#feed_display').html(response['main']);
+
+              console.log("success:Delete " + " : " + delete_btn);
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+
+
+
+
+
+
+</script>

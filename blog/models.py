@@ -17,6 +17,7 @@ class Topic(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length = 100,blank=True)
     image = models.ImageField(default = 'default.jpg', upload_to='post_pics')
+    video = models.FileField(upload_to='video_files', null=True, verbose_name="", blank=True)
     content = models.TextField(max_length = 500)
     date_posted = models.DateTimeField(default = timezone.now)
     author = models.ForeignKey(User, on_delete = models.CASCADE)

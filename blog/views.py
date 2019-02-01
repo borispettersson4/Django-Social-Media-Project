@@ -123,7 +123,7 @@ class PostModalView(DetailView):
     model = Post
 
 @login_required
-def home_view(request, pk=1):
+def home_view(request, pk=3):
     post_form = NewPostForm()
     posts = Post.objects.all().order_by('-date_posted')
     page = request.GET.get('page', 1)
@@ -240,19 +240,34 @@ def home_view(request, pk=1):
             html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Delete_Post"):
+
+            post = Post.objects.get(id=post_id)
+            post.context = "Marked for Deletion"
+            html3 = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
         if(post_form.is_valid()):
             con = post_form.cleaned_data.get('content')
-            #Image filtering
+            new_post = Post(content=con, author=request.user, reply=None)
+
+            #Media filtering
             try:
-                img = request.FILES['image']
-                new_post = Post(image=img, content=con, author=request.user, reply=None)
-            except MultiValueDictKeyError:
-                new_post = Post(content=con, author=request.user, reply=None)
+                media = request.FILES['media']
+                url = media.name.lower()
+                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    new_post.image = media
+                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                    new_post.video = media
+            except:
+                pass
+
             new_post.save()
             post_form = NewPostForm()
-            return HttpResponseRedirect(request.path_info)
 
 
     return render(request, 'blog/home.html', context)
