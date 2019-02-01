@@ -72,6 +72,14 @@
             }
           });
       });
+
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('hidden', '#newPostModalCenter' , function(event) {
+                    console.log("CLOSE MODAL");
+      });
+
   });
 
 </script>
@@ -108,12 +116,12 @@
 
 <!--Profile Page-->
 {% block left %}
-          <img class="img-fluid mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
-        <article class="media content-section">
+
+        <article class="media content-section" style="border-radius: 3rem;">
           <img class="rounded-circle article-img" src="{{user.profile.image.url}}">
           <div class="media-body">
             <b class="article-content" style="margin-right:2v">{{user.profile.nick}}</b>
-            <p class="text-secondary">~{{user.username}}</p>
+            <p class="text-secondary">@{{user.username}}</p>
           </div>
         </article>
 
@@ -169,6 +177,11 @@
 {% endblock left %}
 
 {% block right %}
+
+<div id="popular_topics" >
+{% include 'blog/popular_topics.html' %}
+</div>
+
 <a><b> Recent Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
 <ul class="list-group" style="margin-bottom:2vh">
 {% if activities %}
@@ -201,7 +214,7 @@ There are no recent activities from your circles.
 
 <div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
-    <div class="modal-content" style="border-radius: 0.5rem;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       <div id="post_display">
       {% include 'blog/post.html' %}
@@ -219,7 +232,7 @@ There are no recent activities from your circles.
 
 <div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
-    <div class="modal-content" style="border-radius: 0.5rem;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:#eedfff;;">
       {# --------------------------Start----------------------------- #}
       <div id="new_post_display" >
       {% include 'blog/post_form.html' %}

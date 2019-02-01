@@ -12,7 +12,7 @@
         <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{comment.author.profile.nick}}</a>
         <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
 
-        <button class="dropdown" id="hidden_interact" member_id = {{comment.id}} aria-haspopup="true" aria-expanded="false"
+        <button class="dropdown" id="hidden_interact" select_id = {{comment.id}} aria-haspopup="true" aria-expanded="false"
         style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
         <img src="{% static 'resources/more.png' %}"
         style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
@@ -20,13 +20,14 @@
 
         <small class="text-muted">{{ comment.date_posted|date:"M d, Y" }}</small>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
           {% if user == comment.author %}
-          <a class="dropdown-item" href="#">Delete Post</a>
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
           {% else %}
           <a class="dropdown-item" href="">Report Post</a>
           {% endif %}
-          <a class="dropdown-item" href="">Copy Post Link</a>
-          <a class="dropdown-item" href="">Embed Post</a>
         </div>
       </div>
       {% for topic in comment.topics.all %}

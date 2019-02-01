@@ -68,7 +68,7 @@
             <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
             {% else %}
             <div class="dropdown">
-                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: 5vh; height: 5vh; border: 0.3vh solid #FFFFFF; cursor:pointer;"
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: 5vh; height: auto; border: 0.3vh solid #FFFFFF; cursor:pointer;"
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                 href="#"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -80,7 +80,7 @@
               </div>
 
 
-              <button class="btn btn-normal" style=" width: auto; height: 5vh; border: 0.3vh solid #FFFFFF;
+              <button class="btn btn-normal post_new" style=" width: auto; height: auto; border: 0.3vh solid #FFFFFF;
               cursor:pointer; border-radius: 20px;" id="main_interact_big" data-toggle="modal"
               data-target="#newPostModalCenter"><b>New Post</b></button>
 

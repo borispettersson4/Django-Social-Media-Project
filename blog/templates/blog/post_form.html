@@ -2,28 +2,96 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
-  <div class="m-4" style="border-radius: 0.5rem;">
+<script>
 
-    <form method="POST" enctype="multipart/form-data">
+  $(document).ready(function(event) {
+    $("#image_preview").hide();
+    $("#video_preview").hide();
+    $("#error_preview").hide();
+    $("#preview").hide();
+    });
+    function readURL(input) {
+            $("#image_preview").hide();
+            if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                      extvideo = e.target.result.includes("video/");
+                      extimage = e.target.result.includes("image/");
+                      $("#image_preview").hide();
+                      $("#video_preview").hide();
+                      $("#error_preview").hide();
+                      if (extimage) {
+                        $('#image_preview')
+                            .attr('src', e.target.result);
+                            $("#image_preview").show();
+                      }
+                      else if (extvideo) {
+                        $('#video_preview')
+                            .attr('src', e.target.result);
+                            $("#video_preview").show();
+
+                      }
+                      else{
+                        $("#error_preview").show();
+                      }
+                      $("#preview").show();
+
+                    };
+
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+</script>
+
+<div style=" border-radius: 0.5rem; background-color:#eedfff;">
+
+  <div class="m-4 " style="">
+          <legend class="border-bottom m-8" style="text-align:center;"><b>Create New Post</b></legend>
+    <form method="POST" enctype="multipart/form-data" style=" ">
       {% csrf_token %}
       <fieldset class="form">
-        <legend class="border-bottom mb-4">Create A Post</legend>
         {{ post_form }}
       </fieldset>
-
-
+<div class="mb-4">
         <div class="form-group">
-          <p>Video or Image</p>
-          <input name="media" type="file" accept="video/* | image/*" onchange="preview_content(event)"
-          class="media" style="visibility:hidde">
+
+          <textarea name="tags" class = ""
+          placeholder="Add topics or people!   Ex: #exampleTag @myBuddy" maxlength="50"
+          style="width:100%; height:4vh; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;
+          overflow:hidden; float:left; border-width:thin; border-color:#a300cc; resize:none"></textarea>
+
+          <div style="background-color:white; border:thin solid #a300cc;" id="preview">
+            <div style="">
+                <p id ="error_preview">This file is not supported.</p>
+                <img id="image_preview" class="img-fluid" style="min-width:100%;"
+                alt="Responsive image" src="#">
+                <video id="video_preview" width="100%" height="auto"preload="auto" loop
+                 style ="" class="" controls>
+                <source src="#" type="video/mp4" style ="">
+            </div>
+          </div>
+
           <textarea name="content" class = "mb-3"
-          style="width:100%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
+          placeholder="Write whatever you feel like writting!" maxlength="300"
+          style="width:100%; height:15vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
+          overflow:hidden; float:left; border-width:thin; border-color:#a300cc; resize:none"></textarea>
 
           <button class="btn btn-outline-info mb-3"
-          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; float:right; border-radius: 2rem;"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
+          float:right; border-radius: 2rem;"
           type="submit">Post</button>
 
+          <label for="media_btn" class="btn btn-outline-info mb-3"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; float:left; border-radius: 2rem;"
+          >Add Photo or Video</label>
+
+
         </div>
+        </div>
+
+        <input name="media" type="file" accept="video/* | image/*" onchange="readURL(this);"
+        class="media" id="media_btn" style="display: none !important;">
     </form>
 
   </div> <!--Content Section Div-->
+</div>

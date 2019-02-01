@@ -15,20 +15,21 @@
       {% endif %}
       <small class="text-muted" style="">{{ obj.date_posted|date:"M d, Y" }}</small>
 
-      <button class="dropdown" id="hidden_interact" member_id = {{obj.id}} aria-haspopup="true" aria-expanded="false"
+      <button class="dropdown" id="hidden_interact" select_id = {{obj.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
       style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" href="">Embed Post</a>
         {% if user == obj.author %}
-        <a class="dropdown-item" href="#">Delete Post</a>
+        <a class="dropdown-item" id = "delete_btn" style="color:red;"
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
         {% else %}
         <a class="dropdown-item" href="">Report Post</a>
         {% endif %}
-        <a class="dropdown-item" href="">Copy Post Link</a>
-        <a class="dropdown-item" href="">Embed Post</a>
       </div>
     </div>
     <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>

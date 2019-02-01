@@ -30,6 +30,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
 from django.utils.datastructures import *
+from itertools import chain
+import datetime
 
 def home(request):
     context = {
@@ -135,6 +137,10 @@ def home_view(request, pk=3):
     except EmptyPage:
         pages = paginator.page(paginator.num_pages)
 
+    #Get all tags
+    tops = Topic.objects.all()
+    peps = User.objects.all()
+
     context = {
             'posts': posts,
             'profile': request.user.profile,
@@ -145,7 +151,10 @@ def home_view(request, pk=3):
             'activities' : Activity.objects.all(),
             'user' : request.user,
             'obj' : Post.objects.get(id=pk),
-            'post_form' : post_form}
+            'post_form' : post_form,
+            'people' : peps,
+            'topics' : tops,
+            'date' : datetime.datetime.now()}
 
 #When user clicks on a post
     if request.is_ajax():
@@ -243,7 +252,7 @@ def home_view(request, pk=3):
         elif (request.POST.get('action') == "Delete_Post"):
 
             post = Post.objects.get(id=post_id)
-            post.context = "Marked for Deletion"
+            post.delete()
             html3 = render_to_string('blog/replies.html', sub_context, request=request)
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             html = render_to_string('blog/post.html', sub_context, request=request)
@@ -252,6 +261,7 @@ def home_view(request, pk=3):
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
         if(post_form.is_valid()):
+            tagfield = post_form.cleaned_data.get('tags')
             con = post_form.cleaned_data.get('content')
             new_post = Post(content=con, author=request.user, reply=None)
 
@@ -269,6 +279,35 @@ def home_view(request, pk=3):
             new_post.save()
             post_form = NewPostForm()
 
+            if(tagfield):
+                #Tag filtering
+                try:
+                    tag_dict = tagfield.split()
+                    for tag in tag_dict:
+                        if(tag.startswith("#")):
+                            try:
+                                try:
+                                    topic = Topic.objects.get(title=tag[1:])
+                                    new_post.topics.add(topic)
+                                except:
+                                    topic = Topic(title=tag[1:])
+                                    topic.save()
+                                    new_post.topics.add(topic)
+                            except Exception as e:
+                                new_post.content = e
+
+                        elif(tag.startswith("@")):
+                            try:
+                                try:
+                                    person = User.objects.get(username=tag[1:])
+                                    new_post.people.add(person)
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+                            except Exception as e:
+                                print(f"____________________________{e}")
+
+                except:
+                    pass
 
     return render(request, 'blog/home.html', context)
 

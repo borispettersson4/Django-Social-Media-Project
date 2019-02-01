@@ -19,6 +19,7 @@ class NewPostForm(forms.Form):
     image = forms.ImageField(widget=forms.HiddenInput, required=False)
     content = forms.CharField(widget=forms.HiddenInput)
     media = forms.FileField(widget=forms.HiddenInput, required=False)
+    tags = forms.CharField(widget=forms.HiddenInput, required=False)
 
 class NewImage(forms.ModelForm):
     class Meta:

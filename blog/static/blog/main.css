@@ -1,6 +1,6 @@
 
 body {
-  background: #fafafa;
+  background: #FCF5FE;
   color: #333333;
   margin-top: 3rem;
 }
@@ -126,6 +126,24 @@ a.article-title:hover {
   background-color:#FFFFFF;
   cursor:pointer;
   border-radius: 25px;
+}
+
+.button-interface{
+  width: auto;
+  height: 5vh;
+  color:#FFFFFF;
+  background-color:#a300cc;
+  cursor:pointer;
+  border-radius: 2rem;
+}
+
+.button-interface:hover{
+  width: auto;
+  height: 5vh;
+  background-color:#a300cc;
+  color:#a300cc;
+  cursor:pointer;
+  border-radius: 2rem;
 }
 
 #hidden_interact {
