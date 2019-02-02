@@ -137,9 +137,13 @@ def home_view(request, pk=3):
     except EmptyPage:
         pages = paginator.page(paginator.num_pages)
 
+    today = datetime.datetime.now()
+    from django.db.models import Count
     #Get all tags
-    tops = Topic.objects.all()
-    peps = User.objects.all()
+    tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
+    peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
+
+    acts = Activity.objects.filter(post__date_posted__day=today.day).annotate(count=Count('date')).order_by('-count')
 
     context = {
             'posts': posts,
@@ -148,13 +152,13 @@ def home_view(request, pk=3):
             'pages' : pages,
             'comments' : Comment.objects.all(),
             'likes' : Like.objects.all(),
-            'activities' : Activity.objects.all(),
+            'activities' : acts,
             'user' : request.user,
             'obj' : Post.objects.get(id=pk),
             'post_form' : post_form,
             'people' : peps,
             'topics' : tops,
-            'date' : datetime.datetime.now()}
+            'date' : today}
 
 #When user clicks on a post
     if request.is_ajax():
@@ -181,7 +185,7 @@ def home_view(request, pk=3):
             author = request.user
             post = Post(content=cont,author=author, reply=post)
             post.save()
-            new_activity = Activity(post=post, author=author, message="posted a comment")
+            new_activity = Activity(post=obj, author=author, type=1)
             new_activity.save()
             html = render_to_string('blog/replies.html', sub_context, request=request)
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
@@ -328,29 +332,69 @@ def getTopic(request, post_title=None):
 
 def get_user_information(request, username=None):
 
-    posts = Post.objects.filter(Q(author__username=username) | Q(people__username=username)).order_by('-date_posted').distinct()
     profile = Profile.objects.get(user__username=username)
+    #Profile information is accquired here.
 
-    #followers_count
-    #following_count
-    pages = paginate(request,posts)
+    post_form = NewPostForm()
+    posts = Post.objects.filter(Q(author=profile.user) | Q(people=profile.user)).order_by('-date_posted')
+    page = request.GET.get('page', 1)
+    paginator = Paginator(posts, 10)
+
+    try:
+        pages = paginator.page(page)
+    except PageNotAnInteger:
+        pages = paginator.page(1)
+    except EmptyPage:
+        pages = paginator.page(paginator.num_pages)
+
+    today = datetime.datetime.now()
+    from django.db.models import Count
+
+    #Get all tags
+    tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
+    peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
+
+    acts = Activity.objects.filter(author=profile.user).annotate(count=Count('date')).order_by('-count')
+
+    #Get Profile accquaintences
+
+    def isFriend():
+        try:
+            return (not profile.friends.get(user=request.user) == None)
+        except:
+            return False
+
+    def isFollowing():
+        try:
+            return (not profile.followers.get(user=request.user) == None)
+        except:
+            return False
+
     context = {
-        'posts': posts.distinct(),
-        'pages': pages['pages'],
+        'posts': posts,
+        'pages': pages,
         'followers_count' : profile.followers.count(),
         'following_count' : profile.following.count(),
         'friends_count' : profile.friends.count(),
-        'page_obj':pages['page_obj'],
+        'page_obj':paginator,
         'profile': profile,
         'comments' : Comment.objects.all(),
         'likes' : Like.objects.all(),
         'user' : request.user,
-        'activities' : Activity.objects.filter(author__username=username),
+        'activities' : acts,
         'images' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg")).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).count(),
         'user_comments' : Comment.objects.filter(author__username=username).count(),
-        'obj' : Post.objects.get(id=1),
-        'user_likes' : Like.objects.filter(post__author__username=username).count()}
+        'obj' : Post.objects.get(id=3),
+        'user_likes' : Like.objects.filter(post__author__username=username).count(),
+        'post_form' : post_form,
+        'people' : peps,
+        'topics' : tops,
+        'date' : today,
+        #Functions
+        'is_friend' : isFriend(),
+        'is_following' : isFollowing(),
+        }
 
     if request.is_ajax():
         post_id = request.POST.get('id')
@@ -362,11 +406,13 @@ def get_user_information(request, username=None):
             'page_obj': paginator,
             'pages' : pages,
             'comments' : Comment.objects.all(),
-            'replies' : Post.objects.filter(Q(reply=obj)),
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
-            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id))}
+            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'post_form' : post_form}
 
         if (request.POST.get('action') == "Comment"):
             cont = request.POST.get('content')
@@ -374,14 +420,133 @@ def get_user_information(request, username=None):
             author = request.user
             post = Post(content=cont,author=author, reply=post)
             post.save()
-            new_activity = Activity(post=post, author=author, message="posted a comment")
+            new_activity = Activity(post=obj, author=author, type=1)
             new_activity.save()
             html = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html3 = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
+
+
+        elif (request.POST.get('action') == "View_Post"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Post"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Post_Reply"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/replies.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Feed"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
-        if (request.POST.get('action') == "View_Post"):
-            html = render_to_string('blog/post.html', sub_context, request=request)
+        elif (request.POST.get('action') == "New_Post"):
+            html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Post"):
+
+            post = Post.objects.get(id=post_id)
+            post.delete()
+            html3 = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+    elif (request.method == 'POST'):
+        post_form = NewPostForm(request.POST, request.FILES)
+        if(post_form.is_valid()):
+            tagfield = post_form.cleaned_data.get('tags')
+            con = post_form.cleaned_data.get('content')
+            new_post = Post(content=con, author=request.user, reply=None)
+
+            #Media filtering
+            try:
+                media = request.FILES['media']
+                url = media.name.lower()
+                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    new_post.image = media
+                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                    new_post.video = media
+            except:
+                pass
+
+            new_post.save()
+            post_form = NewPostForm()
+
+            if(tagfield):
+                #Tag filtering
+                try:
+                    tag_dict = tagfield.split()
+                    for tag in tag_dict:
+                        if(tag.startswith("#")):
+                            try:
+                                try:
+                                    topic = Topic.objects.get(title=tag[1:])
+                                    new_post.topics.add(topic)
+                                except:
+                                    topic = Topic(title=tag[1:])
+                                    topic.save()
+                                    new_post.topics.add(topic)
+                            except Exception as e:
+                                new_post.content = e
+
+                        elif(tag.startswith("@")):
+                            try:
+                                try:
+                                    person = User.objects.get(username=tag[1:])
+                                    new_post.people.add(person)
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+                            except Exception as e:
+                                print(f"____________________________{e}")
+
+                except:
+                    pass
 
     return render(request, 'blog/user_posts.html', context)
 

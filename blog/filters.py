@@ -39,6 +39,12 @@ def set_value(variable,value):
 def has_like(post,user):
     return post.like_set.filter(author=user)
 
+#User Posts Profile
+
+@register.filter
+def is_friends(user,friend):
+    return (user.profile.friends.get(friend) == None)
+
 class SetVarNode(template.Node):
 
     def __init__(self, var_name, var_value):

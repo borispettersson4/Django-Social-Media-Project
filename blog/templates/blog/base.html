@@ -59,6 +59,8 @@
           <div class="navbar-nav mr-auto">
             <a class="nav-item nav-link" href="{% url 'blog-home' %}">Home</a>
             <a class="nav-item nav-link" href="">Messages</a>
+            <a class="nav-item nav-link" href="">Notifications</a>
+            <a class="nav-item nav-link" href="">Activities</a>
             <a class="nav-item nav-link" href="{% url 'blog-about' %}">About</a>
           </div>
           <!-- Navbar Right Side -->
@@ -72,9 +74,10 @@
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                 href="#"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Action</a>
+                  <a class="dropdown-item" href="#">About Mango</a>
                   <a class="dropdown-item" href="{% url 'user-posts' user.username %}">View Profile</a>
                   <a class="dropdown-item" href="{% url 'profile' %}">Edit Profile</a>
+                  <a class="dropdown-item" href="{% url 'profile' %}">Preferences</a>
                   <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
                 </div>
               </div>

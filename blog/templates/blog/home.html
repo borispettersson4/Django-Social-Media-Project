@@ -116,41 +116,62 @@
 
 <!--Profile Page-->
 {% block left %}
-
+      <a href="{% url 'user-posts' user %}" style="text-decoration: none !important">
         <article class="media content-section" style="border-radius: 3rem;">
           <img class="rounded-circle article-img" src="{{user.profile.image.url}}">
           <div class="media-body">
-            <b class="article-content" style="margin-right:2v">{{user.profile.nick}}</b>
-            <p class="text-secondary">@{{user.username}}</p>
+            <b class="article-title" style="margin-right:2v; text-decoration:none;">{{user.profile.nick}}</b>
+            <b class="text" style="color:#0071e6">@{{user.username}}</b>
           </div>
         </article>
+      </a>
 
-        <b> Friends </b>
+        <b> Friends <a style="font-size:2.5vh;">{{user.profile.friends.count}}</a> </b>
         <ul class="list-group" style="margin-bottom:2vh">
       {% if user.profile.friends.all %}
           {% for friend in user.profile.friends.all %}
-            <li class="list-group-item list-group-item">
+              {% if forloop.counter <= 5 %}
+          <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
+              {% if forloop.first %}
+          <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+              {% elif forloop.last %}
+          <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+              {% else %}
+          <li class="list-group-item list-group-item" style="">
+              {% endif %}
               <div class="media-body">
-              <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                <b class="article-content" style="">{{friend.nick}}</b>
+              <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{friend.image.url}}">
+                <b class="article-title" style="font-size:2vh">{{friend.nick}}</b>
               </div>
             </li>
+            </a>
+              {% endif %}
           {% endfor %}
       {% else %}
         You don't have any friends yet.
       {% endif %}
         </ul>
 
-        <b> Interests </b>
+        <b> Interests <a style="font-size:2.5vh;">{{user.profile.following.count}}</a></b>
         <ul class="list-group" style="margin-bottom:2vh">
           {% if user.profile.following.all %}
             {% for friend in user.profile.following.all %}
-              <li class="list-group-item list-group-item">
+            <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
+                {% if forloop.counter <= 5 %}
+                {% if forloop.first %}
+            <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+                {% elif forloop.last %}
+            <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+                {% else %}
+            <li class="list-group-item list-group-item" style="">
+                {% endif %}
                 <div class="media-body">
-                <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                  <b class="article-content" style="">{{friend.nick}}</b>
+                  <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{friend.image.url}}">
+                    <b class="article-title" style="font-size:2vh">{{friend.nick}}</b>
                 </div>
               </li>
+              </a>
+                {% endif %}
               {% endfor %}
 
             {% else %}
@@ -158,16 +179,26 @@
             {% endif %}
         </ul>
 
-    <b> Interested </b>
+    <b> Interested <a style="font-size:2.5vh;">{{user.profile.followers.count}}</a></b>
     <ul class="list-group">
       {% if user.profile.followers.all %}
         {% for friend in user.profile.followers.all %}
-          <li class="list-group-item list-group-item">
+            {% if forloop.counter <= 5 %}
+          <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
+              {% if forloop.first %}
+          <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+              {% elif forloop.last %}
+          <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+              {% else %}
+          <li class="list-group-item list-group-item" style="">
+              {% endif %}
             <div class="media-body">
-            <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-              <b class="article-content" style="">{{friend.nick}}</b>
+              <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{friend.image.url}}">
+                <b class="article-title" style="font-size:2vh">{{friend.nick}}</b>
             </div>
           </li>
+          </a>
+          {% endif %}
         {% endfor %}
 
       {% else %}
@@ -181,28 +212,26 @@
 <div id="popular_topics" >
 {% include 'blog/popular_topics.html' %}
 </div>
-
-<a><b> Recent Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
-<ul class="list-group" style="margin-bottom:2vh">
 {% if activities %}
-    {% for activity in activities|slice:":10"%}
+<a><b> Today's Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
+<ul class="list-group" style="margin-bottom:2vh">
+    {% for activity in activities%}
+    {% if forloop.counter <= 5 %}
       {% if activity.author != user  %}
   <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
     <li class="list-group-item list-group-item">
       <div class="input-block-level media-body">
-        <img class="rounded-circle article-img mr-1 ml-0" style="width:3.5vh; height:3.5vh" src="{{activity.author.profile.image.url}}">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:3vh; height:3vh" src="{{activity.author.profile.image.url}}">
         {% if activity.type == 1 %}
-        <img class="article-img mr-1" style="width:3vh; height:3vh" src="{% static 'resources/comment.png' %}">
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">replied to {{activity.post.author}}'s Post</b>
         {% else %}
-        <img class="article-img mr-1" style="width:3vh; height:3vh" src="{% static 'resources/heart_big.png' %}">
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">liked {{activity.post.author}}'s Post</b>
         {% endif %}
-        <b class="article-title" style="text-decoration: none;">{{activity.post.author}}'s Post</b>
       </div>
     </li></a>
     {% endif %}
+  {% endif %}
   {% endfor %}
-{% else %}
-There are no recent activities from your circles.
 {% endif %}
 
 

@@ -31,7 +31,8 @@ class ProfileSettings(models.Model):
     coverImage = models.ImageField(default = 'default_cover.png', upload_to='cover_pics')
     about = models.CharField(default = 'Write about yourself.', max_length = 160)
     quote = models.CharField(default = 'Write an original idea!', max_length = 80)
-
+    #birthday = models.CharField(default = 'Write an original idea!', max_length = 80)
+    #location = models.CharField(default = 'Write an original idea!', max_length = 80)
     #To be continued...
 
     def __str__(self):

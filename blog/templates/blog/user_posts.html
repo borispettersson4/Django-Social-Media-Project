@@ -18,12 +18,29 @@
             <div>
               <main role="main" class="col">
                 {% if request.user.username in request.path %}
-                <button type="button" class="btn btn-primary float-right ml-2" style=" background-color: #a300cc; border-color: #a300cc;"
-                href="{% url 'profile' %}"> Edit Profile </button>
+
+                  <button type="button" class="btn btn-primary float-right ml-2" style=" background-color: #a300cc; border-color: #a300cc;"
+                  href="{% url 'profile' %}"> Edit Profile </button>
                 {% else %}
-                <button type="button" class="btn btn-primary ml-2 float-left" style="  background-color: #a300cc; border-color: #a300cc;">Send Message</button>
-                <button type="button" class="btn btn-primary float-right ml-2" style="  background-color: #a300cc; border-color: #a300cc;">Follow</button>
-                <button type="button" class="btn btn-primary float-right ml-2" style="  background-color: #a300cc; border-color: #a300cc;">Add Friend</button>
+                  <button type="button" class="btn btn-primary float-left ml-2"
+                  style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Message</b></button>
+
+                  {% if is_following %}
+                  <button type="button" class="btn btn-primary float-right ml-2"
+                  style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Following</b></button>
+                  {% else %}
+                  <button type="button" class="btn btn-primary float-right ml-2"
+                  style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Follow</b></button>
+                  {% endif %}
+
+                  {% if is_friend %}
+                  <button type="button" class="btn btn-primary float-right ml-2"
+                  style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Added Friend</b></button>
+                  {% else %}
+                  <button type="button" class="btn btn-primary float-right ml-2"
+                  style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Add Friend</b></button>
+                  {% endif %}
+
                 {% endif %}
               </main>
 
@@ -39,6 +56,8 @@
   $(document).ready(function(event) {
       $(document).on('click', '.updateButton' , function(event) {
         event.preventDefault();
+              $('#loading').show();
+              $('#post_display').hide();
           var member_id = $(this).attr('member_id');
           $.ajax({
             type: "POST",
@@ -47,6 +66,8 @@
             dataType: 'json',
             success : function(response) {
               $('#post_display').html(response['form']);
+              $('#loading').hide();
+              $('#post_display').show();
               console.log("success");
             },
             error : function(rs, e) {
@@ -56,71 +77,63 @@
           });
       });
   });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.homeLikeButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Feed"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              $('#feed_display').html(response['main']);
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.newPostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "New_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('hidden', '#newPostModalCenter' , function(event) {
+                    console.log("CLOSE MODAL");
+      });
+
+  });
+
 </script>
-    {% for post in pages %}
-    <button type="submit" class="btn btn-light updateButton" data-toggle="modal" data-target="#exampleModalCenter"
-    member_id = {{post.id}} style="text-align:left; border:none; width:100%; background:none;">
-    <article class="media content-section">
-      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-          {% if post.reply != post %}
-          <a class="mr-2" href="{% url 'user-posts' post.reply.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
-          {% endif %}
-          <small class="text-muted" style="">{{ post.date_posted|date:"F d, Y" }}</small>
-
-            <img class="dropdown" style="width: 4%; height: auto; float:right; border:none; background:none; padding:none; cursor:pointer"
-            src="{% static 'resources/more.png' %}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              {% if user == post.author %}
-              <a class="dropdown-item" href="#">Delete Post</a>
-              {% else %}
-              <a class="dropdown-item" href="">Report Post</a>
-              {% endif %}
-              <a class="dropdown-item" href="">Copy Post Link</a>
-              <a class="dropdown-item" href="">Embed Post</a>
-            </div>
-        </div>
-        <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
-        <div>
-
-          {% for topic in post.topics.all %}
-            <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
-              style="color:#a300cc">
-            <b>#{{topic.title}}</b></a>
-          {% endfor %}
-
-          {% for person in post.people.all %}
-            <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
-              style="color:#0071e6">
-            <b>@{{person.username}}</b></a>
-          {% endfor %}
-        </div>
-            {% if 'default.jpg' not in post.image.url%}
-          <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
-            {% endif %}
-        <p class="article-content" style="">{{ post.content }}</p>
-
-{#This is the part where the image information is done#}
-      <div class="" style="text-align:right">
-        {% if post|has_comment:user%}
-          <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
-        {% else %}
-          <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
-        {% endif %}
-        <a>{{post.comment_set.count}}</a>
-
-        {% if post|has_like:user%}
-        <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-        {% else %}
-        <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-        {% endif %}
-        <a>{{post.like_set.count}}</a>
-    </div>
-    </article>
-  </button>
-    {% endfor %}
+<div id="feed_display">
+{% include 'blog/feed.html' %}
+</div>
     <!--Pagees Object-->
     {% if pages.has_other_pages %}
 
@@ -148,139 +161,145 @@
 {% endblock content %}
 
 {% block left %}
-<b class="article article-content">"{{profile.user.profilesettings.quote}}"</b>
-<p>{{profile.user.profilesettings.about}}</p>
+<div class="float-right mb-4" id="quote_section">
+  <b class="text-secondary">"{{profile.user.profilesettings.quote}}"</b>
+</div>
+
+<div class="article-content mt-0 mb-4" id="about_section">
+<b> About {{profile.nick}} </b>
+  {{profile.user.profilesettings.about}}
+</div>
 
 <a><b> Pictures & Videos </b> <a class="float-right mr-0" href="?page=1">See All</a>
   {% for post in images|slice:":6"%}
-      <img class="img-fluid mb-2 mt-2 rounded" style="width:10.3vh; height:10.3vh" alt="Responsive image" src="{{post.image.url}}">
+      <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
+      style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
+      member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
   {% endfor %}
 <p></p>
 
+{% if activities %}
 <a><b> Recent Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
 <ul class="list-group" style="margin-bottom:2vh">
-{% if activities %}
-    {% for activity in activities|slice:":5"%}
+    {% for activity in activities %}
+    {% if forloop.counter <= 5 %}
+
+  <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
     <li class="list-group-item list-group-item">
-      <div class="input-block-level media-body" href="#">
-        <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{activity.author.profile.image.url}}">
-          <b>{{ activity.message }}</b>
+      <div class="input-block-level media-body">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:3vh; height:3vh" src="{{activity.author.profile.image.url}}">
+        {% if activity.type == 1 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">replied to {{activity.post.author}}'s Post</b>
+        {% else %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">liked {{activity.post.author}}'s Post</b>
+        {% endif %}
       </div>
-    </li>
+    </li></a>
+    {% endif %}
   {% endfor %}
-{% else %}
-This person has not done anything yet.
 {% endif %}
-</ul>
+
 {% endblock left %}
 
 
 
 {% block right %}
-<!--
-<main role="main" class="container">
-  <div class="row">
-
-    <a class="h5"><b>{{profile.user.username}}'s Circle</b></a>
-    <div style="float:right">
-      <canvas id="social_circle" width="100%" height="100%"></canvas>
+    <div class="media-body" style="border-radius: 0.5rem;">
+    <div class="row">
+      <div class="col-md-4 mt-3" style="text-align:center">
+        <img src="{% static 'resources/post_big.png' %}" style="width: 60%; height: auto; text-align:center;"/>
+        <div class="h5" style="text-align:center"><b>{{user_posts}}</b></div>
+      </div>
+      <div class="col-md-4 mt-3" style="text-align:center">
+        <img class="align-middle" src="{% static 'resources/heart_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
+        <div class="h5" style="text-align:center"><b>{{user_likes}}</b></div>
+      </div>
+      <div class="col-md-4 mt-3" style="text-align:center">
+        <img src="{% static 'resources/comment_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
+        <div class="h5" style="text-align:center"><b>{{user_comments}}</b></div>
+      </div>
+    </div>
     </div>
 
-  </div>
+  <b> Friends <a style="font-size:2.5vh;">{{profile.friends.count}}</a> </b>
+  <ul class="list-group" style="margin-bottom:2vh">
+{% if profile.friends.all %}
+    {% for friend in profile.friends.all %}
+        {% if forloop.counter <= 5 %}
+    <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
+        {% if forloop.first %}
+    <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+        {% elif forloop.last %}
+    <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+        {% else %}
+    <li class="list-group-item list-group-item" style="">
+        {% endif %}
+        <div class="media-body">
+        <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{friend.image.url}}">
+          <b class="article-title" style="font-size:2vh">{{friend.nick}}</b>
+        </div>
+      </li>
+      </a>
+        {% endif %}
+    {% endfor %}
+{% else %}
+  You don't have any friends yet.
+{% endif %}
+  </ul>
 
-</main> -->
-<script>
-  var pieData = [
-      {
-          value: {{followers_count}},
-          color:"#E65F5C",
-
-      },
-      {
-          value : {{following_count}},
-          color : "#6D72C3"
-      },
-      {
-          value : {{friends_count}},
-          color : "#59C3C3"
-      }
-  ];
-    // Get the context of the canvas element we want to select
-    var circle= document.getElementById("social_circle").getContext("2d");
-
-
-    new Chart(circle).Doughnut(data=pieData);
-</script>
-
-<main role="main" class="container mb-2">
-  <div class="row">
-    <div class="col-md-4" style="text-align:center">
-      <img src="{% static 'resources/post_big.png' %}" style="width: 60%; height: auto; text-align:center;"/>
-      <div class="h5" style="text-align:center"><b>{{user_posts}}</b></div>
-    </div>
-    <div class="col-md-4" style="text-align:center">
-      <img class="align-middle" src="{% static 'resources/heart_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
-      <div class="h5" style="text-align:center"><b>{{user_likes}}</b></div>
-    </div>
-    <div class="col-md-4" style="text-align:center">
-      <img src="{% static 'resources/comment_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
-      <div class="h5" style="text-align:center"><b>{{user_comments}}</b></div>
-    </div>
-  </div>
-  </main>
-
-      <a style="color:#59C3C3;">●</a>
-      <b> Friends {% if friends_count %} {{friends_count}} {% endif %}</b>
-      <ul class="list-group" style="margin-bottom:2vh">
-    {% if profile.user.profile.friends.all %}
-        {% for friend in profile.user.profile.friends.all|slice:":5"%}
-          <li class="list-group-item list-group-item">
-            <div class="media-body">
-            <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                <b class="article-content" style=""><a href="{% url 'user-posts' friend.user.username %}">{{friend.nick}}</a></b>
-            </div>
-          </li>
-        {% endfor %}
-    {% else %}
-      This person does not have any friends yet.
-    {% endif %}
-      </ul>
-
-      <a style="color:#6D72C3;">●</a>
-      <b> Interests {% if following_count %} {{following_count}} {% endif %}</b>
-      <ul class="list-group" style="margin-bottom:2vh">
-        {% if profile.user.profile.following.all %}
-          {% for friend in profile.user.profile.following.all|slice:":5"%}
-            <li class="list-group-item list-group-item">
-              <div class="media-body">
-              <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                <b class="article-content" style=""><a href="{% url 'user-posts' friend.user.username %}">{{friend.nick}}</a></b>
-              </div>
-            </li>
-            {% endfor %}
-
+  <b> Interests <a style="font-size:2.5vh;">{{profile.following.count}}</a></b>
+  <ul class="list-group" style="margin-bottom:2vh">
+    {% if profile.following.all %}
+      {% for friend in profile.following.all %}
+      <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
+          {% if forloop.counter <= 5 %}
+          {% if forloop.first %}
+      <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+          {% elif forloop.last %}
+      <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
           {% else %}
-            This person does not have any interests yet.
+      <li class="list-group-item list-group-item" style="">
           {% endif %}
-      </ul>
-
-  <a style="color:#E65F5C;">●</a>
-  <b> Interested {% if followers_count %}{{followers_count}} {% endif %}</b>
-  <ul class="list-group">
-    {% if profile.user.profile.followers.all%}
-      {% for friend in profile.user.profile.followers.all|slice:":5"%}
-        <li class="list-group-item list-group-item">
           <div class="media-body">
-          <img class="rounded-circle article-img" style="width:4vh; height:4vh" src="{{friend.image.url}}">
-                <b class="article-content" style=""><a href="{% url 'user-posts' friend.user.username %}">{{friend.nick}}</a></b>
+            <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{friend.image.url}}">
+              <b class="article-title" style="font-size:2vh">{{friend.nick}}</b>
           </div>
         </li>
-      {% endfor %}
+        </a>
+          {% endif %}
+        {% endfor %}
 
-    {% else %}
-      This person does not have any interested people yet.
-    {% endif %}
+      {% else %}
+        You don't have any interests yet.
+      {% endif %}
   </ul>
+
+<b> Interested <a style="font-size:2.5vh;">{{profile.followers.count}}</a></b>
+<ul class="list-group">
+{% if profile.followers.all %}
+  {% for friend in profile.followers.all %}
+      {% if forloop.counter <= 5 %}
+    <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
+        {% if forloop.first %}
+    <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+        {% elif forloop.last %}
+    <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+        {% else %}
+    <li class="list-group-item list-group-item" style="">
+        {% endif %}
+      <div class="media-body">
+        <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{friend.image.url}}">
+          <b class="article-title" style="font-size:2vh">{{friend.nick}}</b>
+      </div>
+    </li>
+    </a>
+    {% endif %}
+  {% endfor %}
+
+{% else %}
+  No one is interested in you yet.
+{% endif %}
+</ul>
 
 {% endblock right %}
 
@@ -290,14 +309,46 @@ This person has not done anything yet.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js" type="text/javascript"></script>
 {% endblock %}
 
+{# Modal scripts go here #}
+
 {% block modal %}
 
-<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
-    <div class="modal-content">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       <div id="post_display">
       {% include 'blog/post.html' %}
+      </div>
+
+      <div id="loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:#eedfff;;">
+      {# --------------------------Start----------------------------- #}
+      <div id="new_post_display" >
+      {% include 'blog/post_form.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deletePostModalCenter" tabindex="-1" role="dialog" aria-labelledby="deletePostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="delete_post_display" >
+      {% include 'blog/post_confirm_delete.html' %}
       </div>
       {# --------------------------END----------------------------- #}
     </div>
