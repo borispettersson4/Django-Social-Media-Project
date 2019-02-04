@@ -12,7 +12,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
     <meta charset="utf-8">
     <!--CSS Inclusion-->
     <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
@@ -51,12 +51,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
           <div class="navbar-nav mr-auto">
-            <a class="nav-item nav-link" href="{% url 'blog-home' %}">Home</a>
-            <a class="nav-item nav-link" href="">Messages</a>
             <a class="nav-item nav-link" href="">Notifications</a>
-            <a class="nav-item nav-link" href="">Activities</a>
-            <a class="nav-item nav-link" href="{% url 'blog-about' %}">About</a>
           </div>
+
+          <img class="mr-2" style=" width: 3.5vh; height: 3.5vh; cursor:pointer; padding:0, margin-left:40px;"
+          src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>          
           <!-- Navbar Right Side -->
           <div class="navbar-nav">
             {% if not user.is_authenticated %}
@@ -64,9 +63,8 @@
             <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
             {% else %}
             <div class="dropdown">
-                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: 5vh; height: auto; border: 0.3vh solid #FFFFFF; cursor:pointer;"
-                src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                href="#"/>
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" max-width: 5vh; height: 100%; border: 0.3vh solid #FFFFFF; cursor:pointer;"
+                src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" href="#">About Mango</a>
                   <a class="dropdown-item" href="{% url 'user-posts' user.username %}">View Profile</a>

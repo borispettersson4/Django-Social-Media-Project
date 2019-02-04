@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% load filters %}
+
 {% block overhead %}
 
 <div id="profile_overhead_display">
@@ -83,35 +84,6 @@
   });
 
   $(document).ready(function(event) {
-      $(document).on('hidden', '#newPostModalCenter' , function(event) {
-                    console.log("CLOSE MODAL");
-      });
-
-  });
-
-  $(document).ready(function(event) {
-      $(document).on('click', '.followButton' , function(event) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        var member_id = $(this).attr('member_id');
-          $.ajax({
-            type: "POST",
-            url: "{% url 'blog-home' %}",
-            data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Follow"},
-            dataType: 'json',
-            success : function(response) {
-              $('#profile_overhead_display').html(response['form']);
-              console.log("success");
-            },
-            error : function(rs, e) {
-              console.log(rs.responseText);
-            }
-          });
-      });
-
-  });
-
-  $(document).ready(function(event) {
       $(document).on('click', '#repostButton' , function(event) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -132,7 +104,29 @@
       });
   });
 
+  $(document).ready(function(event) {
+      $(document).on('click', '#followButton' , function(event) {
+          var member_id = 10;
+          $.ajax({
+            type: "POST",
+            url: "{% url 'user-posts' profile.user %}",
+            data : {'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Follow"},
+            dataType: 'json',
+            success : function(response) {
+              console.log("success");
+              $('#profile_overhead_display').html(response['form']);
+              location.reload();
+            },
+            error : function(rs, e) {
+              $('#profile_overhead_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
 </script>
+
 <div id="feed_display">
 {% include 'blog/feed.html' %}
 </div>
@@ -163,7 +157,8 @@
 {% endblock content %}
 
 {% block left %}
-<div class="float-right mb-4" id="quote_section">
+<div class="float-right mb-4" id="quote_section"
+style="text-align:left; font-size:2.3vh;">
   <b class="text-secondary">"{{profile.user.profilesettings.quote}}"</b>
 </div>
 
@@ -351,6 +346,18 @@
       {# --------------------------Start----------------------------- #}
       <div id="delete_post_display" >
       {% include 'blog/post_confirm_delete.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="delete_post_display" >
+      Notifications and activities go here...
       </div>
       {# --------------------------END----------------------------- #}
     </div>

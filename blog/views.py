@@ -270,6 +270,10 @@ def home_view(request, pk=3):
             html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Follow"):
+            html = render_to_string('blog/profile_overhead.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
         if(post_form.is_valid()):
@@ -408,9 +412,10 @@ def get_user_information(request, username=None):
         post_id = request.POST.get('id')
         obj = Post.objects.get(id=post_id)
 
+
         sub_context = {
             'posts': posts,
-            'profile': request.user.profile,
+            'profile': profile,
             'page_obj': paginator,
             'pages' : pages,
             'comments' : Comment.objects.all(),
@@ -420,106 +425,18 @@ def get_user_information(request, username=None):
             'user' : request.user,
             'obj' : obj,
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
-            'post_form' : post_form}
+            'post_form' : post_form,
+            #Functions
+            'is_friend' : isFriend(),
+            'is_following' : isFollowing(),}
 
-        if (request.POST.get('action') == "Comment"):
-            cont = request.POST.get('content')
-            post = Post.objects.get(id=request.POST.get('id'))
-            author = request.user
-            post = Post(content=cont,author=author, reply=post)
-            post.save()
-            new_activity = Activity(post=obj, author=author, type=1)
-            new_activity.save()
-            html = render_to_string('blog/replies.html', sub_context, request=request)
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
-            html3 = render_to_string('blog/post.html', sub_context, request=request)
-            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
-
-
-        elif (request.POST.get('action') == "View_Post"):
-            html = render_to_string('blog/post.html', sub_context, request=request)
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
-            return JsonResponse({'form':html, 'main' : html2})
-
-        elif (request.POST.get('action') == "Like_Post"):
-            post = Post.objects.get(id=request.POST.get('id'))
-            like = None
-            try:
-                likes = Like.objects.filter(post=post, author=request.user)
-                if(not likes):
-                    new_like = Like(post=post,author=request.user)
-                    new_like.save()
-                else:
-                    likes.delete()
-            except:
-                pass
-
-            html = render_to_string('blog/post.html', sub_context, request=request)
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
-            return JsonResponse({'form':html, 'main' : html2})
-
-        elif (request.POST.get('action') == "Like_Post_Reply"):
-            post = Post.objects.get(id=request.POST.get('id'))
-            like = None
-            try:
-                likes = Like.objects.filter(post=post, author=request.user)
-                if(not likes):
-                    new_like = Like(post=post,author=request.user)
-                    new_like.save()
-                else:
-                    likes.delete()
-            except:
-                pass
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
-            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
-            html = render_to_string('blog/replies.html', sub_context, request=request)
-            return JsonResponse({'form':html, 'main' : html2})
-
-        elif (request.POST.get('action') == "Like_Feed"):
-            post = Post.objects.get(id=request.POST.get('id'))
-            like = None
-            try:
-                likes = Like.objects.filter(post=post, author=request.user)
-                if(not likes):
-                    new_like = Like(post=post,author=request.user)
-                    new_like.save()
-                else:
-                    likes.delete()
-            except:
-                pass
-
-            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
-            html = render_to_string('blog/feed.html', sub_context, request=request)
+        if (request.POST.get('action') == "Follow"):
+            if(isFollowing()):
+                request.user.profile.following.remove(profile)
+            else:
+                request.user.profile.following.add(profile)
+            html = render_to_string('blog/profile_overhead.html', context, request=request)
             return JsonResponse({'form':html})
-
-        elif (request.POST.get('action') == "New_Post"):
-            html = render_to_string('blog/feed.html', sub_context, request=request)
-            return JsonResponse({'form':html})
-
-        elif (request.POST.get('action') == "Delete_Post"):
-
-            post = Post.objects.get(id=post_id)
-            post.delete()
-            html3 = render_to_string('blog/replies.html', sub_context, request=request)
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
-            html = render_to_string('blog/post.html', sub_context, request=request)
-            return JsonResponse({'form':html,'main':html2,'post':html3})
-
-        elif (request.POST.get('action') == "Follow"):
-
-            return JsonResponse({'form':html,'main':html2,'post':html3})
-
-        elif (request.POST.get('action') == "Unfollow"):
-
-            return JsonResponse({'form':html,'main':html2,'post':html3})
-
-        elif (request.POST.get('action') == "Send_Friend_Request"):
-
-            return JsonResponse({'form':html,'main':html2,'post':html3})\
-
-        elif (request.POST.get('action') == "Remove_Friend"):
-
-            return JsonResponse({'form':html,'main':html2,'post':html3})
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)

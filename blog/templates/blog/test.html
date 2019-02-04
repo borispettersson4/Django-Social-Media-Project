@@ -1,73 +1,1580 @@
+ERROR:
+
+
+
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="robots" content="NONE,NOARCHIVE">
-  <title>403 Forbidden</title>
-  <style type="text/css">
-    html * { padding:0; margin:0; }
-    body * { padding:10px 20px; }
-    body * * { padding:0; }
-    body { font:small sans-serif; background:#eee; color:#000; }
-    body>div { border-bottom:1px solid #ddd; }
-    h1 { font-weight:normal; margin-bottom:.4em; }
-    h1 span { font-size:60%; color:#666; font-weight:normal; }
-    #info { background:#f6f6f6; }
-    #info ul { margin: 0.5em 4em; }
-    #info p, #summary p { padding-top:10px; }
-    #summary { background: #ffc; }
-    #explanation { background:#eee; border-bottom: 0px none; }
-  </style>
-</head>
-<body>
-<div id="summary">
-  <h1>Forbidden <span>(403)</span></h1>
-  <p>CSRF verification failed. Request aborted.</p>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <meta charset="utf-8">
+    <!--CSS Inclusion-->
+    <link rel="stylesheet" type="text/css" href="/static/blog/main.css">
+
+    <title>Django Blog</title>
+
+  </head>
+  <body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+
+    <!--Chart JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js" type="text/javascript"></script>
+
+    <!--Angular JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js" type="text/javascript"></script>
+
+    <!--JQuery-->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+
+  <!-- Navigation Bar -->
+  <header class="site-header">
+    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
+      <div class="container">
+        <a class="navbar-brand mr-4" href="/">MANGO Post</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggle">
+          <div class="navbar-nav mr-auto">
+            <a class="nav-item nav-link" href="/">Home</a>
+            <a class="nav-item nav-link" href="">Messages</a>
+            <a class="nav-item nav-link" href="">Notifications</a>
+            <a class="nav-item nav-link" href="">Activities</a>
+            <a class="nav-item nav-link" href="/about/">About</a>
+          </div>
+          <!-- Navbar Right Side -->
+          <div class="navbar-nav">
+
+            <div class="dropdown">
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: 5vh; height: auto; border: 0.3vh solid #FFFFFF; cursor:pointer;"
+                src="/media/profile_pics/8JZ0LWSN_400x400.jpg" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                href="#"/>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">About Mango</a>
+                  <a class="dropdown-item" href="/user/Boris">View Profile</a>
+                  <a class="dropdown-item" href="/profile/">Edit Profile</a>
+                  <a class="dropdown-item" href="/profile/">Preferences</a>
+                  <a class="dropdown-item" href="/logout/">Log Out</a>
+                </div>
+              </div>
+
+
+              <button class="btn btn-normal post_new" style=" width: auto; height: auto; border: 0.3vh solid #FFFFFF;
+              cursor:pointer; border-radius: 20px;" id="main_interact_big" data-toggle="modal"
+              data-target="#newPostModalCenter"><b>New Post</b></button>
+
+
+
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+
+  <!-- Container Area -->
+  <main role="main" class="container">
+    <div class="row">
+      <!--Friends-->
+
+        <div class="col-md-3" style="margin-top: 2rem;">
+
+      <a href="/user/Boris" style="text-decoration: none !important">
+        <article class="media content-section" style="border-radius: 3rem;">
+          <img class="rounded-circle article-img" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+          <div class="media-body">
+            <b class="article-title" style="margin-right:2v; text-decoration:none;">Boris Pettersson</b>
+            <b class="text" style="color:#0071e6">@Boris</b>
+          </div>
+        </article>
+      </a>
+
+        <b> Friends <a style="font-size:2.5vh;">1</a> </b>
+        <ul class="list-group" style="margin-bottom:2vh">
+
+
+
+          <a href="/user/bolascas" style="text-decoration: none !important">
+
+          <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+
+              <div class="media-body">
+              <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="/media/profile_pics/burger.png.jpg">
+                <b class="article-title" style="font-size:2vh">John Lascas</b>
+              </div>
+            </li>
+            </a>
+
+
+
+        </ul>
+
+        <b> Interests <a style="font-size:2.5vh;">1</a></b>
+        <ul class="list-group" style="margin-bottom:2vh">
+
+
+            <a href="/user/testUser" style="text-decoration: none !important">
+
+
+            <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+
+                <div class="media-body">
+                  <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="/media/profile_pics/mmm.jpg">
+                    <b class="article-title" style="font-size:2vh">Pol Reigh</b>
+                </div>
+              </li>
+              </a>
+
+
+
+
+        </ul>
+
+    <b> Interested <a style="font-size:2.5vh;">2</a></b>
+    <ul class="list-group">
+
+
+
+          <a href="/user/bolascas" style="text-decoration: none !important">
+
+          <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+
+            <div class="media-body">
+              <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="/media/profile_pics/burger.png.jpg">
+                <b class="article-title" style="font-size:2vh">John Lascas</b>
+            </div>
+          </li>
+          </a>
+
+
+
+          <a href="/user/testUser" style="text-decoration: none !important">
+
+          <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+
+            <div class="media-body">
+              <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="/media/profile_pics/mmm.jpg">
+                <b class="article-title" style="font-size:2vh">Pol Reigh</b>
+            </div>
+          </li>
+          </a>
+
+
+
+
+    </ul>
+
+        </div>
+
+      <!--Content-->
+      <div class="col-md-6" style="margin-top: 2rem;">
+
+
+
+
+
+<script>
+  $(document).ready(function(event) {
+      $(document).on('click', '.updateButton' , function(event) {
+        event.preventDefault();
+              $('#loading').show();
+              $('#post_display').hide();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "/",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "View_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#post_display').html(response['form']);
+              $('#loading').hide();
+              $('#post_display').show();
+              console.log("success");
+            },
+            error : function(rs, e) {
+              $('#loading').hide();
+              $('#post_display').hide();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.homeLikeButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "/",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "Like_Feed"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              $('#feed_display').html(response['main']);
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.newPostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "/",
+            data : { 'id':member_id,'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "New_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '#repostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "/",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "Repost"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+</script>
+
+<div id="feed_display">
+
+
+
+
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+  <article class="media content-section" style="margin-bottom:0vh; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small class="text-muted" style="">Feb 04, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 418 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 418 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/418/"></a></h2>
+      <div>
+
+
+          <a href="/topic/goodmovies" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#goodmovies</b></a>
+
+
+
+      </div>
+
+      <p class="article-content" style="">Just watched Pulp Fiction. It was a great film.</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 418 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 418
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 399 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 399 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/399/"></a></h2>
+      <div>
+
+
+          <a href="/topic/New" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#New</b></a>
+
+
+
+      </div>
+
+          <video width="100%" preload="auto" loop style ="border-radius: 1rem;"
+            class="mb-2" controls>
+            <source src="/media/video_files/Street_Fighter_Championship_7q9hf41.mp4" type="video/mp4" style ="border-radius: 1rem;">
+            Your browser does not support the video tag.
+          </video>
+
+      <p class="article-content" style="">This post is new.</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 399 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 399
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/mmm.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/testUser">Pol Reigh</a>
+
+        <small>
+        <a class="mr-2 ml-0" href="/user/Boris"
+        style="color:#a300cc">Replied to <b>@Boris</b></a>
+        </small>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 398 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 398 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" href="">Report Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/398/"></a></h2>
+      <div>
+
+
+
+
+      </div>
+
+      <p class="article-content" style="">adadd</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 398 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 398
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small>
+        <a class="mr-2 ml-0" href="/user/Boris"
+        style="color:#a300cc">Replied to <b>@testUser</b></a>
+        </small>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 397 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 397 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/397/"></a></h2>
+      <div>
+
+
+
+
+      </div>
+
+      <p class="article-content" style="">PO?</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 397 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 397
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/mmm.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/testUser">Pol Reigh</a>
+
+        <small>
+        <a class="mr-2 ml-0" href="/user/Boris"
+        style="color:#a300cc">Replied to <b>@Boris</b></a>
+        </small>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 396 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 396 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" href="">Report Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/396/"></a></h2>
+      <div>
+
+
+
+
+      </div>
+
+      <p class="article-content" style="">Hellow</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 396 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 396
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/mmm.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/testUser">Pol Reigh</a>
+
+        <small>
+        <a class="mr-2 ml-0" href="/user/Boris"
+        style="color:#a300cc">Replied to <b>@Boris</b></a>
+        </small>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 395 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 395 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" href="">Report Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/395/"></a></h2>
+      <div>
+
+
+
+
+      </div>
+
+      <p class="article-content" style="">???</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 395 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 395
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 394 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 394 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/394/"></a></h2>
+      <div>
+
+
+          <a href="/topic/Post3" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#Post3</b></a>
+
+
+
+      </div>
+
+      <p class="article-content" style="">addaa</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 394 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>2</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 394
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>2</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 393 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 393 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/393/"></a></h2>
+      <div>
+
+
+          <a href="/topic/Post2" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#Post2</b></a>
+
+
+
+      </div>
+
+      <p class="article-content" style="">adad</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 393 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 393
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 392 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 392 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/392/"></a></h2>
+      <div>
+
+
+          <a href="/topic/Post" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#Post</b></a>
+
+
+
+      </div>
+
+      <p class="article-content" style="">This is a new tag.</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 392 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 392
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+
+  <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+
+
+
+
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+        <small class="text-muted" style="">Feb 02, 2019</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = 391 aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="/static/resources/more.png"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = 391 id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="/post/item/391/"></a></h2>
+      <div>
+
+
+          <a href="/topic/New" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#New</b></a>
+
+
+
+      </div>
+
+      <p class="article-content" style="">new stuff.</p>
+
+
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = 391 data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/comment.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>0</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = 391
+          style="cursor:pointer; border-radius: 1rem;">
+
+          <img src="/static/resources/heart_full.png"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+          <a>1</a>
+          </button>
+      </div>
+
+
+<!-- Button trigger modal -->
+</article>
+</article>
 
 
 </div>
 
-<div id="info">
-  <h2>Help</h2>
-
-    <p>Reason given for failure:</p>
-    <pre>
-    CSRF token missing or incorrect.
-    </pre>
+    <!--Pagees Object-->
 
 
-  <p>In general, this can occur when there is a genuine Cross Site Request Forgery, or when
-  <a
-  href="https://docs.djangoproject.com/en/2.1/ref/csrf/">Django's
-  CSRF mechanism</a> has not been used correctly.  For POST forms, you need to
-  ensure:</p>
 
-  <ul>
-    <li>Your browser is accepting cookies.</li>
 
-    <li>The view function passes a <code>request</code> to the template's <a
-    href="https://docs.djangoproject.com/en/dev/topics/templates/#django.template.backends.base.Template.render"><code>render</code></a>
-    method.</li>
 
-    <li>In the template, there is a <code>{% csrf_token
-    %}</code> template tag inside each POST form that
-    targets an internal URL.</li>
 
-    <li>If you are not using <code>CsrfViewMiddleware</code>, then you must use
-    <code>csrf_protect</code> on any views that use the <code>csrf_token</code>
-    template tag, as well as those that accept the POST data.</li>
 
-    <li>The form has a valid CSRF token. After logging in in another browser
-    tab or hitting the back button after a login, you may need to reload the
-    page with the form, because the token is rotated after a login.</li>
-  </ul>
+          <a class="btn btn-info mb-4" href="?page=1">1</a>
 
-  <p>You're seeing the help section of this page because you have <code>DEBUG =
-  True</code> in your Django settings file. Change that to <code>False</code>,
-  and only the initial error message will be displayed.  </p>
 
-  <p>You can customize this page using the CSRF_FAILURE_VIEW setting.</p>
+
+
+
+          <a class="btn btn-outline-info mb-4" href="?page=2">2</a>
+
+
+
+
+
+          <a class="btn btn-outline-info mb-4" href="?page=3">3</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <a class="btn btn-outline-info mb-4" href="?page=2"> > </a>
+        <a class="btn btn-outline-info mb-4" href="?page=8">Last</a>
+
+
+     <!--Big If-->
+
+
+      </div>
+
+        <div class="col-md-3" style="margin-top: 2rem;">
+
+
+
+<div id="popular_topics" >
+
+
+
+
+<article class="media content-section" style="border-radius: 0.5rem;">
+<div class="media-body" style="border-radius: 0.5rem; ">
+  <b class="mt-2" style="font-size:3vh" href="">Monday, Feb 4</b>
+
+  <div class="m-2"></div>
+
+  <b class="mt-0" style="font-size:2vh" href="">People of the Day</b>
+
+  <li class="list" style="list-style-type: none;">
+
+
+    <ul class="mt-1" style="padding-left:1vh;">
+    <a class="article-title"  href="/user/Boris"
+    style="color:#0071e6"><b>@Boris</b></a>
+    </ul>
+
+
+  </li>
+
+    <div class="m-3"></div>
+
+    <b class="" style="font-size:2vh" href="">Topics of the Day</b>
+
+    <li class="list" style="list-style-type: none;">
+
+
+      <ul class="mt-1" style="padding-left:1vh;">
+      <a class="article-title" href="/topic/goodmovies"
+      style="color:#e60000"><b>#goodmovies</b></a>
+      </ul>
+
+
+    </li>
+</div>
+</article>
+
 </div>
 
-</body>
+
+
+
+      </div>
+
+    </div>
+  </main>
+
+      <!--Modals go here-->
+
+      <!-- Modal -->
+
+
+
+<div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+
+      <div id="post_display">
+
+
+
+
+<div style="background-color:#eedfff; border-radius: 0.5rem;">
+<form class="mb-3" id="myForm" action="/" method="post" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+<input type="hidden" name="csrfmiddlewaretoken" value="k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht">
+<article class="media content-section mb-3;" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+  <div class="media-body" style="border-radius: 0.5rem;">
+    <div class="article-metadata">
+      <a class="mr-2" href="/user/Boris">Boris Pettersson</a>
+
+      <small class="text-muted" style="">Jan 14, 2019</small>
+
+      <button class="dropdown" id="hidden_interact" select_id = 3 aria-haspopup="true" aria-expanded="false"
+      style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+      <img src="/static/resources/more.png"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      </button>
+
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" href="">Embed Post</a>
+
+        <a class="dropdown-item" id = "delete_btn" style="color:red;"
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+
+      </div>
+    </div>
+    <h2><a class="article-title" style="font-size:3vh" href="/post/item/3/">Blog 3</a></h2>
+    <div>
+
+
+    </div>
+
+    <p class="article-content" style="">This is the almost last test :)</p>
+
+
+    <div class="" style="float:right">
+
+
+
+      <button class="updateButton" id="hidden_interact" member_id = 3 data-toggle="modal" data-target="#postModalCenter"
+      style="cursor:pointer; border-radius: 1rem;">
+
+      <img src="/static/resources/comment.png"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+      <a>0</a>
+      </button>
+
+      <button class="postLikeButton" id="hidden_interact" member_id = 3
+      style="cursor:pointer; border-radius: 1rem;">
+
+      <img src="/static/resources/heart.png"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+
+      <a>0</a>
+      </button>
+  </div>
+</article>
+</form>
+    <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form" style="border-radius: 0.5rem;">
+      <input type="hidden" name="csrfmiddlewaretoken" value="k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht">
+      <fieldset class="form-group" style="text-align:center; margin:1vh;">
+
+          <div class="" style="">
+                <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.3vh;"
+                src="/media/profile_pics/8JZ0LWSN_400x400.jpg">
+                <textarea class="textbox_big"
+                style="width:80%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
+                <textarea class="textbox_small"
+                style="width:80%; height:4vh; color:#c4c4c4; border-radius: 1rem; overflow:hidden;
+                float:left;"> What do you think of this post?</textarea>
+          </div>
+
+        <script>
+          $(document).ready(function() {
+            $(".textbox_big").hide();
+            $(".post_comment").hide();
+            $(".post_image").hide();
+            $(document).on('click', '.textbox_small' , function() {
+              event.preventDefault();
+              $(".textbox_small").hide();
+              $(".textbox_big").show();
+              $(".post_comment").show();
+              $(".post_image").show();
+            });
+          });
+        </script>
+      </fieldset>
+          </form>
+      <form name="upload_img" enctype="multipart/form-data" id="upload_img">
+        <div class="form-group" style="margin-bottom:3vh">
+          <div class="">
+          <label for="file_upload" class="post_image" accept="image/*" onchange="loadFile(event)" style="">
+          <a style="font-size:1.7vh; color:#a300cc; float:left; margin-left:10vh">Replying to @Boris<a/>
+          </label>
+          <button class="btn btn-outline-info post_comment updateButton float-right"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:4vh; border-radius: 10rem;"
+          type="submit" post_id=3 member_id = 3>Reply</button>
+          </div>
+        </div>
+
+        </form>
+    <script>
+    function preview_image(event)
+    {
+     var reader = new FileReader();
+     reader.onload = function()
+     {
+      var output = document.getElementById('output_image');
+      output.src = reader.result;
+     }
+     reader.readAsDataURL(event.target.files[0]);
+     $(".output_img").show();
+    }
+    </script>
+
+    <div id="reply_display">
+
+
+
+
+<li class="list-group"
+style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: list-style-type: none;">
+
+</li>
+
+    </div>
+    <!--Comments-->
+
+    </div>
+
+
+
+
+    <script>
+      $(document).ready(function(event) {
+          $(document).on('click', '.post_comment' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          /*    var form = new FormData(document.getElementById('comment_form'));
+              var file = document.getElementById('file_upload').files[0];
+              if (file) {
+                form.append('file_upload', file);
+              } */
+              var post_id = $(this).attr('post_id');
+              var content_text = $('.textbox_big').val();
+
+              $(".textbox_big").hide();
+              $('.textbox_big').val('');
+              $(".post_comment").hide();
+              $(".textbox_small").show();
+              $.ajax({
+                type: "POST",
+                url: "/",
+                data : { 'id': post_id, 'content': content_text,'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "Comment"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#feed_display').html(response['main']);
+                  $('#reply_display').html(response['form']);
+                  $('#post_display').html(response['post']);
+                  console.log("success");
+                },
+                error : function(rs, e) {
+                  $('#reply_display').html("an error occured");
+                  console.log(rs.responseText);
+                }
+              });
+          });
+          return false;
+      });
+
+      $(document).ready(function(event) {
+          $(document).on('click', '.postLikeButton' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+              var member_id = $(this).attr('member_id');
+              $.ajax({
+                type: "POST",
+                url: "/",
+                data : { 'id':member_id, 'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "Like_Post"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#feed_display').html(response['main']);
+                  $('#post_display').html(response['form']);
+                  console.log("success");
+                },
+                error : function(rs, e) {
+                  $('#post_display').html("an error occured");
+                  console.log(rs.responseText);
+                }
+              });
+          });
+      });
+    </script>
+
+    <script>
+      $(document).ready(function(event) {
+        $(document).on('click', '.replyLikeButton' , function(event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+            var member_id = $(this).attr('member_id');
+            $.ajax({
+              type: "POST",
+              url: "/",
+              data : { 'id':member_id, 'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "Like_Post_Reply"},
+              dataType: 'json',
+              success : function(response) {
+                $('#feed_display').html(response['main']);
+                $('#reply_display').html(response['form']);
+                console.log("success :" + "Id is : " + member_id);
+              },
+              error : function(rs, e) {
+                $('#reply_display').html("an error occured");
+                console.log(rs.responseText);
+              }
+            });
+        });
+      });
+    </script>
+
+<script>
+function getCookie(c_name)
+{
+    if (document.cookie.length > 0)
+    {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1)
+        {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) c_end = document.cookie.length;
+            return unescape(document.cookie.substring(c_start,c_end));
+        }
+    }
+    return "";
+ }
+</script>
+
+      </div>
+
+      <div id="loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      <div style="display: flex; align-items: center; justify-content: center;">
+
+    <div class="spinner">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
+    </div>
+
+</div>
+
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:#eedfff;;">
+
+      <div id="new_post_display" >
+
+
+
+
+<script>
+
+  $(document).ready(function(event) {
+    $("#image_preview").hide();
+    $("#video_preview").hide();
+    $("#error_preview").hide();
+    $("#preview").hide();
+    });
+    function readURL(input) {
+            $("#image_preview").hide();
+            if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                      extvideo = e.target.result.includes("video/");
+                      extimage = e.target.result.includes("image/");
+                      $("#image_preview").hide();
+                      $("#video_preview").hide();
+                      $("#error_preview").hide();
+                      if (extimage) {
+                        $('#image_preview')
+                            .attr('src', e.target.result);
+                            $("#image_preview").show();
+                      }
+                      else if (extvideo) {
+                        $('#video_preview')
+                            .attr('src', e.target.result);
+                            $("#video_preview").show();
+
+                      }
+                      else{
+                        $("#error_preview").show();
+                      }
+                      $("#preview").show();
+
+                    };
+
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+</script>
+
+<div style=" border-radius: 0.5rem; background-color:#eedfff;">
+
+  <div class="m-4 " style="">
+          <legend class="border-bottom m-8" style="text-align:center;"><b>Create New Post</b></legend>
+    <form method="POST" enctype="multipart/form-data" style=" ">
+      <input type="hidden" name="csrfmiddlewaretoken" value="k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht">
+      <fieldset class="form">
+        <input type="hidden" name="image" id="id_image"><input type="hidden" name="content" id="id_content"><input type="hidden" name="media" id="id_media"><input type="hidden" name="tags" id="id_tags">
+      </fieldset>
+<div class="mb-4">
+        <div class="form-group">
+
+          <textarea name="tags" class = ""
+          placeholder=" Add topics or people!   Ex: #exampleTag @myBuddy" maxlength="50"
+          style="width:100%; height:4vh; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;
+          overflow:hidden; float:left; border-width:thin; border-color:#a300cc; resize:none"></textarea>
+
+          <div style="background-color:white; border:thin solid #a300cc;" id="preview">
+            <div style="">
+                <p id ="error_preview">This file is not supported.</p>
+                <img id="image_preview" class="img-fluid" style="min-width:100%;"
+                alt="Responsive image" src="#">
+                <video id="video_preview" width="100%" height="auto"preload="auto" loop
+                 style ="" class="" controls>
+                <source src="#" type="video/mp4" style ="">
+            </div>
+          </div>
+
+          <textarea name="content" class = "mb-3"
+          placeholder=" Write whatever you feel like writting!" maxlength="300"
+          style="width:100%; height:15vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
+          overflow:hidden; float:left; border-width:thin; border-color:#a300cc; resize:none"></textarea>
+
+          <button class="btn btn-outline-info mb-3"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
+          float:right; border-radius: 2rem;"
+          type="submit">Post</button>
+
+          <label for="media_btn" class="btn btn-outline-info mb-3"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; float:left; border-radius: 2rem;"
+          >Add Photo or Video</label>
+
+
+        </div>
+        </div>
+
+        <input name="media" type="file" accept="video/* | image/*" onchange="readURL(this);"
+        class="media" id="media_btn" style="display: none !important;">
+    </form>
+
+  </div> <!--Content Section Div-->
+</div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deletePostModalCenter" tabindex="-1" role="dialog" aria-labelledby="deletePostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+
+      <div id="delete_post_display" >
+
+  <div class="content-section">
+
+    <form method="POST">
+      <input type="hidden" name="csrfmiddlewaretoken" value="k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht">
+      <fieldset class="form-group">
+        <h3> Are you sure you want to delete the post: "" ? </h3>
+      </fieldset>
+
+        <div class="form-group">
+          <button class="btn btn-danger deleteConfirmButton" type="submit" data-toggle="modal"
+          data-target="#deletePostModalCenter"
+          style="background-color:red;color:white;"> Yes, Delete</button>
+          <a class="btn btn-outline-secondary" href="/post/item/3/">Go Back</a>
+        </div>
+    </form>
+
+  </div> <!--Content Section Div-->
+
+<script>
+  var delete_btn;
+
+  $(document).ready(function(event) {
+    $(document).on('click', '.dropdown' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      delete_btn = $(this).attr('select_id');
+    });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.deleteConfirmButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        var member_id = delete_btn;
+
+          $.ajax({
+            type: "POST",
+            url: "/",
+            data : { 'id':member_id,'csrfmiddlewaretoken': 'k6slW1aT8ILnjQaQnojPlEwL6GcQO0hLGdxIUjuQdS1Mq7HruRzPLiHzDMTjldht', 'action' : "Delete_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#reply_display').html(response['post']);
+              $('#post_display').html(response['form']);
+              $('#feed_display').html(response['main']);
+
+              console.log("success:Delete " + " : " + delete_btn);
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+
+
+
+
+
+
+</script>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+  </body>
 </html>

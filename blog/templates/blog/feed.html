@@ -26,7 +26,7 @@
       {% endif %}
       <small class="text-muted" style="">{{ post.repost.date_posted|date:"M d, Y" }}</small>
 
-      <button class="dropdown" id="hidden_interact" select_id = {{post.repost.id}} aria-haspopup="true" aria-expanded="false"
+      <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
       style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
@@ -36,9 +36,9 @@
         <a class="dropdown-item" member_id = {{post.repost.id}} id="repostButton" style="cursor:pointer">Repost</a>
         <a class="dropdown-item" href="">Copy Post Link</a>
         <a class="dropdown-item" href="">Embed Post</a>
-        {% if user == post.repost.author %}
+        {% if user == post.author %}
         <a class="dropdown-item" id = "delete_btn" style="color:red;"
-        data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Repost</a>
         {% else %}
         <a class="dropdown-item" href="">Report Post</a>
         {% endif %}
@@ -128,7 +128,7 @@
           <a class="dropdown-item" href="">Copy Post Link</a>
           <a class="dropdown-item" href="">Embed Post</a>
           {% if user == post.author %}
-          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer;"
           data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
           {% else %}
           <a class="dropdown-item" href="">Report Post</a>

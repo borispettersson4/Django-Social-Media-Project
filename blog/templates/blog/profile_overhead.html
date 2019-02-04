@@ -17,17 +17,18 @@
         <main role="main" class="col">
           {% if request.user.username in request.path %}
 
-            <button type="button" class="btn btn-primary float-right ml-2" style=" background-color: #a300cc; border-color: #a300cc;"
-            href="{% url 'profile' %}"> Edit Profile </button>
+            <button type="button" class="btn btn-primary float-right ml-2"
+            style=" background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"
+            href="{% url 'profile' %}"> <b>Edit Profile</b> </button>
           {% else %}
             <button type="button" class="btn btn-primary float-left ml-2"
             style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Message</b></button>
 
             {% if is_following %}
-            <button type="button" class="btn btn-primary float-right ml-2"
+            <button type="button" class="btn btn-primary float-right ml-2" id="followButton"
             style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Following</b></button>
             {% else %}
-            <button type="button" class="btn btn-primary float-right ml-2"
+            <button type="button" class="btn btn-primary float-right ml-2" id="followButton"
             style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Follow</b></button>
             {% endif %}
 
