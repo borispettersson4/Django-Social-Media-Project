@@ -11,25 +11,32 @@
   {% else %}
     <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
   {% endif %}
-  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
+
+
+  {% if post.repost %}
+  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.repost.author.profile.image.url}}">
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
-      <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-      {% if post.reply != None %}
-      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ post.reply.author.username}}</a>
+      <a class="mr-2" href="{% url 'user-posts' post.repost.author.username %}">{{ post.repost.author.profile.nick }}</a>
+      {% if post.repost.reply != None %}
+      <small>
+      <a class="mr-2 ml-0" href="{% url 'user-posts' obj.author.username %}"
+      style="color:#a300cc">Replied to <b>@{{ post.repost.reply.author.username}}</b></a>
+      </small>
       {% endif %}
-      <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
+      <small class="text-muted" style="">{{ post.repost.date_posted|date:"M d, Y" }}</small>
 
-      <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
+      <button class="dropdown" id="hidden_interact" select_id = {{post.repost.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
       style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" member_id = {{post.repost.id}} id="repostButton" style="cursor:pointer">Repost</a>
         <a class="dropdown-item" href="">Copy Post Link</a>
         <a class="dropdown-item" href="">Embed Post</a>
-        {% if user == post.author %}
+        {% if user == post.repost.author %}
         <a class="dropdown-item" id = "delete_btn" style="color:red;"
         data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
         {% else %}
@@ -38,59 +45,151 @@
       </div>
 
     </div>
-    <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
+    <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.repost.id%}">{{ post.repost.title }}</a></h2>
     <div>
 
-      {% for topic in post.topics.all %}
+      {% for topic in post.repost.topics.all %}
         <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
           style="color:#e60000">
         <b>#{{topic.title}}</b></a>
       {% endfor %}
 
-      {% for person in post.people.all %}
+      {% for person in post.repost.people.all %}
         <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
           style="color:#0071e6">
         <b>@{{person.username}}</b></a>
       {% endfor %}
     </div>
-        {% if 'default.jpg' not in post.image.url%}
+        {% if 'default.jpg' not in post.repost.image.url%}
         <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
-        alt="Responsive image" src="{{post.image.url}}">
-        {% elif post.video %}
+        alt="Responsive image" src="{{post.repost.image.url}}">
+        {% elif post.repost.video %}
         <video width="100%" preload="auto" loop style ="border-radius: 1rem;"
           class="mb-2" controls>
-          <source src="{{post.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+          <source src="{{post.repost.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
           Your browser does not support the video tag.
         </video>
         {% endif %}
-    <p class="article-content" style="">{{ post.content }}</p>
+    <p class="article-content" style="">{{ post.repost.content }}</p>
+
+        <small class="float-left" style="font-size:1.4vh">
+        Reposted by <a class="text-secondary" href="{% url 'user-posts' obj.author.username %}"
+        style="font-size:1.4vh">{{post.author.profile.nick}}</a>
+        </small>
 
     {#This is the part where the image information is done#}
       <div class="" style="float:right">
-        <button class="updateButton" id="hidden_interact" member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter"
+        <button class="updateButton" id="hidden_interact" member_id = {{post.repost.id}} data-toggle="modal" data-target="#postModalCenter"
         style="cursor:pointer; border-radius: 1rem;">
-        {% if post|has_reply:user%}
+        {% if post.repost|has_reply:user%}
         <img src="{% static 'resources/comment_full.png' %}"
         style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
         {% else %}
         <img src="{% static 'resources/comment.png' %}"
         style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
         {% endif %}
-        <a>{{post.post_set.count}}</a>
+        <a>{{post.repost.post_set.count}}</a>
         </button>
 
-        <button class="homeLikeButton" id="hidden_interact" member_id = {{post.id}}
+        <button class="homeLikeButton" id="hidden_interact" member_id = {{post.repost.id}}
         style="cursor:pointer; border-radius: 1rem;">
-        {% if post|has_like:user%}
+        {% if post.repost|has_like:user%}
         <img src="{% static 'resources/heart_full.png' %}"
         style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
         {% else %}
         <img src="{% static 'resources/heart.png' %}"
         style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
         {% endif %}
-        <a>{{post.like_set.count}}</a>
+        <a>{{post.repost.like_set.count}}</a>
         </button>
     </div>
+
+    {% else %}
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
+    <div class="media-body" style="border-radius: 0.5rem;">
+      <div class="article-metadata">
+        <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
+        {% if post.reply != None %}
+        <small>
+        <a class="mr-2 ml-0" href="{% url 'user-posts' obj.author.username %}"
+        style="color:#a300cc">Replied to <b>@{{ post.reply.author.username}}</b></a>
+        </small>
+        {% endif %}
+        <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
+
+        <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
+        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        <img src="{% static 'resources/more.png' %}"
+        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        </button>
+
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" member_id = {{post.id}} id="repostButton" style="cursor:pointer">Repost</a>
+          <a class="dropdown-item" href="">Copy Post Link</a>
+          <a class="dropdown-item" href="">Embed Post</a>
+          {% if user == post.author %}
+          <a class="dropdown-item" id = "delete_btn" style="color:red;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+          {% else %}
+          <a class="dropdown-item" href="">Report Post</a>
+          {% endif %}
+        </div>
+
+      </div>
+      <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
+      <div>
+
+        {% for topic in post.topics.all %}
+          <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+            style="color:#e60000">
+          <b>#{{topic.title}}</b></a>
+        {% endfor %}
+
+        {% for person in post.people.all %}
+          <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+            style="color:#0071e6">
+          <b>@{{person.username}}</b></a>
+        {% endfor %}
+      </div>
+          {% if 'default.jpg' not in post.image.url%}
+          <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
+          alt="Responsive image" src="{{post.image.url}}">
+          {% elif post.video %}
+          <video width="100%" preload="auto" loop style ="border-radius: 1rem;"
+            class="mb-2" controls>
+            <source src="{{post.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+            Your browser does not support the video tag.
+          </video>
+          {% endif %}
+      <p class="article-content" style="">{{ post.content }}</p>
+
+      {#This is the part where the image information is done#}
+        <div class="" style="float:right">
+          <button class="updateButton" id="hidden_interact" member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter"
+          style="cursor:pointer; border-radius: 1rem;">
+          {% if post|has_reply:user%}
+          <img src="{% static 'resources/comment_full.png' %}"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+          {% else %}
+          <img src="{% static 'resources/comment.png' %}"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+          {% endif %}
+          <a>{{post.post_set.count}}</a>
+          </button>
+
+          <button class="homeLikeButton" id="hidden_interact" member_id = {{post.id}}
+          style="cursor:pointer; border-radius: 1rem;">
+          {% if post|has_like:user%}
+          <img src="{% static 'resources/heart_full.png' %}"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+          {% else %}
+          <img src="{% static 'resources/heart.png' %}"
+          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+          {% endif %}
+          <a>{{post.like_set.count}}</a>
+          </button>
+      </div>
+    {% endif %}
 
 <!-- Button trigger modal -->
 </article>

@@ -262,6 +262,14 @@ def home_view(request, pk=3):
             html = render_to_string('blog/post.html', sub_context, request=request)
             return JsonResponse({'form':html,'main':html2,'post':html3})
 
+        elif (request.POST.get('action') == "Repost"):
+
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post)
+            repost.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
         if(post_form.is_valid()):
@@ -495,6 +503,22 @@ def get_user_information(request, username=None):
             html3 = render_to_string('blog/replies.html', sub_context, request=request)
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Follow"):
+
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Unfollow"):
+
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Send_Friend_Request"):
+
+            return JsonResponse({'form':html,'main':html2,'post':html3})\
+
+        elif (request.POST.get('action') == "Remove_Friend"):
+
             return JsonResponse({'form':html,'main':html2,'post':html3})
 
     elif (request.method == 'POST'):

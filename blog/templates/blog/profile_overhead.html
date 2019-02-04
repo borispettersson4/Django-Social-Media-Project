@@ -1,0 +1,48 @@
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
+<div class="thumbnail">
+ <img class="img-fluid mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
+  <div class="carousel-caption" style="">
+      <img class="rounded-circle article-img mr-2" style=" width: 15vh; height: 15vh; border: 0.5vh solid #FFFFFF;" src="{{profile.user.profile.image.url}}">
+      <div class="mb-0">
+        <b><a class="mr-2" style="font-size:3vh;">{{ profile.user.profile.nick }}</a></b>
+      </div>
+      <div class="mb-0">
+        <a class="text mr-2" style="font-size:2.25vh;">{{ profile.user.username }}</a>
+      </div>
+
+      <div>
+        <main role="main" class="col">
+          {% if request.user.username in request.path %}
+
+            <button type="button" class="btn btn-primary float-right ml-2" style=" background-color: #a300cc; border-color: #a300cc;"
+            href="{% url 'profile' %}"> Edit Profile </button>
+          {% else %}
+            <button type="button" class="btn btn-primary float-left ml-2"
+            style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Message</b></button>
+
+            {% if is_following %}
+            <button type="button" class="btn btn-primary float-right ml-2"
+            style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Following</b></button>
+            {% else %}
+            <button type="button" class="btn btn-primary float-right ml-2"
+            style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Follow</b></button>
+            {% endif %}
+
+            {% if is_friend %}
+            <button type="button" class="btn btn-primary float-right ml-2"
+            style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Added Friend</b></button>
+            {% else %}
+            <button type="button" class="btn btn-primary float-right ml-2"
+            style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Friend Request</b></button>
+            {% endif %}
+
+          {% endif %}
+        </main>
+
+      </div>
+  </div>
+
+ </div>

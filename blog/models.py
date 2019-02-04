@@ -24,7 +24,7 @@ class Post(models.Model):
     topics = models.ManyToManyField(Topic, blank=True, symmetrical=False)
     people = models.ManyToManyField(User, blank=True,related_name='people', symmetrical=False)
     reply = models.ForeignKey("self", on_delete = models.CASCADE, blank=True, default = "self", null=True)
-
+    repost = models.ForeignKey("self", on_delete = models.CASCADE,related_name='reposts', blank=True, null=True)
 
 
     def __str__(self):

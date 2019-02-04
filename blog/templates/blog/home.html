@@ -4,6 +4,7 @@
 {% load filters %}
 <!--Content Page-->
 {% block content %}
+
 <script>
   $(document).ready(function(event) {
       $(document).on('click', '.updateButton' , function(event) {
@@ -23,7 +24,8 @@
               console.log("success");
             },
             error : function(rs, e) {
-              $('#post_display').html("an error occured");
+              $('#loading').hide();
+              $('#post_display').hide();
               console.log(rs.responseText);
             }
           });
@@ -76,10 +78,24 @@
   });
 
   $(document).ready(function(event) {
-      $(document).on('hidden', '#newPostModalCenter' , function(event) {
-                    console.log("CLOSE MODAL");
+      $(document).on('click', '#repostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Repost"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+              console.log("success");
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
       });
-
   });
 
 </script>
