@@ -45,17 +45,20 @@
   <header class="site-header">
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
       <div class="container">
-        <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">MANGO Post</a>
+        <a class="navbar-brand mr-4" style="font-family:Targa MS Hand; font-size:2.5vh;"href="{% url 'blog-home' %}">MANGO</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
           <div class="navbar-nav mr-auto">
-            <a class="nav-item nav-link" href="">Notifications</a>
+            <img class="mr-2" style=" width: 3.5vh; height: 3.5vh; cursor:pointer;" id="bellButton"
+            src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>
+            {% if notifications or requests %}
+              {% if badge_count != 0 %}
+                <span class="badge badge-danger" style="border-radius:3rem;"> {{badge_count}}</span>
+              {% endif %}
+            {% endif %}
           </div>
-
-          <img class="mr-2" style=" width: 3.5vh; height: 3.5vh; cursor:pointer; padding:0, margin-left:40px;"
-          src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>          
           <!-- Navbar Right Side -->
           <div class="navbar-nav">
             {% if not user.is_authenticated %}

@@ -148,6 +148,10 @@ def home_view(request, pk=3):
     context = {
             'posts': posts,
             'profile': request.user.profile,
+            'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+            'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+            'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+            Notification.objects.filter(recepient=request.user, confirmed=False).count(),
             'page_obj': paginator,
             'pages' : pages,
             'comments' : Comment.objects.all(),
@@ -158,12 +162,17 @@ def home_view(request, pk=3):
             'post_form' : post_form,
             'people' : peps,
             'topics' : tops,
-            'date' : today}
+            'date' : today,
+            }
 
 #When user clicks on a post
     if request.is_ajax():
-        post_id = request.POST.get('id')
-        obj = Post.objects.get(id=post_id)
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            post_id = 10
+            obj = Post.objects.get(id=post_id)
 
         sub_context = {
             'posts': posts,
@@ -180,6 +189,8 @@ def home_view(request, pk=3):
             'post_form' : post_form}
 
         if (request.POST.get('action') == "Comment"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
             cont = request.POST.get('content')
             post = Post.objects.get(id=request.POST.get('id'))
             author = request.user
@@ -187,6 +198,9 @@ def home_view(request, pk=3):
             post.save()
             new_activity = Activity(post=obj, author=author, type=1)
             new_activity.save()
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
             html = render_to_string('blog/replies.html', sub_context, request=request)
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             html3 = render_to_string('blog/post.html', sub_context, request=request)
@@ -206,6 +220,11 @@ def home_view(request, pk=3):
                 if(not likes):
                     new_like = Like(post=post,author=request.user)
                     new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
                 else:
                     likes.delete()
             except:
@@ -218,11 +237,18 @@ def home_view(request, pk=3):
         elif (request.POST.get('action') == "Like_Post_Reply"):
             post = Post.objects.get(id=request.POST.get('id'))
             like = None
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
             try:
                 likes = Like.objects.filter(post=post, author=request.user)
                 if(not likes):
                     new_like = Like(post=post,author=request.user)
                     new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
                 else:
                     likes.delete()
             except:
@@ -233,6 +259,8 @@ def home_view(request, pk=3):
             return JsonResponse({'form':html, 'main' : html2})
 
         elif (request.POST.get('action') == "Like_Feed"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
             post = Post.objects.get(id=request.POST.get('id'))
             like = None
             try:
@@ -240,6 +268,11 @@ def home_view(request, pk=3):
                 if(not likes):
                     new_like = Like(post=post,author=request.user)
                     new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
                 else:
                     likes.delete()
             except:
@@ -267,11 +300,46 @@ def home_view(request, pk=3):
             post = Post.objects.get(id=post_id)
             repost = Post(author=request.user, reply=None, repost=post)
             repost.save()
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
             html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
-        elif (request.POST.get('action') == "Follow"):
-            html = render_to_string('blog/profile_overhead.html', sub_context, request=request)
+        #User Actions
+
+        elif (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
     elif (request.method == 'POST'):
@@ -317,6 +385,9 @@ def home_view(request, pk=3):
                                 try:
                                     person = User.objects.get(username=tag[1:])
                                     new_post.people.add(person)
+                                    new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                    if(new_notification.sender != new_notification.recepient):
+                                        new_notification.save()
                                 except Exception as e:
                                     print(f"____________________________{e}")
                             except Exception as e:
@@ -382,6 +453,12 @@ def get_user_information(request, username=None):
         except:
             return False
 
+    def isRequestExists():
+        try:
+            return (Request.objects.get(recepient=profile.user,sender=request.user) != None)
+        except:
+            return False
+
     context = {
         'posts': posts,
         'pages': pages,
@@ -394,6 +471,11 @@ def get_user_information(request, username=None):
         'likes' : Like.objects.all(),
         'user' : request.user,
         'activities' : acts,
+        'notifications' : Notification.objects.filter(recepient=request.user),
+        'requests' : Request.objects.filter(recepient=request.user),
+        'existing_request' : isRequestExists(),
+        'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+        Notification.objects.filter(recepient=request.user, confirmed=False).count(),
         'images' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg")).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).count(),
         'user_comments' : Comment.objects.filter(author__username=username).count(),
@@ -409,8 +491,12 @@ def get_user_information(request, username=None):
         }
 
     if request.is_ajax():
-        post_id = request.POST.get('id')
-        obj = Post.objects.get(id=post_id)
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            post_id = 10
+            obj = Post.objects.get(id=post_id)
 
 
         sub_context = {
@@ -435,6 +521,17 @@ def get_user_information(request, username=None):
                 request.user.profile.following.remove(profile)
             else:
                 request.user.profile.following.add(profile)
+            html = render_to_string('blog/profile_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Request"):
+            request = Request(sender=request.user, recepient=profile.user)
+            request.save()
+            html = render_to_string('blog/profile_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Unfriend"):
+            request.user.profile.friends.remove(profile)
             html = render_to_string('blog/profile_overhead.html', context, request=request)
             return JsonResponse({'form':html})
 

@@ -1,0 +1,153 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+{% block js_code %}
+<script>
+  $(document).ready(function(event) {
+      $('#notifications_display').show();
+      $('#requests_display').hide();
+      $(document).on('click', '#requestButton' , function(event) {
+        $('#notifications_display').hide();
+        $('#requests_display').show();
+      });
+
+      $(document).on('click', '#notificationButton' , function(event) {
+        $('#notifications_display').show();
+        $('#requests_display').hide();
+      });
+  });
+
+$(document).ready(function(event) {
+    $(document).on('click', '#bellButton' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Open_Notifications"},
+          dataType: 'json',
+          success : function(response) {
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#requestButton' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Open_Requests"},
+          dataType: 'json',
+          success : function(response) {
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#notificationClearButton' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Clear_Notifications"},
+          dataType: 'json',
+          success : function(response) {
+            $('#notifications_display').html(response['form']);
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#requestsClearButton' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Clear_Requests"},
+          dataType: 'json',
+          success : function(response) {
+            $('#requests_display').html(response['form']);
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#requestsDeclineButton' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      var member_id = $(this).attr('member_id');
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'request_id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Decline_Request"},
+          dataType: 'json',
+          success : function(response) {
+            $('#requests_display').html(response['form']);
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#acceptRequestButton' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      var member_id = $(this).attr('member_id');
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'request_id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Accept_Request"},
+          dataType: 'json',
+          success : function(response) {
+            $('#requests_display').html(response['form']);
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+<div id="notifications_display" >
+{% include 'blog/notifications_view.html' %}
+</div>
+
+<div id="requests_display" >
+{% include 'blog/requests_view.html' %}
+</div>

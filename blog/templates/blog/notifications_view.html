@@ -1,0 +1,71 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+<article class="media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white;">
+
+  <div class="btn-group m-3" data-toggle="buttons" style="border-radius: 10rem;">
+    <label class="mr-3" style="font-size:2.5vh; cursor:pointer;" id="notificationButton">
+      <a name="options" autocomplete="off" checked> <b> <u>Notifications</u> </b> </a>
+    </label>
+    <label class="" style="font-size:2.5vh; color:#981ceb; cursor:pointer;">
+      <a name="options"id="requestButton" autocomplete="off"> <b> Requests </b> </a>
+      {% if requests %}
+        {% if requests.all.confirmed %}
+        <span class="badge badge-danger" style="">{{requests.count}}</span>
+        {% else %}
+        <span class="badge badge-secondary" style="">{{requests.count}}</span>
+        {% endif %}
+      {% endif %}
+    </label>
+  </div>
+
+  <div class="btn-group" data-toggle="buttons" style="border-radius: 10rem; float:right; margin-top:2.5vh; margin-right:2.5vh">
+    <label class="" style="font-size:2vh; color:#981ceb; cursor:pointer;" id ="notificationClearButton">
+      <a name="options" id="option3" autocomplete="off"> <b> <u> Clear All </u> </b> </a>
+    </label>
+  </div>
+
+<ul class="list-group" style="margin-bottom:2vh">
+    {% if notifications %}
+
+    {% for activity in notifications %}
+    {% if forloop.counter <= 20 %}
+  <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
+    {% if activity.confirmed == False %}
+    <li class="list-group-item list-group-item" style="background-color:#fffab4;
+        {% if forloop.last  %} border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
+        {% else %} border-radius: 0.0rem; {% endif %}">
+    {% else %}
+    <li class="list-group-item list-group-item" style="background-color:#f2f2f2;
+        {% if forloop.last  %} border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
+        {% else %} border-radius: 0.0rem; {% endif %}">
+    {% endif %}
+      <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+        {% if activity.type == 0 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} liked your Post</b>
+        {% elif activity.type == 1 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} replied to your Post.</b>
+        {% elif activity.type == 2 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} tagged you in a Post.</b>
+        {% elif activity.type == 3 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} reposted your Post.</b>
+        {% endif %}
+      <small class="text-muted" style="">{{ activity.date_posted|date:"M d, Y" }}</small>
+      </div>
+    </li></a>
+  {% endif %}
+  {% endfor %}
+  {% else %}
+  <li class="list-group-item list-group-item" style="
+    background-color:#f2f2f2; ">
+
+    <div class="input-block-level media-body" style="border-radius: 0.0rem; text-align:center;">
+      <b class="article-title" style="text-decoration: none; font-size:2vh;">There are no new notifications.</b>
+
+    </div>
+  </li>
+  {% endif %}
+  <b class="m-3"style="text-align:center;">mango</b>
+  </article>

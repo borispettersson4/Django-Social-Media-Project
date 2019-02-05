@@ -106,11 +106,50 @@
 
   $(document).ready(function(event) {
       $(document).on('click', '#followButton' , function(event) {
-          var member_id = 10;
           $.ajax({
             type: "POST",
             url: "{% url 'user-posts' profile.user %}",
-            data : {'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Follow"},
+            data : {'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Follow"},
+            dataType: 'json',
+            success : function(response) {
+              console.log("success");
+              $('#profile_overhead_display').html(response['form']);
+              location.reload();
+            },
+            error : function(rs, e) {
+              $('#profile_overhead_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '#sendRequestButton' , function(event) {
+          $.ajax({
+            type: "POST",
+            url: "{% url 'user-posts' profile.user %}",
+            data : {'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Send_Request"},
+            dataType: 'json',
+            success : function(response) {
+              console.log("success");
+              $('#profile_overhead_display').html(response['form']);
+              location.reload();
+            },
+            error : function(rs, e) {
+              location.reload();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '#unfriendButton' , function(event) {
+          $.ajax({
+            type: "POST",
+            url: "{% url 'user-posts' profile.user %}",
+            data : {'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Unfriend"},
             dataType: 'json',
             success : function(response) {
               console.log("success");
@@ -353,12 +392,10 @@ style="text-align:left; font-size:2.3vh;">
 </div>
 
 <div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
-    <div class="modal-content" style="border-radius: 0.5rem;">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
-      <div id="delete_post_display" >
-      Notifications and activities go here...
-      </div>
+      {% include 'blog/notifications_main.html' %}
       {# --------------------------END----------------------------- #}
     </div>
   </div>

@@ -88,3 +88,31 @@ class Activity(models.Model):
 
     def __str__(self):
         return (f"{self.author}")
+
+class Notification(models.Model):
+    recepient = models.ForeignKey(User, on_delete = models.CASCADE,related_name='recepient', blank=True, null=True)
+    sender = models.ForeignKey(User, on_delete = models.CASCADE,related_name='sender', blank=True, null=True)
+    post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None,blank=True, null=True)
+    type = models.IntegerField(default=0)
+    confirmed = models.BooleanField(default=False)
+    date_posted = models.DateTimeField(default = timezone.now)
+
+    def __str__(self):
+        return (f"To {self.recepient} From {self.sender}")
+
+    def save(self):
+        super().save()
+
+
+class Request(models.Model):
+    recepient = models.ForeignKey(User, on_delete = models.CASCADE,related_name='requestant', blank=True, null=True)
+    sender = models.ForeignKey(User, on_delete = models.CASCADE,related_name='requester', blank=True, null=True)
+    confirmed = models.BooleanField(default=False)
+    accepted = models.BooleanField(default=False)
+    date_posted = models.DateTimeField(default = timezone.now)
+
+    def __str__(self):
+        return (f"To {self.recepient} From {self.sender}")
+
+    def save(self):
+        super().save()

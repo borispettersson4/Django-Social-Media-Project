@@ -33,11 +33,18 @@
             {% endif %}
 
             {% if is_friend %}
-            <button type="button" class="btn btn-primary float-right ml-2"
-            style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Added Friend</b></button>
+            <button type="button" class="btn btn-primary float-right ml-2" id="unfriendButton"
+            style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Unfriend</b></button>
             {% else %}
-            <button type="button" class="btn btn-primary float-right ml-2"
-            style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Friend Request</b></button>
+
+              {% if not existing_request %}
+              <button type="button" class="btn btn-primary float-right ml-2" id="sendRequestButton"
+              style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Friend Request</b></button>
+              {% else %}
+              <button type="button" class="btn btn-primary float-right ml-2"
+              style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Friend Request Sent</b></button>
+              {% endif %}
+
             {% endif %}
 
           {% endif %}
