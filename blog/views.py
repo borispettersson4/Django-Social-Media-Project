@@ -521,6 +521,9 @@ def get_user_information(request, username=None):
                 request.user.profile.following.remove(profile)
             else:
                 request.user.profile.following.add(profile)
+                new_notification = Notification(sender=request.user, recepient=profile.user, type=4)
+                if(new_notification.sender != new_notification.recepient):
+                    new_notification.save()
             html = render_to_string('blog/profile_overhead.html', context, request=request)
             return JsonResponse({'form':html})
 

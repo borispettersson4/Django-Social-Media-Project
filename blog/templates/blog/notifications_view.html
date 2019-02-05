@@ -31,7 +31,11 @@
 
     {% for activity in notifications %}
     {% if forloop.counter <= 20 %}
-  <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
+    {% if activity.post != None %}
+    <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
+    {% else %}
+    <a href="{% url 'user-posts' activity.sender %}" style="text-decoration: none !important">
+    {% endif %}
     {% if activity.confirmed == False %}
     <li class="list-group-item list-group-item" style="background-color:#fffab4;
         {% if forloop.last  %} border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
@@ -51,6 +55,8 @@
         <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} tagged you in a Post.</b>
         {% elif activity.type == 3 %}
         <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} reposted your Post.</b>
+        {% elif activity.type == 4 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} is now following you.</b>
         {% endif %}
       <small class="text-muted" style="">{{ activity.date_posted|date:"M d, Y" }}</small>
       </div>
