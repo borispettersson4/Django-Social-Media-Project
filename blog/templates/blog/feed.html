@@ -2,8 +2,9 @@
 {% load static %}
 {% load filters %}
 
-{% for post in pages %}
-<article class="" style="border-radius: 0.5rem; margin-bottom:0px">
+{% for post in posts %}
+{% if forloop.counter <= page_limit %}
+<article class="post_object" style="border-radius: 0.5rem; margin-bottom:0px">
   {% if forloop.last %}
   <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
   {% elif forloop.first %}
@@ -33,12 +34,13 @@
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="{% url 'post-detail' post.repost.id %}" style="cursor:pointer">View Post</a>
         <a class="dropdown-item" member_id = {{post.repost.id}} id="repostButton" style="cursor:pointer">Repost</a>
         <a class="dropdown-item" href="">Copy Post Link</a>
         <a class="dropdown-item" href="">Embed Post</a>
         {% if user == post.author %}
-        <a class="dropdown-item" id = "delete_btn" style="color:red;"
-        data-toggle="modal" data-target="#deletePostModalCenter">Delete Repost</a>
+        <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer"
+        data-toggle="modal" data-target="#deletePostModalCenter" >Delete Repost</a>
         {% else %}
         <a class="dropdown-item" href="">Report Post</a>
         {% endif %}
@@ -64,9 +66,9 @@
         <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
         alt="Responsive image" src="{{post.repost.image.url}}">
         {% elif post.repost.video %}
-        <video width="100%" preload="auto" loop style ="border-radius: 1rem;"
+        <video width="300" height="240" preload="auto" loop style ="border-radius: 1rem;"
           class="mb-2" controls>
-          <source src="{{post.repost.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+          <source src="{{post.repost.video.url}}" type="video/mp4" style ="border-radius: 1rem;" >
           Your browser does not support the video tag.
         </video>
         {% endif %}
@@ -78,30 +80,10 @@
         </small>
 
     {#This is the part where the image information is done#}
-      <div class="" style="float:right">
-        <button class="updateButton" id="hidden_interact" member_id = {{post.repost.id}} data-toggle="modal" data-target="#postModalCenter"
-        style="cursor:pointer; border-radius: 1rem;">
-        {% if post.repost|has_reply:user%}
-        <img src="{% static 'resources/comment_full.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% else %}
-        <img src="{% static 'resources/comment.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% endif %}
-        <a>{{post.repost.post_set.count}}</a>
-        </button>
+    <div id="feed_like_comment_R{{post.repost.id}}">
+    {% include 'blog/like_comment.html' with p=post %}
+    </div>
 
-        <button class="homeLikeButton" id="hidden_interact" member_id = {{post.repost.id}}
-        style="cursor:pointer; border-radius: 1rem;">
-        {% if post.repost|has_like:user%}
-        <img src="{% static 'resources/heart_full.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% else %}
-        <img src="{% static 'resources/heart.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% endif %}
-        <a>{{post.repost.like_set.count}}</a>
-        </button>
     </div>
 
     {% else %}
@@ -124,6 +106,7 @@
         </button>
 
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="{% url 'post-detail' post.id %}" style="cursor:pointer">View Post</a>
           <a class="dropdown-item" member_id = {{post.id}} id="repostButton" style="cursor:pointer">Repost</a>
           <a class="dropdown-item" href="">Copy Post Link</a>
           <a class="dropdown-item" href="">Embed Post</a>
@@ -164,34 +147,14 @@
       <p class="article-content" style="">{{ post.content }}</p>
 
       {#This is the part where the image information is done#}
-        <div class="" style="float:right">
-          <button class="updateButton" id="hidden_interact" member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter"
-          style="cursor:pointer; border-radius: 1rem;">
-          {% if post|has_reply:user%}
-          <img src="{% static 'resources/comment_full.png' %}"
-          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-          {% else %}
-          <img src="{% static 'resources/comment.png' %}"
-          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-          {% endif %}
-          <a>{{post.post_set.count}}</a>
-          </button>
-
-          <button class="homeLikeButton" id="hidden_interact" member_id = {{post.id}}
-          style="cursor:pointer; border-radius: 1rem;">
-          {% if post|has_like:user%}
-          <img src="{% static 'resources/heart_full.png' %}"
-          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-          {% else %}
-          <img src="{% static 'resources/heart.png' %}"
-          style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-          {% endif %}
-          <a>{{post.like_set.count}}</a>
-          </button>
+      <div id="feed_like_comment_{{post.id}}">
+      {% include 'blog/like_comment.html' with p=post %}
       </div>
+
     {% endif %}
 
 <!-- Button trigger modal -->
 </article>
 </article>
+{% endif %}
 {% endfor %}

@@ -57,41 +57,11 @@
         {% endif %}
     <p class="article-content" style="">{{ obj.content }}</p>
 
-    {#This is the part where the image information is done#}
-    <div class="" style="float:right">
+      {#This is the part where the image information is done#}
+      <div id="post_like_comment_P{{obj.id}}">
+      {% include 'blog/post_like_comment.html' with p=obj %}
+      </div>
 
-      {% if obj.reply != None %}
-      <button class="updateButton" id="hidden_interact" member_id = {{obj.reply.id}}
-      style="cursor:pointer; border-radius: 1rem;">
-      <img src="{% static 'resources/back.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      </button>
-      {% endif %}
-
-      <button class="updateButton" id="hidden_interact" member_id = {{obj.id}} data-toggle="modal" data-target="#postModalCenter"
-      style="cursor:pointer; border-radius: 1rem;">
-      {% if obj|has_reply:user%}
-      <img src="{% static 'resources/comment_full.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% else %}
-      <img src="{% static 'resources/comment.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% endif %}
-      <a>{{obj.post_set.count}}</a>
-      </button>
-
-      <button class="postLikeButton" id="hidden_interact" member_id = {{obj.id}}
-      style="cursor:pointer; border-radius: 1rem;">
-      {% if obj|has_like:user%}
-      <img src="{% static 'resources/heart_full.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% else %}
-      <img src="{% static 'resources/heart.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% endif %}
-      <a>{{obj.like_set.count}}</a>
-      </button>
-  </div>
 </article>
 </form>
     <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form" style="border-radius: 0.5rem;">
@@ -184,9 +154,10 @@
                 data : { 'id': post_id, 'content': content_text,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Comment"},
                 dataType: 'json',
                 success : function(response) {
-                  $('#feed_display').html(response['main']);
+                  $('#feed_like_comment_' + post_id).html(response['main']);
+                  $('#feed_like_comment_R' + post_id).html(response['main']);
                   $('#reply_display').html(response['form']);
-                  $('#post_display').html(response['post']);
+                  $('#post_like_comment_P' + post_id).html(response['post']);
                   console.log("success");
                 },
                 error : function(rs, e) {
@@ -209,8 +180,9 @@
                 data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post"},
                 dataType: 'json',
                 success : function(response) {
-                  $('#feed_display').html(response['main']);
-                  $('#post_display').html(response['form']);
+                  $('#feed_like_comment_' + member_id).html(response['main']);
+                  $('#feed_like_comment_R' + member_id).html(response['main']);
+                  $('#post_like_comment_P' + member_id).html(response['form']);
                   console.log("success");
                 },
                 error : function(rs, e) {
@@ -234,7 +206,8 @@
               data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post_Reply"},
               dataType: 'json',
               success : function(response) {
-                $('#feed_display').html(response['main']);
+                $('#feed_like_comment_' + member_id).html(response['main']);
+                $('#feed_like_comment_R' + member_id).html(response['main']);
                 $('#reply_display').html(response['form']);
                 console.log("success :" + "Id is : " + member_id);
               },

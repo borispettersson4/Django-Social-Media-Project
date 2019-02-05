@@ -180,7 +180,7 @@ a.article-title:hover {
 .spinner > div {
   width: 2vh;
   height: 2vh;
-  background-color: #FFFFFF;
+  background-color: #a300cc;
 
   border-radius: 50%;
   display: inline-block;
@@ -238,3 +238,5 @@ a.article-title:hover {
   background: red;
   color: white;
 }
+
+/*Video Files*/

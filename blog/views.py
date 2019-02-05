@@ -126,10 +126,11 @@ class PostModalView(DetailView):
 
 @login_required
 def home_view(request, pk=3):
+    page_limit = 10
     post_form = NewPostForm()
     posts = Post.objects.all().order_by('-date_posted')
     page = request.GET.get('page', 1)
-    paginator = Paginator(posts, 10)
+    paginator = Paginator(posts, page_limit)
     try:
         pages = paginator.page(page)
     except PageNotAnInteger:
@@ -163,6 +164,7 @@ def home_view(request, pk=3):
             'people' : peps,
             'topics' : tops,
             'date' : today,
+            'page_limit' : page_limit,
             }
 
 #When user clicks on a post
@@ -186,7 +188,10 @@ def home_view(request, pk=3):
             'user' : request.user,
             'obj' : obj,
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
-            'post_form' : post_form}
+            'post_form' : post_form,
+            'page_limit' : page_limit,
+            'slice_custom' : page_limit,
+            }
 
         if (request.POST.get('action') == "Comment"):
             post_id = request.POST.get('id')
@@ -201,9 +206,10 @@ def home_view(request, pk=3):
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
             html = render_to_string('blog/replies.html', sub_context, request=request)
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
-            html3 = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            html3 = render_to_string('blog/post_like_comment.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
 
 
@@ -229,9 +235,9 @@ def home_view(request, pk=3):
                     likes.delete()
             except:
                 pass
-
-            html = render_to_string('blog/post.html', sub_context, request=request)
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2})
 
         elif (request.POST.get('action') == "Like_Post_Reply"):
@@ -253,7 +259,8 @@ def home_view(request, pk=3):
                     likes.delete()
             except:
                 pass
-            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
             sub_context['replies'] = Post.objects.filter(reply=obj.reply)
             html = render_to_string('blog/replies.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2})
@@ -280,7 +287,9 @@ def home_view(request, pk=3):
 
             sub_context['replies'] = Post.objects.filter(reply=obj.reply)
             html = render_to_string('blog/feed.html', sub_context, request=request)
-            return JsonResponse({'form':html})
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2})
 
         elif (request.POST.get('action') == "New_Post"):
             html = render_to_string('blog/feed.html', sub_context, request=request)
@@ -341,6 +350,14 @@ def home_view(request, pk=3):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
+
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+                page_count = request.POST.get('page_count')
+                new_context = sub_context
+                new_context["page_limit"] += int(page_count)
+                html = render_to_string('blog/feed.html',new_context, request=request)
+                return JsonResponse({'form':html})
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
@@ -414,7 +431,7 @@ def getTopic(request, post_title=None):
     return render(request, 'blog/topic_posts.html', context)
 
 def get_user_information(request, username=None):
-
+    page_limit = 10
     profile = Profile.objects.get(user__username=username)
     #Profile information is accquired here.
 
@@ -471,8 +488,8 @@ def get_user_information(request, username=None):
         'likes' : Like.objects.all(),
         'user' : request.user,
         'activities' : acts,
-        'notifications' : Notification.objects.filter(recepient=request.user),
-        'requests' : Request.objects.filter(recepient=request.user),
+        'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
         'existing_request' : isRequestExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
@@ -485,6 +502,7 @@ def get_user_information(request, username=None):
         'people' : peps,
         'topics' : tops,
         'date' : today,
+        'page_limit' : page_limit,
         #Functions
         'is_friend' : isFriend(),
         'is_following' : isFollowing(),
@@ -512,6 +530,7 @@ def get_user_information(request, username=None):
             'obj' : obj,
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
             'post_form' : post_form,
+            'page_limit' : page_limit,
             #Functions
             'is_friend' : isFriend(),
             'is_following' : isFollowing(),}
@@ -537,6 +556,14 @@ def get_user_information(request, username=None):
             request.user.profile.friends.remove(profile)
             html = render_to_string('blog/profile_overhead.html', context, request=request)
             return JsonResponse({'form':html})
+
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+                page_count = request.POST.get('page_count')
+                new_context = sub_context
+                new_context["page_limit"] += int(page_count)
+                html = render_to_string('blog/feed.html',new_context, request=request)
+                return JsonResponse({'form':html})
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)

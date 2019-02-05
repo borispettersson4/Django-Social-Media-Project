@@ -49,11 +49,11 @@
             data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Feed"},
             dataType: 'json',
             success : function(response) {
-              $('#feed_display').html(response['form']);
-              console.log("success");
+              $('#feed_like_comment_' + member_id).html(response['main']);
+              $('#feed_like_comment_R' + member_id).html(response['main']);
+              console.log("success" + member_id);
             },
             error : function(rs, e) {
-              $('#feed_display').html(response['main']);
               $('#post_display').html("an error occured");
               console.log(rs.responseText);
             }
@@ -164,35 +164,41 @@
       });
   });
 
+  //paginator
+$(document).ready(function (event) {
+  $(window).scroll(function (event) {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+       event.preventDefault();
+       event.stopImmediatePropagation();
+         var page_count = $("article[class*='post_object']").length;
+         $.ajax({
+           type: "POST",
+           url: "{% url 'user-posts' profile.user %}",
+           data : { 'page_count': page_count, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next"},
+           dataType: 'json',
+           success : function(response) {
+             $('#feed_display').html(response['form']);
+             console.log("success");
+             console.log(page_count);
+           },
+           error : function(rs, e) {
+             console.log(rs.responseText);
+           }
+         });
+     }
+  });
+});
+
 </script>
 
 <div id="feed_display">
 {% include 'blog/feed.html' %}
 </div>
-    <!--Pagees Object-->
-    {% if pages.has_other_pages %}
 
-      {% if pages.has_previous %}
-        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-        <a class="btn btn-outline-info mb-4" href="?page={{page_obj.previous_page_number}}"> < </a>
-      {% endif %}
-
-      {% for num in pages.paginator.page_range %}
-
-        {% if pages.number == num %}
-          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% elif num > pages.number|add:'-3' and num < pages.number|add:'+3' %}
-          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-
-      {% endfor %}
-
-      {% if pages.has_next %}
-        <a class="btn btn-outline-info mb-4" href="?page={{ pages.next_page_number }}"> > </a>
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.num_pages }}">Last</a>
-      {% endif %}
-
-    {% endif %} <!--Big If-->
+<div id="loading_feed">
+{% include 'blog/loading.html' %}
+<div class="" style="margin-bottom:10vh;"></div>
+</div>
 {% endblock content %}
 
 {% block left %}

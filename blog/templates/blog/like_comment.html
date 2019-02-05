@@ -1,0 +1,58 @@
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
+{#This is the part where the image information is done#}
+ {% if p.repost %}
+  <div class="" style="float:right">
+    <button class="updateButton" id="hidden_interact" member_id = {{p.repost.id}} data-toggle="modal" data-target="#postModalCenter"
+    style="cursor:pointer; border-radius: 1rem;">
+    {% if p.repost|has_reply:user%}
+    <img src="{% static 'resources/comment_full.png' %}"
+    style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+    {% else %}
+    <img src="{% static 'resources/comment.png' %}"
+    style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+    {% endif %}
+    <a>{{p.repost.post_set.count}}</a>
+    </button>
+
+    <button class="homeLikeButton" id="hidden_interact" member_id = {{p.repost.id}}
+    style="cursor:pointer; border-radius: 1rem;">
+    {% if p.repost|has_like:user%}
+    <img src="{% static 'resources/heart_full.png' %}"
+    style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+    {% else %}
+    <img src="{% static 'resources/heart.png' %}"
+    style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+    {% endif %}
+    <a>{{p.repost.like_set.count}}</a>
+    </button>
+</div>
+{% else %}
+<div class="" style="float:right">
+  <button class="updateButton" id="hidden_interact" member_id = {{p.id}} data-toggle="modal" data-target="#postModalCenter"
+  style="cursor:pointer; border-radius: 1rem;">
+  {% if p|has_reply:user%}
+  <img src="{% static 'resources/comment_full.png' %}"
+  style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+  {% else %}
+  <img src="{% static 'resources/comment.png' %}"
+  style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+  {% endif %}
+  <a>{{p.post_set.count}}</a>
+  </button>
+
+  <button class="homeLikeButton" id="hidden_interact" member_id = {{p.id}}
+  style="cursor:pointer; border-radius: 1rem;">
+  {% if p|has_like:user%}
+  <img src="{% static 'resources/heart_full.png' %}"
+  style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+  {% else %}
+  <img src="{% static 'resources/heart.png' %}"
+  style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+  {% endif %}
+  <a>{{p.like_set.count}}</a>
+  </button>
+</div>
+{% endif %}

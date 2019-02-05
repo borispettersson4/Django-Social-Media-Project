@@ -45,7 +45,7 @@
 
 <div style=" border-radius: 0.5rem; background-color:#eedfff;">
 
-  <div class="m-4 " style="">
+  <div class="m-3 " style="">
           <legend class="border-bottom m-8" style="text-align:center;"><b>Create New Post</b></legend>
     <form method="POST" enctype="multipart/form-data" style=" ">
       {% csrf_token %}
@@ -65,9 +65,10 @@
                 <p id ="error_preview">This file is not supported.</p>
                 <img id="image_preview" class="img-fluid" style="min-width:100%;"
                 alt="Responsive image" src="#">
-                <video id="video_preview" width="100%" height="auto"preload="auto" loop
-                 style ="" class="" controls>
-                <source src="#" type="video/mp4" style ="">
+                <video id="video_preview" width="100%" height="auto" preload="auto"
+                 style ="" class="video_preview" controls>
+                <source src="" type="video/mp4" style ="">
+                  </video>
             </div>
           </div>
 
@@ -79,11 +80,11 @@
           <button class="btn btn-outline-info mb-3"
           style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
           float:right; border-radius: 2rem;"
-          type="submit">Post</button>
+          type="submit"><b>Post</b></button>
 
           <label for="media_btn" class="btn btn-outline-info mb-3"
           style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; float:left; border-radius: 2rem;"
-          >Add Photo or Video</label>
+          ><b>Add Photo or Video </b></label>
 
 
         </div>

@@ -70,3 +70,17 @@ def set_var(parser, token):
         raise template.TemplateSyntaxError("'set' tag must be of the form: {% set <var_name> = <var_value> %}")
 
     return SetVarNode(parts[1], parts[3])
+
+@register.filter("slice_custom", is_safe=True)
+def slice_filter(value, arg):
+    try:
+        bits = []
+        for x in arg.split(':'):
+            if len(x) == 0:
+                bits.append(None)
+            else:
+                bits.append(int(x))
+        return value[slice(*bits)]
+
+    except (ValueError, TypeError):
+        return value # Fail silently.
