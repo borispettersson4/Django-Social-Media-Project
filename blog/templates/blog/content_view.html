@@ -1,0 +1,33 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+{% if obj.repost %}
+
+{% if 'default.jpg' not in obj.repost.image.url%}
+<img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
+alt="Responsive image" src="{{obj.repost.image.url}}">
+{% elif obj.repost.video %}
+<video width="100%" height="100%" style ="border-radius: 1rem;"
+  class="mb-2" controls>
+  <source src="{{obj.repost.video.url}}" type="video/mp4" style ="border-radius: 1rem;" >
+  Your browser does not support the video tag.
+</video>
+</a>
+{% endif %}
+
+{% else %}
+
+{% if 'default.jpg' not in obj.image.url%}
+<img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
+alt="Responsive image" src="{{obj.image.url}}">
+{% elif obj.video %}
+<video width="100%" height="100%" style ="border-radius: 1rem;"
+  class="mb-2" controls>
+  <source src="{{obj.video.url}}" type="video/mp4" style ="border-radius: 1rem;" >
+  Your browser does not support the video tag.
+</video>
+</a>
+{% endif %}
+
+{% endif %}

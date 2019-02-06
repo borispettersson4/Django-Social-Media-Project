@@ -81,8 +81,6 @@ class Like(models.Model):
 class Activity(models.Model):
     author = models.ForeignKey(User, on_delete = models.CASCADE)
     post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None)
-    message = models.TextField(max_length = 40)
-    link = models.TextField(max_length = 100, blank=True)
     date = models.DateTimeField(default = timezone.now)
     type = models.IntegerField(default=0)
 
@@ -95,6 +93,7 @@ class Notification(models.Model):
     post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None,blank=True, null=True)
     type = models.IntegerField(default=0)
     confirmed = models.BooleanField(default=False)
+    first_seen = models.BooleanField(default=False)
     date_posted = models.DateTimeField(default = timezone.now)
 
     def __str__(self):

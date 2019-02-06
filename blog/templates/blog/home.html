@@ -6,6 +6,7 @@
 {% block content %}
 
 <script>
+
   $(document).ready(function(event) {
       $(document).on('click', '.updateButton' , function(event) {
         event.preventDefault();
@@ -21,11 +22,37 @@
               $('#post_display').html(response['form']);
               $('#loading').hide();
               $('#post_display').show();
-              console.log("success");
+
             },
             error : function(rs, e) {
               $('#loading').hide();
               $('#post_display').hide();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.viewButtonContent' , function(event) {
+        event.preventDefault();
+              $('#content_loading').show();
+              $('#content_display').hide();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Content"},
+            dataType: 'json',
+            success : function(response) {
+              $('#content_display').html(response['form']);
+              $('#content_loading').hide();
+              $('#content_display').show();
+
+            },
+            error : function(rs, e) {
+              $('#content_loading').hide();
+              $('#content_display').hide();
               console.log(rs.responseText);
             }
           });
@@ -67,7 +94,7 @@
             dataType: 'json',
             success : function(response) {
               $('#feed_display').html(response['form']);
-              console.log("success");
+
             },
             error : function(rs, e) {
               console.log(rs.responseText);
@@ -89,7 +116,7 @@
             dataType: 'json',
             success : function(response) {
               $('#feed_display').html(response['form']);
-              console.log("success");
+
             },
             error : function(rs, e) {
               console.log(rs.responseText);
@@ -112,8 +139,7 @@ $(document).ready(function (event) {
            dataType: 'json',
            success : function(response) {
              $('#feed_display').html(response['form']);
-             console.log("success");
-             console.log(page_count);
+
            },
            error : function(rs, e) {
              console.log(rs.responseText);
@@ -235,28 +261,11 @@ $(document).ready(function (event) {
 <div id="popular_topics" >
 {% include 'blog/popular_topics.html' %}
 </div>
-{% if activities %}
-<a><b> Today's Activity </b> <a class="float-right mr-0" href="?page=1"></a></a>
-<ul class="list-group" style="margin-bottom:2vh">
-    {% for activity in activities%}
-    {% if forloop.counter <= 5 %}
-      {% if activity.author != user  %}
-  <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
-    <li class="list-group-item list-group-item">
-      <div class="input-block-level media-body">
-        <img class="rounded-circle article-img mr-1 ml-0" style="width:3vh; height:3vh" src="{{activity.author.profile.image.url}}">
-        {% if activity.type == 1 %}
-        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">replied to {{activity.post.author}}'s Post</b>
-        {% else %}
-        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">liked {{activity.post.author}}'s Post</b>
-        {% endif %}
-      </div>
-    </li></a>
-    {% endif %}
-  {% endif %}
-  {% endfor %}
-{% endif %}
 
+<a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
+<div id="activities" >
+{% include 'blog/activities.html' %}
+</div>
 
 {% endblock right %}
 
@@ -266,7 +275,7 @@ $(document).ready(function (event) {
 
 <div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
-    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+    <div class="modal-content" id="postModalBody" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       <div id="post_display">
       {% include 'blog/post.html' %}
@@ -310,6 +319,23 @@ $(document).ready(function (event) {
     <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="viewContentPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="viewContentPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; border-color:transparent; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      <div id="content_display" >
+      {% include 'blog/content_view.html' %}
+      </div>
+
+      <div id="content_loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
       {# --------------------------END----------------------------- #}
     </div>
   </div>

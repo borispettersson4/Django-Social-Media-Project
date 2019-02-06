@@ -1,0 +1,28 @@
+{% if activities.count > 0 %}
+<ul class="list-group" style="margin-bottom:2vh">
+    {% for activity in activities%}
+    {% if forloop.counter <= 10 %}
+  <a href="{% url 'user-posts' activity.author %}" style="text-decoration: none !important">
+    <li class="list-group-item list-group-item">
+      <div class="input-block-level media-body">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:3vh; height:3vh" src="{{activity.author.profile.image.url}}">
+        {% if activity.type == 0 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">{{activity.author}} likes this Post</b>
+        {% elif activity.type == 1 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">{{activity.author}} replied to this Post</b>
+        {% elif activity.type == 2 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">{{activity.author}} created this Post</b>
+        {% elif activity.type == 3 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">{{activity.author}} reposted this Post</b>
+        {% endif %}
+        <small class="text-muted" style="float:right">{{ activity.date|date:"M j, Y" }}</small>
+      </div>
+    </li></a>
+  {% endif %}
+  {% endfor %}
+
+{% if activities.count > 10 %}
+<b><a style="float:right">{{activities.count|add:"-10"}} more...</a></b>
+{% endif %}
+
+{% endif %}

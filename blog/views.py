@@ -52,7 +52,7 @@ def getPost(request, pk=None):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(post__date_posted__day=today.day).annotate(count=Count('date')).order_by('-count')
+    acts = Activity.objects.filter(post__date_posted__day=today.day, post=Post.objects.get(id=pk)).order_by('-date')
 
     post_id = pk
     obj = Post.objects.get(id=post_id)
@@ -88,10 +88,7 @@ def getPost(request, pk=None):
             obj = Post.objects.get(id=post_id)
 
         sub_context = {
-            'posts': posts,
             'profile': request.user.profile,
-            'page_obj': paginator,
-            'pages' : pages,
             'comments' : Comment.objects.all(),
             'replies' : Post.objects.filter(reply=obj),
             'replies-reply' : Post.objects.filter(reply=obj),
@@ -144,6 +141,10 @@ def getPost(request, pk=None):
                         new_notification.save()
                 else:
                     likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
             except:
                 pass
             html = render_to_string('blog/post_detail.html', context, request=request)
@@ -166,6 +167,10 @@ def getPost(request, pk=None):
                         new_notification.save()
                 else:
                     likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()  
             except:
                 pass
             sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
@@ -240,7 +245,7 @@ def getPost(request, pk=None):
                 page_count = request.POST.get('page_count')
                 new_context = sub_context
                 new_context["page_limit"] += int(page_count)
-                html = render_to_string('blog/feed.html',new_context, request=request)
+                html = render_to_string('blog/replies.html',new_context, request=request)
                 return JsonResponse({'form':html})
 
     elif (request.method == 'POST'):
@@ -366,7 +371,7 @@ def home_view(request, pk=3):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(post__date_posted__day=today.day).annotate(count=Count('date')).order_by('-count')
+    acts = Activity.objects.filter(post__date_posted__day=today.day).order_by('-date')
 
     context = {
             'posts': posts,
@@ -434,11 +439,14 @@ def home_view(request, pk=3):
             html3 = render_to_string('blog/post_like_comment.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
 
-
         elif (request.POST.get('action') == "View_Post"):
             html = render_to_string('blog/post.html', sub_context, request=request)
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "View_Content"):
+            html = render_to_string('blog/content_view.html', sub_context, request=request)
+            return JsonResponse({'form':html})
 
         elif (request.POST.get('action') == "Like_Post"):
             post = Post.objects.get(id=request.POST.get('id'))
@@ -455,6 +463,10 @@ def home_view(request, pk=3):
                         new_notification.save()
                 else:
                     likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
             except:
                 pass
             sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
@@ -479,6 +491,10 @@ def home_view(request, pk=3):
                         new_notification.save()
                 else:
                     likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
             except:
                 pass
             sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
@@ -531,6 +547,8 @@ def home_view(request, pk=3):
             post = Post.objects.get(id=post_id)
             repost = Post(author=request.user, reply=None, repost=post)
             repost.save()
+            new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
+            new_activity.save()
             new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -575,11 +593,18 @@ def home_view(request, pk=3):
 
     #Site Behaviour
         elif (request.POST.get('action') == "Load_Next"):
-                page_count = request.POST.get('page_count')
-                new_context = sub_context
-                new_context["page_limit"] += int(page_count)
-                html = render_to_string('blog/feed.html',new_context, request=request)
-                return JsonResponse({'form':html})
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/feed.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Next_Reply"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/replies.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
@@ -601,6 +626,9 @@ def home_view(request, pk=3):
 
             new_post.save()
             post_form = NewPostForm()
+
+            new_activity = Activity(post=new_post, author=request.user, type=2)
+            new_activity.save()
 
             if(tagfield):
                 #Tag filtering
@@ -676,7 +704,7 @@ def get_user_information(request, username=None):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(author=profile.user).annotate(count=Count('date')).order_by('-count')
+    acts = Activity.objects.filter(post__date_posted__day=today.day).order_by('-date')
 
     #Get Profile accquaintences
 

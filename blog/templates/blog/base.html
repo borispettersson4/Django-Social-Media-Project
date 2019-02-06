@@ -41,6 +41,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
     {% block js_code %}{% endblock %}
+
+    <script>
+      $(document).ready(function(event) {
+          setInterval(function(){
+            $("#navbarToggle").load(" #navbarToggle > *");
+                  console.log("LOG");
+          }, 2000);
+      });
+    </script>
+
   <!-- Navigation Bar -->
   <header class="site-header">
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >

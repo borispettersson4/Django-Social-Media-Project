@@ -5,11 +5,12 @@
 <li class="list-group"
 style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: list-style-type: none;">
   {% for comment in replies %}
+  {% if forloop.counter <= page_limit %}
   <ul style="padding-left:0vh;">
   {% if forloop.last %}
-  <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+  <article id="reply_object" class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
   {% else %}
-    <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+    <article id="reply_object" class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
   {% endif %}
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
     <div class="media-body">
@@ -25,11 +26,12 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
 
         <small class="text-muted">{{ comment.date_posted|date:"M d, Y" }}</small>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="{% url 'post-detail' comment.id %}" style="cursor:pointer">View Post</a>
+          <a class="dropdown-item" href="{% url 'blog-home' %}"  member_id = {{comment.id}} id="repostButton" style="cursor:pointer">Repost</a>
           <a class="dropdown-item" href="">Copy Post Link</a>
-          <a class="dropdown-item" href="">Embed Post</a>
-          {% if user == comment.author %}
-          <a class="dropdown-item" id = "delete_btn" style="color:red;"
-          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+          {% if user == post.author %}
+          <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer"
+          data-toggle="modal" data-target="#deletePostModalCenter" >Delete Repost</a>
           {% else %}
           <a class="dropdown-item" href="">Report Post</a>
           {% endif %}
@@ -80,5 +82,6 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
     </div>
   </article>
   </ul>
+  {% endif %}
   {% endfor %}
 </li>

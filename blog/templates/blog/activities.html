@@ -1,0 +1,22 @@
+{% if activities.count > 0 %}
+<ul class="list-group" style="margin-bottom:2vh">
+    {% for activity in activities%}
+    {% if forloop.counter <= 5 %}
+  <a href="{% url 'post-detail' activity.post.id %}" style="text-decoration: none !important">
+    <li class="list-group-item list-group-item">
+      <div class="input-block-level media-body">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:3vh; height:3vh" src="{{activity.author.profile.image.url}}">
+        {% if activity.type == 0 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">liked {{activity.post.author}}'s Post</b>
+        {% elif activity.type == 1 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">replied to {{activity.post.author}}'s Post</b>
+        {% elif activity.type == 2 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">created a Post</b>
+        {% elif activity.type == 3 %}
+        <b class="article-title" style="text-decoration: none; font-size:1.7vh;">reposted {{activity.post.author}}'s Post</b>
+        {% endif %}
+      </div>
+    </li></a>
+  {% endif %}
+  {% endfor %}
+{% endif %}

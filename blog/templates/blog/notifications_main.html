@@ -28,7 +28,8 @@ $(document).ready(function(event) {
           data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Open_Notifications"},
           dataType: 'json',
           success : function(response) {
-            console.log("success");
+            $("#notifications_display").load(" #notifications_display > *");
+            $("#requests_display").load(" #requests_display > *");
           },
           error : function(rs, e) {
             console.log(rs.responseText);
@@ -48,7 +49,6 @@ $(document).ready(function(event) {
           data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Open_Requests"},
           dataType: 'json',
           success : function(response) {
-            console.log("success");
           },
           error : function(rs, e) {
             console.log(rs.responseText);
@@ -141,6 +141,8 @@ $(document).ready(function(event) {
         });
     });
 });
+
+
 </script>
 {% endblock %}
 

@@ -7,14 +7,14 @@
 <div class="" style="float:right">
 
   {% if p.reply != None %}
-  <button class="updateButton" id="hidden_interact" member_id = {{p.reply.id}}
+  <button class="updateButton" id="hidden_interact" member_id = {{p.reply.id}} reply_id = True
   style="cursor:pointer; border-radius: 1rem;">
   <img src="{% static 'resources/back.png' %}"
   style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
   </button>
   {% endif %}
 
-  <button class="updateButton" id="hidden_interact" member_id = {{p.id}} 
+  <button class="updateButton" id="hidden_interact" member_id = {{p.id}}
   style="cursor:pointer; border-radius: 1rem;">
   {% if p|has_reply:user%}
   <img src="{% static 'resources/comment_full.png' %}"

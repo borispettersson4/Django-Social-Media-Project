@@ -47,6 +47,8 @@
         <b>@{{person.username}}</b></a>
       {% endfor %}
     </div>
+    <a class = "viewButtonContent" style="cursor:pointer" data-toggle="modal"
+    data-target="#viewContentPostModalCenter" member_id = {{obj.id}}>
         {% if 'default.jpg' not in obj.image.url%}
       <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
       alt="Responsive image" src="{{obj.image.url}}">
@@ -57,41 +59,12 @@
         Your browser does not support the video tag.
       </video>
         {% endif %}
+      </a>
     <p class="article-content" style="">{{ obj.content }}</p>
 
-    <div class="" style="float:right">
-
-      {% if obj.reply != None %}
-      <button class="updateButton" id="hidden_interact" member_id = {{obj.reply.id}}
-      style="cursor:pointer; border-radius: 1rem;">
-      <img src="{% static 'resources/back.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      </button>
-      {% endif %}
-
-      <button class="updateButton" id="hidden_interact" member_id = {{obj.id}}
-      style="cursor:pointer; border-radius: 1rem;">
-      {% if obj|has_reply:user%}
-      <img src="{% static 'resources/comment_full.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% else %}
-      <img src="{% static 'resources/comment.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% endif %}
-      <a>{{obj.post_set.count}}</a>
-      </button>
-
-      <button class="postLikeButton" id="hidden_interact" member_id = {{obj.id}}
-      style="cursor:pointer; border-radius: 1rem;">
-      {% if obj|has_like:user%}
-      <img src="{% static 'resources/heart_full.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% else %}
-      <img src="{% static 'resources/heart.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-      {% endif %}
-      <a>{{obj.like_set.count}}</a>
-      </button>
+    {#This is the part where the image information is done#}
+    <div id="post_like_comment_P{{obj.id}}">
+    {% include 'blog/post_like_comment.html' with p=obj %}
     </div>
 
 </article>
@@ -103,7 +76,7 @@
           <div class="" style="">
                 <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.3vh;"
                 src="{{user.profile.image.url}}">
-                <textarea class="textbox_big"
+                <textarea class="textbox_big" autofocus
                 style="width:80%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
                 <textarea class="textbox_small"
                 style="width:80%; height:4vh; color:#c4c4c4; border-radius: 1rem; overflow:hidden;
@@ -160,6 +133,10 @@
     </div>
 
 
+    {% endblock content %}
+
+    {% block js_code %}
+
     {# Jquery script #}
 
     <script>
@@ -179,6 +156,7 @@
               $('.textbox_big').val('');
               $(".post_comment").hide();
               $(".textbox_small").show();
+              $(".post_image").hide();
               $.ajax({
                 type: "POST",
                 url: "{% url 'blog-home' %}",
@@ -189,7 +167,7 @@
                   $('#feed_like_comment_R' + post_id).html(response['main']);
                   $('#reply_display').html(response['form']);
                   $('#post_like_comment_P' + post_id).html(response['post']);
-                  console.log("success");
+                  $("#activities").load(" #activities > *");
                 },
                 error : function(rs, e) {
                   $('#reply_display').html("an error occured");
@@ -211,8 +189,8 @@
                 data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post"},
                 dataType: 'json',
                 success : function(response) {
-                  $('#post' + member_id).html(response['form']);
-                  console.log("successsssss");
+                  $('#post_like_comment_P' + member_id).html(response['form']);
+                  $("#activities").load(" #activities > *");
                 },
                 error : function(rs, e) {
                   $('#post_display').html("an error occured");
@@ -238,7 +216,7 @@
                 $('#feed_like_comment_' + member_id).html(response['main']);
                 $('#feed_like_comment_R' + member_id).html(response['main']);
                 $('#reply_display').html(response['form']);
-                console.log("success :" + "Id is : " + member_id);
+                $("#activities").load(" #activities > *");
               },
               error : function(rs, e) {
                 $('#reply_display').html("an error occured");
@@ -265,14 +243,96 @@ function getCookie(c_name)
     }
     return "";
  }
+
+ $(document).ready(function(event) {
+     $(document).on('click', '.updateButton' , function(event) {
+       event.preventDefault();
+        event.stopImmediatePropagation();
+         var member_id = $(this).attr('member_id');
+         $.ajax({
+           type: "POST",
+           url: "{% url 'blog-home' %}",
+           data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
+           dataType: 'json',
+           success : function(response) {
+             console.log("success");
+             window.location="{% if obj.reply %}{% url 'post-detail' obj.reply.id %} {% endif %}";
+           },
+           error : function(rs, e) {
+             console.log(rs.responseText);
+           }
+         });
+     });
+ });
+
+ $(document).ready(function (event) {
+   $(window).scroll(function (event) {
+      if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var page_count = $("article[id*='reply_object']").length;
+          var member_id = {{obj.id}}
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id': member_id, 'page_count': page_count, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next_Reply"},
+            dataType: 'json',
+            success : function(response) {
+              $('#reply_display').html(response['form']);
+              $("#activities").load(" #activities > *");
+              console.log("success");
+              console.log(page_count);
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      }
+   });
+ });
+
+ $(document).ready(function(event) {
+     $(document).on('click', '.viewButtonContent' , function(event) {
+       event.preventDefault();
+             $('#content_loading').show();
+             $('#content_display').hide();
+         var member_id = $(this).attr('member_id');
+         $.ajax({
+           type: "POST",
+           url: "{% url 'blog-home' %}",
+           data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Content"},
+           dataType: 'json',
+           success : function(response) {
+             $('#content_display').html(response['form']);
+             $('#content_loading').hide();
+             $('#content_display').show();
+
+           },
+           error : function(rs, e) {
+             $('#content_loading').hide();
+             $('#content_display').hide();
+             console.log(rs.responseText);
+           }
+         });
+     });
+ });
 </script>
 
-{% endblock content %}
+<script>
+  $(document).ready(function(event) {
+      setInterval(function(){
+        $("#activities").load(" #activities > *");
+              console.log("LOG");
+      }, 2000);
+  });
+</script>
 
-
+{% endblock js_code %}
 <!--Comment S-->
 
 
 {% block right %}
-sssss
+<div id="activities" >
+{% include 'blog/activities_post.html' %}
+</div>
 {% endblock right %}

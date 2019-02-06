@@ -37,7 +37,6 @@
         <a class="dropdown-item" href="{% url 'post-detail' post.repost.id %}" style="cursor:pointer">View Post</a>
         <a class="dropdown-item" member_id = {{post.repost.id}} id="repostButton" style="cursor:pointer">Repost</a>
         <a class="dropdown-item" href="">Copy Post Link</a>
-        <a class="dropdown-item" href="">Embed Post</a>
         {% if user == post.author %}
         <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer"
         data-toggle="modal" data-target="#deletePostModalCenter" >Delete Repost</a>
@@ -62,16 +61,19 @@
         <b>@{{person.username}}</b></a>
       {% endfor %}
     </div>
+        <a class = "viewButtonContent" style="cursor:pointer" data-toggle="modal"
+        data-target="#viewContentPostModalCenter" member_id = {{post.repost.id}}>
         {% if 'default.jpg' not in post.repost.image.url%}
         <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
         alt="Responsive image" src="{{post.repost.image.url}}">
         {% elif post.repost.video %}
-        <video width="300" height="240" preload="auto" loop style ="border-radius: 1rem;"
+        <video width="100%" height="100%" preload="auto" loop style ="border-radius: 1rem;"
           class="mb-2" controls>
           <source src="{{post.repost.video.url}}" type="video/mp4" style ="border-radius: 1rem;" >
           Your browser does not support the video tag.
         </video>
         {% endif %}
+        </a>
     <p class="article-content" style="">{{ post.repost.content }}</p>
 
         <small class="float-left" style="font-size:1.4vh">
@@ -109,7 +111,6 @@
           <a class="dropdown-item" href="{% url 'post-detail' post.id %}" style="cursor:pointer">View Post</a>
           <a class="dropdown-item" member_id = {{post.id}} id="repostButton" style="cursor:pointer">Repost</a>
           <a class="dropdown-item" href="">Copy Post Link</a>
-          <a class="dropdown-item" href="">Embed Post</a>
           {% if user == post.author %}
           <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer;"
           data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
@@ -134,16 +135,19 @@
           <b>@{{person.username}}</b></a>
         {% endfor %}
       </div>
+        <a class = "viewButtonContent" style="cursor:pointer" data-toggle="modal"
+        data-target="#viewContentPostModalCenter" member_id = {{post.id}}>
           {% if 'default.jpg' not in post.image.url%}
           <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
           alt="Responsive image" src="{{post.image.url}}">
           {% elif post.video %}
-          <video width="100%" preload="auto" loop style ="border-radius: 1rem;"
+          <video width="100%" height="100%" preload="auto" loop style ="border-radius: 1rem;"
             class="mb-2" controls>
             <source src="{{post.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
             Your browser does not support the video tag.
           </video>
           {% endif %}
+        </a>
       <p class="article-content" style="">{{ post.content }}</p>
 
       {#This is the part where the image information is done#}
