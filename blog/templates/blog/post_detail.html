@@ -4,86 +4,269 @@
 {% load filters %}
 
 {% block content %}
-    <div class="col-md-0" style="margin-top: 0rem;">
-    <article class="media content-section">
-      <img class="rounded-circle article-img" style=" width: 8%; height:auto;" src="{{obj.author.profile.image.url}}">
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
-          <small class="text-muted" style="float:right">{{ obj.date_posted|date:"F d, Y" }}</small>
-          {% if obj.author == user %}
-            <div>
-              <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' obj.id %}">Update</a>
-            </div>
-          {% endif %}
-        </div>
-          <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>
-            {% if 'default.jpg' not in obj.image.url%}
-              <img class="img-fluid mb-2 mt-2" alt="Responsive image" src="{{obj.image.url}}">
-            {% endif %}
-          <p class="article-content" style=" font-size:1.8vh">{{ obj.content }}</p>
-{#This is the part where the image information is done#}
-          <div class="" style="text-align:right">
-            {% if obj|has_comment:user%}
-              <img src="{% static 'resources/comment_full.png' %}" style="width: 4%; height: auto; "/>
-            {% else %}
-              <img src="{% static 'resources/comment.png' %}" style="width: 4%; height: auto; "/>
-            {% endif %}
-            <a>{{obj.comment_set.count}}</a>
+<div id="post" style="background-color:#eedfff; border-radius: 0.5rem;">
+<form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+{% csrf_token %}
+<article class="media content-section mb-3;" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
+  <div class="media-body" style="border-radius: 0.5rem;">
+    <div class="article-metadata">
+      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
+      {% if obj.reply != None %}
+      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.reply.author.username}}</a>
+      {% endif %}
+      <small class="text-muted" style="">{{ obj.date_posted|date:"M d, Y" }}</small>
 
-            {% if obj|has_like:user%}
-            <img src="{% static 'resources/heart_full.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-            {% else %}
-            <img src="{% static 'resources/heart.png' %}" style="width: 4%; height: auto; margin-left:10px;"/>
-            {% endif %}
-            <a>{{obj.like_set.count}}</a>
+      <button class="dropdown" id="hidden_interact" select_id = {{obj.id}} aria-haspopup="true" aria-expanded="false"
+      style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+      <img src="{% static 'resources/more.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      </button>
+
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" href="">Embed Post</a>
+        {% if user == obj.author %}
+        <a class="dropdown-item" id = "delete_btn" style="color:red;"
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
+        {% else %}
+        <a class="dropdown-item" href="">Report Post</a>
+        {% endif %}
       </div>
-    </article>
+    </div>
+    <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>
+    <div>
+      {% for topic in obj.topics.all %}
+        <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+          style="color:#e60000">
+        <b>#{{topic.title}}</b></a>
+      {% endfor %}
+      {% for person in obj.people.all %}
+        <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+          style="color:#0071e6">
+        <b>@{{person.username}}</b></a>
+      {% endfor %}
+    </div>
+        {% if 'default.jpg' not in obj.image.url%}
+      <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
+      alt="Responsive image" src="{{obj.image.url}}">
+        {% elif obj.video %}
+      <video width="100%" height="auto"preload="auto" loop style ="border-radius: 1rem;"
+        class="mb-2" controls>
+        <source src="{{obj.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+        Your browser does not support the video tag.
+      </video>
+        {% endif %}
+    <p class="article-content" style="">{{ obj.content }}</p>
 
-    {% block post %}
-    <!--Comments-->
-    <form method="POST" enctype="multipart/form-data">
+    <div class="" style="float:right">
+
+      {% if obj.reply != None %}
+      <button class="updateButton" id="hidden_interact" member_id = {{obj.reply.id}}
+      style="cursor:pointer; border-radius: 1rem;">
+      <img src="{% static 'resources/back.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      </button>
+      {% endif %}
+
+      <button class="updateButton" id="hidden_interact" member_id = {{obj.id}}
+      style="cursor:pointer; border-radius: 1rem;">
+      {% if obj|has_reply:user%}
+      <img src="{% static 'resources/comment_full.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% else %}
+      <img src="{% static 'resources/comment.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% endif %}
+      <a>{{obj.post_set.count}}</a>
+      </button>
+
+      <button class="postLikeButton" id="hidden_interact" member_id = {{obj.id}}
+      style="cursor:pointer; border-radius: 1rem;">
+      {% if obj|has_like:user%}
+      <img src="{% static 'resources/heart_full.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% else %}
+      <img src="{% static 'resources/heart.png' %}"
+      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      {% endif %}
+      <a>{{obj.like_set.count}}</a>
+      </button>
+    </div>
+
+</article>
+</form>
+    <form method="POST" enctype="multipart/form-data" class = "comment_form" id="comment_form" style="border-radius: 0.5rem;">
       {% csrf_token %}
-      <fieldset class="form-group">
-        {{ comment_form|crispy }}
+      <fieldset class="form-group" style="text-align:center; margin:1vh;">
+
+          <div class="" style="">
+                <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.3vh;"
+                src="{{user.profile.image.url}}">
+                <textarea class="textbox_big"
+                style="width:80%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
+                <textarea class="textbox_small"
+                style="width:80%; height:4vh; color:#c4c4c4; border-radius: 1rem; overflow:hidden;
+                float:left;"> What do you think of this post?</textarea>
+          </div>
+
+        <script>
+          $(document).ready(function() {
+            $(".textbox_big").hide();
+            $(".post_image").hide();
+            $(document).on('click', '.textbox_small' , function() {
+              event.preventDefault();
+              $(".textbox_small").hide();
+              $(".textbox_big").show();
+              $(".post_comment").show();
+              $(".post_image").show();
+            });
+          });
+        </script>
       </fieldset>
-
-        <div class="form-group">
-          <button class="btn btn-outline-info" type="submit">Post</button>
+          </form>
+      <form name="upload_img" enctype="multipart/form-data" id="upload_img">
+        <div class="form-group" style="margin-bottom:3vh">
+          <div class="">
+          <label for="file_upload" class="post_image" accept="image/*" onchange="loadFile(event)" style="">
+          <a style="font-size:1.7vh; color:#a300cc; float:left; margin-left:10vh">Replying to @{{obj.author.username}}<a/>
+          </label>
+          <button class="btn btn-outline-info post_comment updateButton float-right"
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:4vh; border-radius: 10rem;"
+          type="submit" post_id={{obj.id}} member_id = {{obj.id}}>Reply</button>
+          </div>
         </div>
-    </form>
+
+        </form>
+    <script>
+    function preview_image(event)
+    {
+     var reader = new FileReader();
+     reader.onload = function()
+     {
+      var output = document.getElementById('output_image');
+      output.src = reader.result;
+     }
+     reader.readAsDataURL(event.target.files[0]);
+     $(".output_img").show();
+    }
+    </script>
+
+    <div id="reply_display">
+    {% include 'blog/replies.html' %}
+    </div>
     <!--Comments-->
-    {% for comment in comments %}
-    {% if comment.post.id == obj.id %}
-    <article class="media content-section">
-      <img class="rounded-circle article-img" src="{{comment.author.profile.image.url}}">
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{ comment.author.username }}</a>
-          <small class="text-muted" style="float:RIGHT">{{ comment.date_posted|date:"F d, Y" }}</small>
-        </div>
-            {% if 'default.jpg' not in comment.image.url%}
-          <img class="img-fluid mb-2 mt-2" alt="Responsive image" src="{{comment.image.url}}">
-            {% endif %}
-        <p class="article-content">{{ comment.content }}</p>
-      </div>
-    </article>
-    {% endif %}
-    {% endfor %}
-    {% endblock post %}
 
-    {% for activity in activities %}
-    <article class="media content-section">
-      <div class="media-body">
+    </div>
 
-          <a class="mr-2" href="{% url 'user-posts' activity.author.username %}">{{ activity.author.username }}</a>
-                  <a>{{ activity.message }}</a>
-          <small class="text-muted" style="float:RIGHT">{{ activity.date|date:"F d, Y" }}</small>
-        </div>
 
-    </article>
-    {% endfor %}
-</div>
+    {# Jquery script #}
+
+    <script>
+      $(document).ready(function(event) {
+          $(document).on('click', '.post_comment' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          /*    var form = new FormData(document.getElementById('comment_form'));
+              var file = document.getElementById('file_upload').files[0];
+              if (file) {
+                form.append('file_upload', file);
+              } */
+              var post_id = $(this).attr('post_id');
+              var content_text = $('.textbox_big').val();
+
+              $(".textbox_big").hide();
+              $('.textbox_big').val('');
+              $(".post_comment").hide();
+              $(".textbox_small").show();
+              $.ajax({
+                type: "POST",
+                url: "{% url 'blog-home' %}",
+                data : { 'id': post_id, 'content': content_text,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Comment"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#feed_like_comment_' + post_id).html(response['main']);
+                  $('#feed_like_comment_R' + post_id).html(response['main']);
+                  $('#reply_display').html(response['form']);
+                  $('#post_like_comment_P' + post_id).html(response['post']);
+                  console.log("success");
+                },
+                error : function(rs, e) {
+                  $('#reply_display').html("an error occured");
+                  console.log(rs.responseText);
+                }
+              });
+          });
+          return false;
+      });
+
+      $(document).ready(function(event) {
+          $(document).on('click', '.postLikeButton' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+              var member_id = $(this).attr('member_id');
+              $.ajax({
+                type: "POST",
+                url: "{% url 'blog-home' %}",
+                data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#post' + member_id).html(response['form']);
+                  console.log("successsssss");
+                },
+                error : function(rs, e) {
+                  $('#post_display').html("an error occured");
+                  console.log(rs.responseText);
+                }
+              });
+          });
+      });
+    </script>
+
+    <script>
+      $(document).ready(function(event) {
+        $(document).on('click', '.replyLikeButton' , function(event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+            var member_id = $(this).attr('member_id');
+            $.ajax({
+              type: "POST",
+              url: "{% url 'blog-home' %}",
+              data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post_Reply"},
+              dataType: 'json',
+              success : function(response) {
+                $('#feed_like_comment_' + member_id).html(response['main']);
+                $('#feed_like_comment_R' + member_id).html(response['main']);
+                $('#reply_display').html(response['form']);
+                console.log("success :" + "Id is : " + member_id);
+              },
+              error : function(rs, e) {
+                $('#reply_display').html("an error occured");
+                console.log(rs.responseText);
+              }
+            });
+        });
+      });
+    </script>
+
+<script>
+function getCookie(c_name)
+{
+    if (document.cookie.length > 0)
+    {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1)
+        {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) c_end = document.cookie.length;
+            return unescape(document.cookie.substring(c_start,c_end));
+        }
+    }
+    return "";
+ }
+</script>
+
 {% endblock content %}
 
 
@@ -91,5 +274,5 @@
 
 
 {% block right %}
-
+sssss
 {% endblock right %}

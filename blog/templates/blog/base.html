@@ -51,11 +51,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
           <div class="navbar-nav mr-auto">
-            <img class="mr-2" style=" width: 3.5vh; height: 3.5vh; cursor:pointer;" id="bellButton"
+            <img class="mr-0" style=" width: 3.5vh; height: 3.5vh; cursor:pointer;" id="bellButton"
             src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>
             {% if notifications or requests %}
               {% if badge_count != 0 %}
-                <span class="badge badge-danger" style="border-radius:3rem;"> {{badge_count}}</span>
+                <span class="badge badge-danger" style="border-radius:3rem; height:100%;"> {{badge_count}}</span>
               {% endif %}
             {% endif %}
           </div>

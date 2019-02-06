@@ -45,35 +45,257 @@ def home(request):
     return render(request, 'blog/home.html', context)
 
 def getPost(request, pk=None):
+    page_limit = 10;
+    today = datetime.datetime.now()
+    from django.db.models import Count
+    #Get all tags
+    tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
+    peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-#Get the Add Comment Form
-    if (request.method == 'POST'):
-        c_form = NewCommentForm(request.POST, request.FILES, instance=request.user)
-        if (c_form.is_valid()):
-            c_form.save()
-            cont = c_form.cleaned_data.get('content')
-            post = Post.objects.get(id=pk)
-            img = c_form.cleaned_data.get('image')
-            author = request.user
-            comment = Comment(content=cont,post=post,image=img,author=author)
-            comment.save()
-            new_activity = Activity(post=post, author=author, message="posted a comment")
-            new_activity.save()
-            pass
+    acts = Activity.objects.filter(post__date_posted__day=today.day).annotate(count=Count('date')).order_by('-count')
 
-    else:
-        c_form = NewCommentForm(instance=request.user)
+    post_id = pk
+    obj = Post.objects.get(id=post_id)
+    post_form = NewPostForm()
 
-#Search for the cliecked-on post
-    if (pk):
-        context = {
-            'posts': Post.objects.all(),
-            'comments': Comment.objects.all(),
-            'obj': Post.objects.get(id=pk),
-            'comment_form': c_form,
+    context = {
+            'profile': request.user.profile,
+            'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+            'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+            'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+            Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+            'comments' : Comment.objects.all(),
+            'likes' : Like.objects.all(),
+            'activities' : acts,
+            'user' : request.user,
+            'obj' : Post.objects.get(id=pk),
+            'post_form' : post_form,
+            'people' : peps,
+            'topics' : tops,
+            'date' : today,
+            'page_limit' : page_limit,
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
+            }
+
+#When user clicks on a post
+    if request.is_ajax():
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            post_id = 10
+            obj = Post.objects.get(id=post_id)
+
+        sub_context = {
+            'posts': posts,
+            'profile': request.user.profile,
+            'page_obj': paginator,
+            'pages' : pages,
+            'comments' : Comment.objects.all(),
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
             'likes' : Like.objects.all(),
             'user' : request.user,
-            'activities' : Activity.objects.filter(post=Post.objects.get(id=pk))}
+            'obj' : obj,
+            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'post_form' : post_form,
+            'page_limit' : page_limit,
+            'slice_custom' : page_limit,
+            }
+
+        if (request.POST.get('action') == "Comment"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            cont = request.POST.get('content')
+            post = Post.objects.get(id=request.POST.get('id'))
+            author = request.user
+            post = Post(content=cont,author=author, reply=post)
+            post.save()
+            new_activity = Activity(post=obj, author=author, type=1)
+            new_activity.save()
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            html3 = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
+
+
+        elif (request.POST.get('action') == "View_Post"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Post"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+            html = render_to_string('blog/post_detail.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Like_Post_Reply"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/replies.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+
+        elif (request.POST.get('action') == "New_Post"):
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Post"):
+
+            post = Post.objects.get(id=post_id)
+            post.delete()
+            html3 = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Repost"):
+
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post)
+            repost.save()
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        #User Actions
+
+        elif (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+                page_count = request.POST.get('page_count')
+                new_context = sub_context
+                new_context["page_limit"] += int(page_count)
+                html = render_to_string('blog/feed.html',new_context, request=request)
+                return JsonResponse({'form':html})
+
+    elif (request.method == 'POST'):
+        post_form = NewPostForm(request.POST, request.FILES)
+        if(post_form.is_valid()):
+            tagfield = post_form.cleaned_data.get('tags')
+            con = post_form.cleaned_data.get('content')
+            new_post = Post(content=con, author=request.user, reply=None)
+
+            #Media filtering
+            try:
+                media = request.FILES['media']
+                url = media.name.lower()
+                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    new_post.image = media
+                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                    new_post.video = media
+            except:
+                pass
+
+            new_post.save()
+            post_form = NewPostForm()
+
+            if(tagfield):
+                #Tag filtering
+                try:
+                    tag_dict = tagfield.split()
+                    for tag in tag_dict:
+                        if(tag.startswith("#")):
+                            try:
+                                try:
+                                    topic = Topic.objects.get(title=tag[1:])
+                                    new_post.topics.add(topic)
+                                except:
+                                    topic = Topic(title=tag[1:])
+                                    topic.save()
+                                    new_post.topics.add(topic)
+                            except Exception as e:
+                                new_post.content = e
+
+                        elif(tag.startswith("@")):
+                            try:
+                                try:
+                                    person = User.objects.get(username=tag[1:])
+                                    new_post.people.add(person)
+                                    new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                    if(new_notification.sender != new_notification.recepient):
+                                        new_notification.save()
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+                            except Exception as e:
+                                print(f"____________________________{e}")
+
+                except:
+                    pass
 
 
     return render(request, 'blog/post_detail.html', context)
