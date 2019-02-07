@@ -13,7 +13,7 @@ class Profile(models.Model):
     def __str__(self):
         return(f'{self.user.username} Profile')
 
-    def save(self):
+    def save(self, **kwargs):
         super().save()
         #Resize Images upon Profile creation
         img = Image.open(self.image.path)
@@ -38,7 +38,7 @@ class ProfileSettings(models.Model):
     def __str__(self):
         return(f'{self.user.username} Profile')
 
-    def save(self):
+    def save(self, **kwargs):
         super().save()
         #Resize Images upon Profile creation
         img = Image.open(self.coverImage.path)

@@ -191,20 +191,22 @@
 
   //paginator
 $(document).ready(function (event) {
+  $('#loading_feed').hide();
   $(window).scroll(function (event) {
      if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+       $('#loading_feed').show();
        event.preventDefault();
        event.stopImmediatePropagation();
          var page_count = $("article[class*='post_object']").length;
          $.ajax({
            type: "POST",
-           url: "{% url 'user-posts' profile.user %}",
-           data : { 'page_count': page_count, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next"},
+           url: "{% url 'user-posts' profile.user view %}",
+           data : { 'view': '{{view}}' ,'page_count': page_count, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next"},
            dataType: 'json',
            success : function(response) {
              $('#feed_display').html(response['form']);
-             console.log("success");
-             console.log(page_count);
+             $('#loading_feed').hide();
+
            },
            error : function(rs, e) {
              console.log(rs.responseText);
@@ -217,8 +219,15 @@ $(document).ready(function (event) {
 </script>
 
 <div id="feed_display">
-{% include 'blog/feed.html' %}
+{% if view == "friends" or view == "followers" or view == "following" %}
+  {% include 'blog/feed_circles.html' %}
+{% elif view == "media" %}
+  {% include 'blog/feed_media.html' %}
+{% else %}
+  {% include 'blog/feed.html' %}
+{% endif %}
 </div>
+
 
 <div id="loading_feed">
 {% include 'blog/loading.html' %}
@@ -255,22 +264,38 @@ style="text-align:left; font-size:2.3vh;">
 
 
 {% block right %}
-    <div class="media-body" style="border-radius: 0.5rem;">
-    <div class="row">
-      <div class="col-md-4 mt-3" style="text-align:center">
-        <img src="{% static 'resources/post_big.png' %}" style="width: 60%; height: auto; text-align:center;"/>
-        <div class="h5" style="text-align:center"><b>{{user_posts}}</b></div>
+    <article class="media content-section" style="margin-bottom:2vh; border-radius:1rem; text-decoration: none !important">
+      <div class="media-body" style="border-radius: 0rem;">
+      <div class="row mb-3" >
+        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'friends' %}">
+          <img src="{% static 'resources/friends_big.png' %}" style="width: 60%; height: 60%; text-align:center;"/>
+          <div class="h5" style="text-align:center; "><b>{{profile.friends.count}}</b></div>
+        </a>
+        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'following' %}">
+          <img class="align-middle" src="{% static 'resources/following_big.png' %}" style="width: 60%; height: 60%; text-align:center"/>
+          <div class="h5" style="text-align:center;"><b>{{profile.following.count}}</b></div>
+        </a>
+        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'followers' %}">
+          <img src="{% static 'resources/followers_big.png' %}" style="width: 60%; height: 60%; text-align:center"/>
+          <div class="h5" style="text-align:center;"><b>{{profile.followers.count}}</b></div>
+        </a>
       </div>
-      <div class="col-md-4 mt-3" style="text-align:center">
-        <img class="align-middle" src="{% static 'resources/heart_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
-        <div class="h5" style="text-align:center"><b>{{user_likes}}</b></div>
+      <div class="row">
+        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'feed' %}">
+          <img src="{% static 'resources/post_big.png' %}" style="width: 60%; height: auto; text-align:center;"/>
+          <div class="h5" style="text-align:center"><b>{{user_posts}}</b></div>
+        </a>
+        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'likes' %}">
+          <img class="align-middle" src="{% static 'resources/heart_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
+          <div class="h5" style="text-align:center"><b>{{user_likes}}</b></div>
+        </a>
+        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'replies' %}">
+          <img src="{% static 'resources/comment_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
+          <div class="h5" style="text-align:center"><b>{{user_comments}}</b></div>
+        </a>
       </div>
-      <div class="col-md-4 mt-3" style="text-align:center">
-        <img src="{% static 'resources/comment_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
-        <div class="h5" style="text-align:center"><b>{{user_comments}}</b></div>
       </div>
-    </div>
-    </div>
+      </article>
 
   <b> Friends <a style="font-size:2.5vh;">{{profile.friends.count}}</a> </b>
   <ul class="list-group" style="margin-bottom:2vh">

@@ -680,7 +680,7 @@ def getTopic(request, post_title=None):
 
     return render(request, 'blog/topic_posts.html', context)
 
-def get_user_information(request, username=None):
+def get_user_information(request, username=None, view=None):
     page_limit = 10
     profile = Profile.objects.get(user__username=username)
     #Profile information is accquired here.
@@ -705,6 +705,25 @@ def get_user_information(request, username=None):
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
     acts = Activity.objects.filter(post__date_posted__day=today.day).order_by('-date')
+
+    from django.db import models
+    #Get page filters
+    circles = Profile.objects.all()
+    img = models.ImageField(default = 'default.jpg', upload_to='post_pics')
+    if(view == "media"):
+        pass
+    elif(view == "friends"):
+        circles = Profile.objects.filter(Q(friends=profile)).order_by('-id')
+    elif(view == "followers"):
+        circles = Profile.objects.filter(Q(following=profile)).order_by('-id')
+    elif(view == "following"):
+        circles = Profile.objects.filter(Q(followers=profile))
+    elif(view == "replies"):
+        posts = Post.objects.filter(Q(author=profile.user) & ~Q(reply=None)).order_by('-date_posted')
+    elif(view == "likes"):
+        posts = Post.objects.filter(Q(like__author=profile.user)).order_by('-date_posted')
+    elif(view == "feed"):
+        posts = Post.objects.filter(Q(author=profile.user)).order_by('-date_posted')
 
     #Get Profile accquaintences
 
@@ -744,10 +763,10 @@ def get_user_information(request, username=None):
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
         'images' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg")).order_by('-date_posted'),
-        'user_posts' : Post.objects.filter(author__username=username).count(),
-        'user_comments' : Comment.objects.filter(author__username=username).count(),
+        'user_posts' : Post.objects.filter(author__username=username).order_by('-date_posted').count(),
+        'user_comments' : Post.objects.filter(reply__author__username=username).order_by('-date_posted').count(),
         'obj' : Post.objects.get(id=3),
-        'user_likes' : Like.objects.filter(post__author__username=username).count(),
+        'user_likes' : Like.objects.filter(author__username=username).order_by('-date_posted').count(),
         'post_form' : post_form,
         'people' : peps,
         'topics' : tops,
@@ -756,6 +775,8 @@ def get_user_information(request, username=None):
         #Functions
         'is_friend' : isFriend(),
         'is_following' : isFollowing(),
+        'view' : view,
+        'circles' : circles,
         }
 
     if request.is_ajax():
@@ -783,7 +804,10 @@ def get_user_information(request, username=None):
             'page_limit' : page_limit,
             #Functions
             'is_friend' : isFriend(),
-            'is_following' : isFollowing(),}
+            'is_following' : isFollowing(),
+            'view' : view,
+            'circles' : circles,
+            }
 
         if (request.POST.get('action') == "Follow"):
             if(isFollowing()):
@@ -812,7 +836,14 @@ def get_user_information(request, username=None):
                 page_count = request.POST.get('page_count')
                 new_context = sub_context
                 new_context["page_limit"] += int(page_count)
-                html = render_to_string('blog/feed.html',new_context, request=request)
+
+                if(view == "media"):
+                    pass
+                elif(view == "friends" or view == "followers" or view == "following"):
+                    html = render_to_string('blog/feed_circles.html',new_context, request=request)
+                else:
+                    html = render_to_string('blog/feed.html',new_context, request=request)
+
                 return JsonResponse({'form':html})
 
     elif (request.method == 'POST'):

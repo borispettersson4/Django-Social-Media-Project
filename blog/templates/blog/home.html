@@ -128,8 +128,10 @@
 
   //paginator
 $(document).ready(function (event) {
+      $('#loading_feed').hide();
   $(window).scroll(function (event) {
      if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+      $('#loading_feed').show();
        event.preventDefault();
        event.stopImmediatePropagation();
          var page_count = $("article[class*='post_object']").length;
@@ -140,7 +142,7 @@ $(document).ready(function (event) {
            dataType: 'json',
            success : function(response) {
              $('#feed_display').html(response['form']);
-
+             $('#loading_feed').hide();
            },
            error : function(rs, e) {
              console.log(rs.responseText);
@@ -180,6 +182,7 @@ $(document).ready(function (event) {
         <ul class="list-group" style="margin-bottom:2vh">
       {% if user.profile.friends.all %}
           {% for friend in user.profile.friends.all %}
+              {% for x in "sssss" %}
               {% if forloop.counter <= 5 %}
           <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
               {% if forloop.first %}
@@ -196,13 +199,14 @@ $(document).ready(function (event) {
             </li>
             </a>
               {% endif %}
+                                    {% endfor %}
           {% endfor %}
       {% else %}
         You don't have any friends yet.
       {% endif %}
         </ul>
 
-        <b> Interests <a style="font-size:2.5vh;">{{user.profile.following.count}}</a></b>
+        <b> Following <a style="font-size:2.5vh;">{{user.profile.following.count}}</a></b>
         <ul class="list-group" style="margin-bottom:2vh">
           {% if user.profile.following.all %}
             {% for friend in user.profile.following.all %}
@@ -229,7 +233,7 @@ $(document).ready(function (event) {
             {% endif %}
         </ul>
 
-    <b> Interested <a style="font-size:2.5vh;">{{user.profile.followers.count}}</a></b>
+    <b> Followers <a style="font-size:2.5vh;">{{user.profile.followers.count}}</a></b>
     <ul class="list-group">
       {% if user.profile.followers.all %}
         {% for friend in user.profile.followers.all %}
