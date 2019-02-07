@@ -178,11 +178,13 @@ $(document).ready(function (event) {
         </article>
       </a>
 
+        <a class=" mr-0 mb-0" href="{% url 'user-posts' request.user 'friends' %}" style="color:black;">
         <b> Friends <a style="font-size:2.5vh;">{{user.profile.friends.count}}</a> </b>
+        </a>
         <ul class="list-group" style="margin-bottom:2vh">
       {% if user.profile.friends.all %}
           {% for friend in user.profile.friends.all %}
-              {% for x in "sssss" %}
+
               {% if forloop.counter <= 5 %}
           <a href="{% url 'user-posts' friend.user %}" style="text-decoration: none !important">
               {% if forloop.first %}
@@ -199,14 +201,15 @@ $(document).ready(function (event) {
             </li>
             </a>
               {% endif %}
-                                    {% endfor %}
           {% endfor %}
       {% else %}
         You don't have any friends yet.
       {% endif %}
         </ul>
 
+        <a class=" mr-0 mb-0" href="{% url 'user-posts' request.user 'following' %}" style="color:black;">
         <b> Following <a style="font-size:2.5vh;">{{user.profile.following.count}}</a></b>
+        </a>
         <ul class="list-group" style="margin-bottom:2vh">
           {% if user.profile.following.all %}
             {% for friend in user.profile.following.all %}
@@ -233,7 +236,9 @@ $(document).ready(function (event) {
             {% endif %}
         </ul>
 
+    <a class=" mr-0 mb-0" href="{% url 'user-posts' request.user 'followers' %}" style="color:black;">
     <b> Followers <a style="font-size:2.5vh;">{{user.profile.followers.count}}</a></b>
+    </a>
     <ul class="list-group">
       {% if user.profile.followers.all %}
         {% for friend in user.profile.followers.all %}

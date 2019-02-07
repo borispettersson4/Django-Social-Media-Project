@@ -4,7 +4,9 @@
 
 <div class="thumbnail">
  <img class="img mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
+
   <div class="carousel-caption" style="">
+        <a href="{% url 'user-posts' profile.user %}">
       <img class="rounded-circle article-img mr-2" style=" width: 15vh; height: 15vh; border: 0.5vh solid #FFFFFF;" src="{{profile.user.profile.image.url}}">
       <div class="mb-0">
         <b><a class="mr-2" style="font-size:3vh;">{{ profile.user.profile.nick }}</a></b>
@@ -12,7 +14,7 @@
       <div class="mb-0">
         <a class="text mr-2" style="font-size:2.25vh;">{{ profile.user.username }}</a>
       </div>
-
+ </a>
       <div>
         <main role="main" class="col">
           {% if request.user.username in request.path %}

@@ -45,7 +45,7 @@
     <script>
       $(document).ready(function(event) {
           setInterval(function(){
-            $("#navbarToggle").load(" #navbarToggle > *");
+            $("#nav_bell").load(" #nav_bell > *");
                   console.log("LOG");
           }, 2000);
       });
@@ -60,7 +60,7 @@
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
-          <div class="navbar-nav mr-auto">
+          <div class="navbar-nav mr-auto" id="nav_bell">
             <img class="mr-0" style=" width: 3.5vh; height: 3.5vh; cursor:pointer;" id="bellButton"
             src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>
             {% if notifications or requests %}
@@ -80,7 +80,7 @@
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" href="#">About Mango</a>
-                  <a class="dropdown-item" href="{% url 'user-posts' user.username %}">View Profile</a>
+                  <a class="dropdown-item" href="{% url 'user-posts' user %}">View Profile</a>
                   <a class="dropdown-item" href="{% url 'profile' %}">Edit Profile</a>
                   <a class="dropdown-item" href="{% url 'profile' %}">Preferences</a>
                   <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>

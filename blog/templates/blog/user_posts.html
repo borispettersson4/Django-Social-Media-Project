@@ -221,8 +221,6 @@ $(document).ready(function (event) {
 <div id="feed_display">
 {% if view == "friends" or view == "followers" or view == "following" %}
   {% include 'blog/feed_circles.html' %}
-{% elif view == "media" %}
-  {% include 'blog/feed_media.html' %}
 {% else %}
   {% include 'blog/feed.html' %}
 {% endif %}
@@ -246,7 +244,7 @@ style="text-align:left; font-size:2.3vh;">
   {{profile.user.profilesettings.about}}
 </div>
 
-<a><b> Pictures & Videos </b> <a class="float-right mr-0" href="?page=1">See All</a>
+<a><b> Pictures & Videos </b> <a class="float-right mr-0" href="{% url 'user-posts' profile.user 'media' %}">See All</a>
   {% for post in images|slice:":6"%}
       <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
       style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
@@ -264,32 +262,32 @@ style="text-align:left; font-size:2.3vh;">
 
 
 {% block right %}
-    <article class="media content-section" style="margin-bottom:2vh; border-radius:1rem; text-decoration: none !important">
+    <article class="media content-section" style="margin-bottom:2vh; text-decoration: none !important; border-radius:0.5rem;">
       <div class="media-body" style="border-radius: 0rem;">
-      <div class="row mb-3" >
-        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'friends' %}">
+      <div class="row mb-0  " >
+        <a class="col-md-4 mt-1" style="text-align:center; text-decoration:none; color:black; border-radius:0.5rem;" id="hidden_interact" href="{% url 'user-posts' profile.user 'friends' %}">
           <img src="{% static 'resources/friends_big.png' %}" style="width: 60%; height: 60%; text-align:center;"/>
           <div class="h5" style="text-align:center; "><b>{{profile.friends.count}}</b></div>
         </a>
-        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'following' %}">
+        <a class="col-md-4 mt-1" style="text-align:center; text-decoration:none; color:black; border-radius:0.5rem;" id="hidden_interact" href="{% url 'user-posts' profile.user 'following' %}">
           <img class="align-middle" src="{% static 'resources/following_big.png' %}" style="width: 60%; height: 60%; text-align:center"/>
           <div class="h5" style="text-align:center;"><b>{{profile.following.count}}</b></div>
         </a>
-        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'followers' %}">
+        <a class="col-md-4 mt-1" style="text-align:center; text-decoration:none; color:black; border-radius:0.5rem;" id="hidden_interact" href="{% url 'user-posts' profile.user 'followers' %}">
           <img src="{% static 'resources/followers_big.png' %}" style="width: 60%; height: 60%; text-align:center"/>
           <div class="h5" style="text-align:center;"><b>{{profile.followers.count}}</b></div>
         </a>
       </div>
       <div class="row">
-        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'feed' %}">
+        <a class="col-md-4 mt-2" style="text-align:center; text-decoration:none; color:black; border-radius:0.5rem;" id="hidden_interact" href="{% url 'user-posts' profile.user 'feed' %}">
           <img src="{% static 'resources/post_big.png' %}" style="width: 60%; height: auto; text-align:center;"/>
           <div class="h5" style="text-align:center"><b>{{user_posts}}</b></div>
         </a>
-        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'likes' %}">
+        <a class="col-md-4 mt-2" style="text-align:center; text-decoration:none; color:black; border-radius:0.5rem;" id="hidden_interact" href="{% url 'user-posts' profile.user 'likes' %}">
           <img class="align-middle" src="{% static 'resources/heart_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
           <div class="h5" style="text-align:center"><b>{{user_likes}}</b></div>
         </a>
-        <a class="col-md-4 mt-3" style="text-align:center; text-decoration:none; color:black;" id="hidden_interact" href="{% url 'user-posts' profile.user 'replies' %}">
+        <a class="col-md-4 mt-2" style="text-align:center; text-decoration:none; color:black; border-radius:0.5rem;" id="hidden_interact" href="{% url 'user-posts' profile.user 'replies' %}">
           <img src="{% static 'resources/comment_big.png' %}" style="width: 60%; height: auto; text-align:center"/>
           <div class="h5" style="text-align:center"><b>{{user_comments}}</b></div>
         </a>
@@ -297,7 +295,9 @@ style="text-align:left; font-size:2.3vh;">
       </div>
       </article>
 
+  <a class=" mr-0 mb-0" href="{% url 'user-posts' profile.user 'friends' %}" style="color:black;">
   <b> Friends <a style="font-size:2.5vh;">{{profile.friends.count}}</a> </b>
+  </a>
   <ul class="list-group" style="margin-bottom:2vh">
 {% if profile.friends.all %}
     {% for friend in profile.friends.all %}
@@ -323,7 +323,9 @@ style="text-align:left; font-size:2.3vh;">
 {% endif %}
   </ul>
 
-  <b> Interests <a style="font-size:2.5vh;">{{profile.following.count}}</a></b>
+  <a class=" mr-0 mb-0" href="{% url 'user-posts' profile.user 'following' %}" style="color:black;">
+  <b> Following <a style="font-size:2.5vh;">{{profile.following.count}}</a></b>
+  </a>
   <ul class="list-group" style="margin-bottom:2vh">
     {% if profile.following.all %}
       {% for friend in profile.following.all %}
@@ -350,7 +352,9 @@ style="text-align:left; font-size:2.3vh;">
       {% endif %}
   </ul>
 
-<b> Interested <a style="font-size:2.5vh;">{{profile.followers.count}}</a></b>
+<a class=" mr-0 mb-0" href="{% url 'user-posts' profile.user 'followers' %}" style="color:black;">
+<b> Followers <a style="font-size:2.5vh;">{{profile.followers.count}}</a></b>
+</a>
 <ul class="list-group">
 {% if profile.followers.all %}
   {% for friend in profile.followers.all %}

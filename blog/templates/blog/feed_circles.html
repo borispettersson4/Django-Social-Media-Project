@@ -3,7 +3,7 @@
 {% for person in circles %}
 {% if forloop.counter <= page_limit %}
 <li class="ml-2 mb-2" style="float:left; ">
-<article class="post_object" style="width:35vh">
+<article class="post_object" style="width:32.5vh; float-left;" >
   <a href="{% url 'user-posts' person.user %}" style="text-decoration: none !important">
     <article class="media content-section mb-0" style="border-radius: 0.5rem;">
       <img class="rounded-circle article-img" src="{{person.image.url}}">

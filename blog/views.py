@@ -52,7 +52,7 @@ def getPost(request, pk=None):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(post__date_posted__day=today.day, post=Post.objects.get(id=pk)).order_by('-date')
+    acts = Activity.objects.filter(post=Post.objects.get(id=pk)).order_by('-date')
 
     post_id = pk
     obj = Post.objects.get(id=post_id)
@@ -74,8 +74,8 @@ def getPost(request, pk=None):
             'topics' : tops,
             'date' : today,
             'page_limit' : page_limit,
-            'replies' : Post.objects.filter(reply=obj),
-            'replies-reply' : Post.objects.filter(reply=obj),
+            'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+            'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
             }
 
 #When user clicks on a post
@@ -90,8 +90,8 @@ def getPost(request, pk=None):
         sub_context = {
             'profile': request.user.profile,
             'comments' : Comment.objects.all(),
-            'replies' : Post.objects.filter(reply=obj),
-            'replies-reply' : Post.objects.filter(reply=obj),
+            'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+            'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
@@ -109,7 +109,9 @@ def getPost(request, pk=None):
             author = request.user
             post = Post(content=cont,author=author, reply=post)
             post.save()
-            new_activity = Activity(post=obj, author=author, type=1)
+            new_activity = Activity(post=obj, author=request.user, type=1)
+            new_activity.save()
+            new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
@@ -428,7 +430,9 @@ def home_view(request, pk=3):
             author = request.user
             post = Post(content=cont,author=author, reply=post)
             post.save()
-            new_activity = Activity(post=obj, author=author, type=1)
+            new_activity = Activity(post=obj, author=request.user, type=1)
+            new_activity.save()
+            new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
@@ -711,7 +715,7 @@ def get_user_information(request, username=None, view=None):
     circles = Profile.objects.all()
     img = models.ImageField(default = 'default.jpg', upload_to='post_pics')
     if(view == "media"):
-        pass
+        posts = Post.objects.filter(~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted')
     elif(view == "friends"):
         circles = Profile.objects.filter(Q(friends=profile)).order_by('-id')
     elif(view == "followers"):
@@ -837,9 +841,7 @@ def get_user_information(request, username=None, view=None):
                 new_context = sub_context
                 new_context["page_limit"] += int(page_count)
 
-                if(view == "media"):
-                    pass
-                elif(view == "friends" or view == "followers" or view == "following"):
+                if(view == "friends" or view == "followers" or view == "following"):
                     html = render_to_string('blog/feed_circles.html',new_context, request=request)
                 else:
                     html = render_to_string('blog/feed.html',new_context, request=request)
