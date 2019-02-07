@@ -170,7 +170,7 @@ def getPost(request, pk=None):
                     new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
                     new_activity.delete()
                     new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
-                    new_notification.delete()  
+                    new_notification.delete()
             except:
                 pass
             sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
@@ -500,7 +500,7 @@ def home_view(request, pk=3):
             sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
             html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
             sub_context['replies'] = Post.objects.filter(reply=obj.reply)
-            html = render_to_string('blog/replies.html', sub_context, request=request)
+            html = render_to_string('blog/like_comment.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2})
 
         elif (request.POST.get('action') == "Like_Feed"):

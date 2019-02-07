@@ -72,6 +72,7 @@
             success : function(response) {
               $('#feed_like_comment_' + member_id).html(response['main']);
               $('#feed_like_comment_R' + member_id).html(response['main']);
+              $('#reply_like_comment_' + member_id).html(response['main']);
               console.log("success" + member_id);
             },
             error : function(rs, e) {

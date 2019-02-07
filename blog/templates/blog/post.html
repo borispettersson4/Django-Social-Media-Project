@@ -212,7 +212,7 @@
               success : function(response) {
                 $('#feed_like_comment_' + member_id).html(response['main']);
                 $('#feed_like_comment_R' + member_id).html(response['main']);
-                $('#reply_display').html(response['form']);
+                $('#reply_like_comment_' + member_id).html(response['main']);
               },
               error : function(rs, e) {
                 $('#reply_display').html("an error occured");

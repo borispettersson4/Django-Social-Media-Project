@@ -203,19 +203,18 @@
 
     <script>
       $(document).ready(function(event) {
-        $(document).on('click', '.replyLikeButton' , function(event) {
+        $(document).on('click', '.homeLikeButton' , function(event) {
           event.preventDefault();
           event.stopImmediatePropagation();
             var member_id = $(this).attr('member_id');
             $.ajax({
               type: "POST",
-              url: "{% url 'blog-home' %}",
+              url: "{% url 'post-detail' obj.id %}",
               data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Post_Reply"},
               dataType: 'json',
               success : function(response) {
-                $('#feed_like_comment_' + member_id).html(response['main']);
-                $('#feed_like_comment_R' + member_id).html(response['main']);
-                $('#reply_display').html(response['form']);
+                $('#reply_like_comment_' + member_id).html(response['main']);
+                $('#reply_like_comment_R' + member_id).html(response['main']);
                 $("#activities").load(" #activities > *");
               },
               error : function(rs, e) {

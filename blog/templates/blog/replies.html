@@ -54,31 +54,9 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
       <p class="article-content">{{ comment.content }}</p>
 
       {#This is the part where the image information is done#}
-      <div class="" style="float:right">
-        <button class="updateButton" id="hidden_interact" member_id = {{comment.id}}
-        style="cursor:pointer; border-radius: 1rem;">
-        {% if comment|has_reply:user%}
-        <img src="{% static 'resources/comment_full.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% else %}
-        <img src="{% static 'resources/comment.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% endif %}
-        <a>{{comment.post_set.count}}</a>
-        </button>
-
-        <button class="replyLikeButton" id="hidden_interact" member_id = {{comment.id}}
-        style="cursor:pointer; border-radius: 1rem;">
-        {% if comment|has_like:user%}
-        <img src="{% static 'resources/heart_full.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% else %}
-        <img src="{% static 'resources/heart.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
-        {% endif %}
-        <a>{{comment.like_set.count}}</a>
-        </button>
-    </div>
+      <div id="reply_like_comment_{{comment.id}}">
+      {% include 'blog/like_comment.html' with p=comment %}
+      </div>
     </div>
   </article>
   </ul>
