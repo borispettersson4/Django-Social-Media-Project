@@ -15,7 +15,7 @@
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
     <meta charset="utf-8">
     <!--CSS Inclusion-->
-    <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
     {% if title %}
     <title>Django Blog - {{ title }}</title>
     {% else %}
@@ -49,6 +49,15 @@
                   console.log("LOG");
           }, 2000);
       });
+
+      $("#inpt_search").on('focus', function () {
+	       $(this).parent('label').addClass('active');
+      });
+
+      $("#inpt_search").on('blur', function () {
+	       if($(this).val().length == 0)
+		       $(this).parent('label').removeClass('active');
+      });
     </script>
 
   <!-- Navigation Bar -->
@@ -68,6 +77,16 @@
                 <span class="badge badge-danger" style="border-radius:3rem; height:100%;"> {{badge_count}}</span>
               {% endif %}
             {% endif %}
+          </div>
+          <div id="searchButton" style="float:left">
+            <div class="mr-1" id="wrap">
+              <form action="" autocomplete="off">
+              <input id="search" name="search" type="text" style="color:white;" placeholder="Search Mango" >
+              <button  id="hidden_interact" style="height:100%; margin-top:0vh;">
+              <img src="{% static 'resources/search_icon.png' %}" style="width:3vh; height:3vh;">
+              </button>
+              </form>
+            </div>
           </div>
           <!-- Navbar Right Side -->
           <div class="navbar-nav">
