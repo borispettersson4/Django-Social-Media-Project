@@ -1,51 +1,266 @@
 {% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+<!--Content Page-->
 {% block content %}
-{% for post in pages %}
-<article class="media content-section">
-  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
-  <div class="media-body">
-    <div class="article-metadata">
-      <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-      <small class="text-muted" style="float:right">{{ post.date_posted|date:"F d, Y" }}</small>
-    </div>
-    <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
-    <div>
 
-      {% for topic in post.topics.all %}
-        <a href="{% url 'topic-posts' topic.title  %}" class="btn btn-primary btn-sm float-left mr-2"
-          style=" background-color: #e60000; border-color: #e60000; font-size:1.5vh;">
-        <b>{{topic.title}}</b></a>
-      {% endfor %}
-    </div>
-        {% if 'default.jpg' not in post.image.url%}
-      <img class="img-fluid mb-2 mt-2 rounded" style="min-width:100%" alt="Responsive image" src="{{post.image.url}}">
-        {% endif %}
-    <p class="article-content" style=" font-size:1.8vh">{{ post.content }}</p>
-  </div>
-</article>
-{% endfor %}
-    <!--Pagees Object-->
-    {% if is_paginated %}
+<script>
 
-      {% if page_obj.has_previous %}
-        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-        <a class="btn btn-outline-info mb-4" href="?page={{page_obj.previous_page_number}}"> < </a>
-      {% endif %}
+  $(document).ready(function(event) {
+      $(document).on('click', '.updateButton' , function(event) {
+        event.preventDefault();
+              $('#loading').show();
+              $('#post_display').hide();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#post_display').html(response['form']);
+              $('#loading').hide();
+              $('#post_display').show();
 
-      {% for num in page_obj.paginator.page_range %}
+            },
+            error : function(rs, e) {
+              $('#loading').hide();
+              $('#post_display').hide();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
 
-        {% if page_obj.number == num %}
-          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'+3' %}
-          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
+  $(document).ready(function(event) {
+      $(document).on('click', '.viewButtonContent' , function(event) {
+        event.preventDefault();
+              $('#content_loading').show();
+              $('#content_display').hide();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Content"},
+            dataType: 'json',
+            success : function(response) {
+              $('#content_display').html(response['form']);
+              $('#content_loading').hide();
+              $('#content_display').show();
 
-      {% endfor %}
+            },
+            error : function(rs, e) {
+              $('#content_loading').hide();
+              $('#content_display').hide();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
 
-      {% if page_obj.has_next %}
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}"> > </a>
-        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-      {% endif %}
+  $(document).ready(function(event) {
+      $(document).on('click', '.homeLikeButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Feed"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_like_comment_' + member_id).html(response['main']);
+              $('#feed_like_comment_R' + member_id).html(response['main']);
+              $('#reply_like_comment_' + member_id).html(response['main']);
+              console.log("success" + member_id);
+            },
+            error : function(rs, e) {
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
 
-    {% endif %} <!--Big If-->
+  $(document).ready(function(event) {
+      $(document).on('click', '.newPostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "New_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '#repostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Repost"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  //paginator
+$(document).ready(function (event) {
+  $('#loading_feed').hide();
+  $(window).scroll(function (event) {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+         var page_count = $("article[class*='post_object']").length;
+         if({{posts.count}} > page_count){
+            $('#loading_feed').show();
+
+         $.ajax({
+           type: "POST",
+           url: "{% url 'topic-posts' topic %}",
+           data : { 'page_count': page_count, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next"},
+           dataType: 'json',
+           success : function(response) {
+             $('#feed_display').html(response['form']);
+             $('#loading_feed').hide();
+
+           },
+           error : function(rs, e) {
+             console.log(rs.responseText);
+           }
+         });
+       }
+     }
+  });
+});
+
+</script>
+
+<div id="feed_display">
+{% include 'blog/feed.html' %}
+</div>
+
+<div id="loading_feed">
+{% include 'blog/loading.html' %}
+<div class="" style="margin-bottom:10vh;"></div>
+</div>
+
+
 {% endblock content %}
+
+<!--Profile Page-->
+{% block left %}
+
+<div id="popular_topics" >
+{% include 'blog/related_topics.html' %}
+</div>
+
+{% endblock left %}
+
+{% block right %}
+
+<div id="popular_topics" >
+{% include 'blog/topic_query_panel.html' %}
+</div>
+
+<a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
+<div id="activities" >
+{% include 'blog/activities.html' %}
+</div>
+
+{% endblock right %}
+
+{# Modal scripts go here #}
+
+{% block modal %}
+
+<div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
+    <div class="modal-content" id="postModalBody" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      <div id="post_display">
+      {% include 'blog/post.html' %}
+      </div>
+
+      <div id="loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:#eedfff;;">
+      {# --------------------------Start----------------------------- #}
+      <div id="new_post_display" >
+      {% include 'blog/post_form.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deletePostModalCenter" tabindex="-1" role="dialog" aria-labelledby="deletePostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="delete_post_display" >
+      {% include 'blog/post_confirm_delete.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="viewContentPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="viewContentPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; border-color:transparent; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      <div id="content_display" >
+      {% include 'blog/content_view.html' %}
+      </div>
+
+      <div id="content_loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+{% endblock modal %}

@@ -10,7 +10,7 @@ urlpatterns = [
     path('<pk>', views.home_view,name='post-open'),
     path('user/<str:username>', views.get_user_information,name='user-posts'),
     path('user/<str:username>/<str:view>', views.get_user_information,name='user-posts'),
-    path('topic/<post_title>', views.getTopic,name='topic-posts'),
+    path('topic/<topic>', views.getTopic,name='topic-posts'),
     path('post/item/<pk>/', views.getPost,name='post-detail'),
 
     path('post/<int:pk>/update', PostUpdateView.as_view(),name='post-update'),

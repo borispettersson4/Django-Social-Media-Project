@@ -8,6 +8,7 @@ from .models import *
 
 class Topic(models.Model):
     title = models.CharField(max_length = 20)
+    date_posted = models.DateTimeField(default = timezone.now)
     def __str__(self):
         return (self.title)
 

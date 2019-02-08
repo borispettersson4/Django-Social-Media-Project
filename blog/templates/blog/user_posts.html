@@ -194,10 +194,11 @@ $(document).ready(function (event) {
   $('#loading_feed').hide();
   $(window).scroll(function (event) {
      if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
-       $('#loading_feed').show();
-       event.preventDefault();
-       event.stopImmediatePropagation();
+        event.preventDefault();
+        event.stopImmediatePropagation();
          var page_count = $("article[class*='post_object']").length;
+         if({{posts.count }} > page_count){
+            $('#loading_feed').show();
          $.ajax({
            type: "POST",
            url: "{% url 'user-posts' profile.user view %}",
@@ -212,6 +213,7 @@ $(document).ready(function (event) {
              console.log(rs.responseText);
            }
          });
+       }
      }
   });
 });
@@ -319,7 +321,7 @@ style="text-align:left; font-size:2.3vh;">
         {% endif %}
     {% endfor %}
 {% else %}
-  You don't have any friends yet.
+  This user does not have any friends yet.
 {% endif %}
   </ul>
 
@@ -348,7 +350,7 @@ style="text-align:left; font-size:2.3vh;">
         {% endfor %}
 
       {% else %}
-        You don't have any interests yet.
+        This user does not follow anybody yet.
       {% endif %}
   </ul>
 
@@ -377,7 +379,7 @@ style="text-align:left; font-size:2.3vh;">
   {% endfor %}
 
 {% else %}
-  No one is interested in you yet.
+  Nobody is following this user yet.
 {% endif %}
 </ul>
 
