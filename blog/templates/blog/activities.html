@@ -19,4 +19,11 @@
     </li></a>
   {% endif %}
   {% endfor %}
+
+{% else %}
+{% if not activities_last %}
+<a>There is no recent activity.</a>
+{% else %}
+<a>There is no recent activity since : {{activities_last.date|date:"M d, Y" }}</a>
+{% endif %}
 {% endif %}

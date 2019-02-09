@@ -1,0 +1,273 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+<!--Content Page-->
+{% block content %}
+
+<script>
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.updateButton' , function(event) {
+        event.preventDefault();
+              $('#loading').show();
+              $('#post_display').hide();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#post_display').html(response['form']);
+              $('#loading').hide();
+              $('#post_display').show();
+
+            },
+            error : function(rs, e) {
+              $('#loading').hide();
+              $('#post_display').hide();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.viewButtonContent' , function(event) {
+        event.preventDefault();
+              $('#content_loading').show();
+              $('#content_display').hide();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Content"},
+            dataType: 'json',
+            success : function(response) {
+              $('#content_display').html(response['form']);
+              $('#content_loading').hide();
+              $('#content_display').show();
+
+            },
+            error : function(rs, e) {
+              $('#content_loading').hide();
+              $('#content_display').hide();
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.homeLikeButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Like_Feed"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_like_comment_' + member_id).html(response['main']);
+              $('#feed_like_comment_R' + member_id).html(response['main']);
+              $('#reply_like_comment_' + member_id).html(response['main']);
+              console.log("success" + member_id);
+            },
+            error : function(rs, e) {
+              $('#post_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.newPostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "New_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '#repostButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Repost"},
+            dataType: 'json',
+            success : function(response) {
+              $('#feed_display').html(response['form']);
+
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  //paginator
+$(document).ready(function (event) {
+  $('#loading_feed').hide();
+  $(window).scroll(function (event) {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+         var page_count = $("article[class*='post_object']").length;
+         if({{posts.count}} > page_count){
+            $('#loading_feed').show();
+         $.ajax({
+           type: "POST",
+           url: "{% url 'search' %}",
+           data : { 'page_count': page_count, 'query' : '{{query}}' , 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next"},
+           dataType: 'json',
+           success : function(response) {
+             $('#feed_display').html(response['form']);
+             $('#loading_feed').hide();
+             $('#people_display').html(response['main']);
+           },
+           error : function(rs, e) {
+             console.log(rs.responseText);
+           }
+         });
+       }
+     }
+  });
+});
+
+</script>
+
+{% if posts or circles %}
+
+<div id="feed_display">
+{% include 'blog/feed.html' %}
+</div>
+
+<div id="loading_feed">
+{% include 'blog/loading.html' %}
+<div class="" style="margin-bottom:10vh;"></div>
+</div>
+
+{% else %}
+<div class="mt-2" style="text-align:center;">
+<h4>No information availabe for <a style="color:#a300cc"><b>{{query}}</b></a></h4>
+</div>
+{% endif %}
+
+
+{% endblock content %}
+
+<!--Profile Page-->
+{% block left %}
+
+<div id="people_display" >
+{% include 'blog/feed_circles.html' %}
+</div>
+
+{% endblock left %}
+
+{% block right %}
+
+<div id="popular_topics" >
+{% include 'blog/topic_query_panel.html' %}
+</div>
+
+<a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
+<div id="activities" >
+{% include 'blog/activities.html' %}
+</div>
+
+{% endblock right %}
+
+{# Modal scripts go here #}
+
+{% block modal %}
+
+<div class="modal fade" id="postModalCenter" tabindex="-1" role="dialog" aria-labelledby="postModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto">
+    <div class="modal-content" id="postModalBody" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      <div id="post_display">
+      {% include 'blog/post.html' %}
+      </div>
+
+      <div id="loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="newPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="newPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:#eedfff;;">
+      {# --------------------------Start----------------------------- #}
+      <div id="new_post_display" >
+      {% include 'blog/post_form.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deletePostModalCenter" tabindex="-1" role="dialog" aria-labelledby="deletePostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="delete_post_display" >
+      {% include 'blog/post_confirm_delete.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="viewContentPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="viewContentPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem; border-color:transparent; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      <div id="content_display" >
+      {% include 'blog/content_view.html' %}
+      </div>
+
+      <div id="content_loading">
+      <div class="" style="margin-bottom:20vh;"></div>
+      {% include 'blog/loading.html' %}
+      <div class="" style="margin-bottom:30vh;"></div>
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+{% endblock modal %}

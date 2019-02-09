@@ -247,10 +247,16 @@ style="text-align:left; font-size:2.3vh;">
 </div>
 
 <a><b> Pictures & Videos </b> <a class="float-right mr-0" href="{% url 'user-posts' profile.user 'media' %}">See All</a>
-  {% for post in images|slice:":6"%}
+  {% for post in media|slice:":6"%}
+  {% if post.video == "" %}
       <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
       style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
       member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
+  {% else %}
+      <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{% static 'resources/default_video.jpg' %}"
+      style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
+      member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
+  {% endif %}
   {% endfor %}
 <p></p>
 

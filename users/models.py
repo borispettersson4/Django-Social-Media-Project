@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
+from django.utils import timezone
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -9,6 +10,7 @@ class Profile(models.Model):
     badge = models.CharField(default = 'A', max_length = 1)
     following = models.ManyToManyField("self", related_name='followers', blank=True,  symmetrical=False)
     friends = models.ManyToManyField("self", related_name='friends', blank=True, symmetrical=True)
+    date_active = models.DateTimeField(default = timezone.now)
 
     def __str__(self):
         return(f'{self.user.username} Profile')

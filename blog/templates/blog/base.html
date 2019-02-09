@@ -78,16 +78,20 @@
               {% endif %}
             {% endif %}
           </div>
-          <div id="searchButton" style="float:left">
-            <div class="mr-1" id="wrap">
-              <form action="" autocomplete="off">
-              <input id="search" name="search" type="text" style="color:white;" placeholder="Search Mango" >
-              <button  id="hidden_interact" style="height:100%; margin-top:0vh;">
-              <img src="{% static 'resources/search_icon.png' %}" style="width:3vh; height:3vh;">
-              </button>
+
+          <div class="" id="searchButton">
+            <div class="mr-2" id="wrap">
+              <form action="{% url 'search' %}" method="GET" autocomplete="off">
+
+                <fieldset class="form">
+                  <input id="search" name="search" type="text" style="color:black;" placeholder="Search posts, @people, #topics, etc." >
+                </fieldset>
+                  <img src="{% static 'resources/search_icon.png' %}" style="width:4vh; height:4vh;">
               </form>
             </div>
           </div>
+
+
           <!-- Navbar Right Side -->
           <div class="navbar-nav">
             {% if not user.is_authenticated %}

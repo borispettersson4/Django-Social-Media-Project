@@ -33,6 +33,10 @@ from django.utils.datastructures import *
 from itertools import chain
 import datetime
 from django.db.models import Count
+from functools import reduce
+import operator
+from django.urls import resolve
+from django.utils import timezone
 
 def home(request):
     context = {
@@ -112,8 +116,10 @@ def getPost(request, pk=None):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -139,6 +145,7 @@ def getPost(request, pk=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -165,6 +172,7 @@ def getPost(request, pk=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -395,6 +403,7 @@ def home_view(request, pk=3):
             'topics' : tops,
             'date' : today,
             'page_limit' : page_limit,
+            'search' : request.GET.get('search')
             }
 
 #When user clicks on a post
@@ -433,8 +442,10 @@ def home_view(request, pk=3):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -463,6 +474,7 @@ def home_view(request, pk=3):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -491,6 +503,7 @@ def home_view(request, pk=3):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -520,6 +533,7 @@ def home_view(request, pk=3):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -554,6 +568,7 @@ def home_view(request, pk=3):
             repost.save()
             new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -634,6 +649,7 @@ def home_view(request, pk=3):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -673,6 +689,399 @@ def home_view(request, pk=3):
 def get_post(request):
     return HttpResponse('blog/post.html')
 
+def search(request, search=None):
+
+    query = request.GET.get('search')
+
+    if(query == None):
+        query = request.POST.get('query')
+
+    content_search = []
+    topics_search = []
+    people_search = []
+
+    content_posts = None
+    topics_posts = None
+    people_posts = None
+    people_circles = None
+
+    #Media filtering
+    if(query):
+        tag_dict = query.split()
+        for tag in tag_dict:
+            if(tag.startswith("#")):
+                topics_search.append(tag[1:])
+            elif(tag.startswith("@")):
+                people_search.append(tag[1:])
+            else:
+                content_search.append(tag)
+
+        if(content_search):
+            content_posts = Post.objects.filter(Q(reduce(operator.or_, (Q(content__contains=x) for x in content_search)))).order_by('-date_posted')
+            people_posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile__nick__contains=x) for x in content_search))) |
+                                               Q(reduce(operator.or_, (Q(author__username__contains=x) for x in content_search)))
+                                               ).order_by('-date_posted')
+            people_circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(nick__contains=x) for x in content_search))) |
+                                               Q(reduce(operator.or_, (Q(user__username__contains=x) for x in content_search)))
+                                               ).order_by('-date_active')
+
+        if(topics_search):
+            topics_posts = Post.objects.filter(Q(reduce(operator.or_, (Q(topics__title__contains=x) for x in topics_search)))).order_by('-date_posted')
+            people_circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user__post__topics__title=x) for x in topics_search)))).order_by('-date_active')
+
+        if(people_search):
+            people_posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__username__contains=x) for x in people_search)))).order_by('-date_posted')
+            people_circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user__username__contains=x) for x in people_search)))).order_by('-date_active')
+
+    if(content_posts or topics_posts or people_posts):
+        posts = people_posts or topics_posts or content_posts
+        posts = posts.distinct()
+        circles = people_circles
+        circles = circles.distinct()
+    else:
+        posts = Post.objects.none()
+        circles = Post.objects.none()
+
+    print(f"TOPICS SEARCH {topics_search}")
+    print(f"PERSON SEARCH {people_search}")
+    print(f"CONTENT SEARCH {content_search}")
+    print(f"QUERY {query}")
+
+    page_limit = 10
+    post_form = NewPostForm()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(posts, page_limit)
+    try:
+        pages = paginator.page(page)
+    except PageNotAnInteger:
+        pages = paginator.page(1)
+    except EmptyPage:
+        pages = paginator.page(paginator.num_pages)
+
+    today = datetime.datetime.now()
+    topic = None
+    #Get all tags
+    tops = Topic.objects.filter(post__topics__title=topic).annotate(count=Count('post__like')).order_by('-count')
+    peps = User.objects.filter(post__topics__title=topic).annotate(count=Count('post__like')).order_by('-count')
+
+    acts = Activity.objects.filter(post__date_posted__day=today.day, post__topics__title=topic).order_by('-date')
+    last_acts = Activity.objects.filter(post__topics__title=topic).last()
+
+    context = {
+            'posts': posts,
+            'profile': request.user.profile,
+            'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+            'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+            'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+             Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+            'page_obj': paginator,
+            'pages' : pages,
+            'comments' : Comment.objects.all(),
+            'likes' : Like.objects.all(),
+            'activities' : acts,
+            'activities_last' : last_acts,
+            'user' : request.user,
+            'obj' : Post.objects.get(id=10),
+            'post_form' : post_form,
+            'people' : peps,
+            'topics' : tops,
+            'date' : today,
+            'page_limit' : page_limit,
+            'topic' : topic,
+            'topic_count' : Post.objects.filter(topics__title=topic).order_by('date_posted').count(),
+            'topic_likes' : Like.objects.filter(post__topics__title=topic).order_by('date_posted').count(),
+            'topic_users' : Profile.objects.filter(user__post__topics__title=topic).annotate(count=Count('user')).order_by('-count').distinct().count(),
+            'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
+            'topic_best_post' : Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count').first(),
+            'query' : query,
+            'circles' : circles
+            }
+
+#When user clicks on a post
+    if request.is_ajax():
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            post_id = 10
+            obj = Post.objects.get(id=post_id)
+
+        sub_context = {
+            'posts': posts,
+            'profile': request.user.profile,
+            'page_obj': paginator,
+            'pages' : pages,
+            'comments' : Comment.objects.all(),
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
+            'likes' : Like.objects.all(),
+            'user' : request.user,
+            'obj' : obj,
+            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'activities_last' : last_acts,
+            'post_form' : post_form,
+            'page_limit' : page_limit,
+            'slice_custom' : page_limit,
+            'topic' : topic,
+            'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
+            'topic_best_post' : Post.objects.filter(topics__title=topic).order_by('like').first(),
+            'query' : request.POST.get('query'),
+            'circles' : circles
+            }
+
+        if (request.POST.get('action') == "Comment"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            cont = request.POST.get('content')
+            post = Post.objects.get(id=request.POST.get('id'))
+            author = request.user
+            post = Post(content=cont,author=author, reply=post)
+            post.save()
+            new_activity = Activity(post=obj, author=request.user, type=1)
+            new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_activity = Activity(post=post, author=request.user, type=2)
+            new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            html3 = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
+
+        elif (request.POST.get('action') == "View_Post"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "View_Content"):
+            html = render_to_string('blog/content_view.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Like_Post"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Post_Reply"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Feed"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2})
+
+        elif (request.POST.get('action') == "New_Post"):
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Post"):
+
+            post = Post.objects.get(id=post_id)
+            post.delete()
+            html3 = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Repost"):
+
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post)
+            repost.save()
+            new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
+            new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        #User Actions
+
+        elif (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/feed.html',new_context, request=request)
+            html2 = render_to_string('blog/feed_circles.html',new_context, request=request)
+            return JsonResponse({'form':html, 'main':html2})
+
+        elif (request.POST.get('action') == "Load_Next_Reply"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/replies.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+    elif (request.method == 'POST'):
+        post_form = NewPostForm(request.POST, request.FILES)
+        if(post_form.is_valid()):
+            tagfield = post_form.cleaned_data.get('tags')
+            con = post_form.cleaned_data.get('content')
+            new_post = Post(content=con, author=request.user, reply=None)
+
+            #Media filtering
+            try:
+                media = request.FILES['media']
+                url = media.name.lower()
+                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    new_post.image = media
+                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                    new_post.video = media
+            except:
+                pass
+
+            new_post.save()
+            post_form = NewPostForm()
+
+            new_activity = Activity(post=new_post, author=request.user, type=2)
+            new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+
+            if(tagfield):
+                #Tag filtering
+                try:
+                    tag_dict = tagfield.split()
+                    for tag in tag_dict:
+                        if(tag.startswith("#")):
+                            try:
+                                try:
+                                    topic = Topic.objects.get(title=tag[1:])
+                                    new_post.topics.add(topic)
+                                except:
+                                    topic = Topic(title=tag[1:])
+                                    topic.save()
+                                    new_post.topics.add(topic)
+                            except Exception as e:
+                                new_post.content = e
+
+                        elif(tag.startswith("@")):
+                            try:
+                                try:
+                                    person = User.objects.get(username=tag[1:])
+                                    new_post.people.add(person)
+                                    new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                    if(new_notification.sender != new_notification.recepient):
+                                        new_notification.save()
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+                            except Exception as e:
+                                print(f"____________________________{e}")
+
+                except:
+                    pass
+    return render(request, 'blog/search_results.html', context)
+
 def getTopic(request, topic=None):
     page_limit = 10
     post_form = NewPostForm()
@@ -692,6 +1101,7 @@ def getTopic(request, topic=None):
     peps = User.objects.filter(post__topics__title=topic).annotate(count=Count('post__like')).order_by('-count')
 
     acts = Activity.objects.filter(post__date_posted__day=today.day, post__topics__title=topic).order_by('-date')
+    last_acts = Activity.objects.filter(post__topics__title=topic).last()
 
     context = {
             'posts': posts,
@@ -705,6 +1115,7 @@ def getTopic(request, topic=None):
             'comments' : Comment.objects.all(),
             'likes' : Like.objects.all(),
             'activities' : acts,
+            'activities_last' : last_acts,
             'user' : request.user,
             'obj' : Post.objects.get(id=10),
             'post_form' : post_form,
@@ -741,6 +1152,7 @@ def getTopic(request, topic=None):
             'user' : request.user,
             'obj' : obj,
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'activities_last' : last_acts,
             'post_form' : post_form,
             'page_limit' : page_limit,
             'slice_custom' : page_limit,
@@ -759,8 +1171,10 @@ def getTopic(request, topic=None):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -789,6 +1203,7 @@ def getTopic(request, topic=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -817,6 +1232,7 @@ def getTopic(request, topic=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -846,6 +1262,7 @@ def getTopic(request, topic=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
+                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -880,6 +1297,7 @@ def getTopic(request, topic=None):
             repost.save()
             new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -960,6 +1378,7 @@ def getTopic(request, topic=None):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
+            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -996,10 +1415,6 @@ def getTopic(request, topic=None):
 
     return render(request, 'blog/topic_posts.html', context)
 
-
-
-    return render(request, 'blog/topic_posts.html', context)
-
 def get_user_information(request, username=None, view=None):
     page_limit = 10
     profile = Profile.objects.get(user__username=username)
@@ -1026,12 +1441,13 @@ def get_user_information(request, username=None, view=None):
 
     acts = Activity.objects.filter(post__date_posted__day=today.day).order_by('-date')
 
+
     from django.db import models
     #Get page filters
     circles = Profile.objects.all()
     img = models.ImageField(default = 'default.jpg', upload_to='post_pics')
     if(view == "media"):
-        posts = Post.objects.filter(~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted')
+        posts = Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted')
     elif(view == "friends"):
         circles = Profile.objects.filter(Q(friends=profile)).order_by('-id')
     elif(view == "followers"):
@@ -1082,7 +1498,7 @@ def get_user_information(request, username=None, view=None):
         'existing_request' : isRequestExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
-        'images' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg")).order_by('-date_posted'),
+        'media' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).order_by('-date_posted').count(),
         'user_comments' : Post.objects.filter(reply__author__username=username).order_by('-date_posted').count(),
         'obj' : Post.objects.get(id=3),
@@ -1119,6 +1535,7 @@ def get_user_information(request, username=None, view=None):
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
+            'media' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted'),
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
             'post_form' : post_form,
             'page_limit' : page_limit,

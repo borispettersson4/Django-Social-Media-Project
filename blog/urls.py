@@ -12,7 +12,7 @@ urlpatterns = [
     path('user/<str:username>/<str:view>', views.get_user_information,name='user-posts'),
     path('topic/<topic>', views.getTopic,name='topic-posts'),
     path('post/item/<pk>/', views.getPost,name='post-detail'),
-
+    path('/?', views.search,name='search'),
     path('post/<int:pk>/update', PostUpdateView.as_view(),name='post-update'),
     path('post/<int:pk>/delete', PostDeleteView.as_view(),name='post-delete'),
     path('post/test', PostUpdateView.as_view(),name='post-open2'),
