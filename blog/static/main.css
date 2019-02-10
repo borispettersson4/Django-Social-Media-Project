@@ -246,13 +246,13 @@ a.article-title:hover {
   display: inline-block;
   position: relative;
   height: 0px;
-  padding-bottom:3.5vh;
+  padding-bottom:4vh;
   position: relative;
 
 }
 
 #search[type="text"] {
-  height: 3.5vh;
+  height: 4vh;
   width: 8vh;
   font-size: 2vh;
   display: inline-block;

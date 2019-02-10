@@ -99,7 +99,7 @@
             <a class="nav-item nav-link" href="{% url 'register' %}" style="color:white;">Register</a>
             {% else %}
             <div class="dropdown">
-                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" max-width: 5vh; height: 100%; border: 0.3vh solid #FFFFFF; cursor:pointer;"
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" max-width: 5vh; max-height: 5vh; border: 0.3vh solid #FFFFFF; cursor:pointer;"
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" style="cursor:pointer" link="#">About Mango</a>

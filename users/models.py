@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
 from django.utils import timezone
+from io import *
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -40,17 +43,11 @@ class ProfileSettings(models.Model):
     def __str__(self):
         return(f'{self.user.username} Profile')
 
-    def save(self, **kwargs):
-        super().save()
-        #Resize Images upon Profile creation
-        img = Image.open(self.coverImage.path)
-        if (img.height != 500 or img.width != 1200):
-            output_size = (500,1200)
-            img.thumbnail(output_size)
-            img.save(self.coverImage.path)
-
-    #This is an activity post item that can be a like, post, or comment
-
-
-
-# Create your models here.
+    def save(self):
+        im = Image.open(self.coverImage)
+        output = BytesIO()
+        im = im.resize((1500,300))
+        im.save(output, format='PNG', quality=100)
+        output.seek(0)
+        self.coverImage = InMemoryUploadedFile(output,'ImageField', "%s.jpg" %self.coverImage.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
+        super(ProfileSettings,self).save()

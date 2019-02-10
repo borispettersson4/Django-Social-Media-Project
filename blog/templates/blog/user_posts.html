@@ -189,6 +189,13 @@
       });
   });
 
+  $(document).ready(function(event) {
+    $(document).on('click', '#editProfile' , function(event) {
+        var link = $(this).attr('link');
+        window.location.href = link;
+    });
+  });
+
   //paginator
 $(document).ready(function (event) {
   $('#loading_feed').hide();
