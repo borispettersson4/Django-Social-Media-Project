@@ -649,7 +649,7 @@ def home_view(request, pk=3):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -788,13 +788,13 @@ def search(request, search=None):
             'date' : today,
             'page_limit' : page_limit,
             'topic' : topic,
-            'topic_count' : Post.objects.filter(topics__title=topic).order_by('date_posted').count(),
-            'topic_likes' : Like.objects.filter(post__topics__title=topic).order_by('date_posted').count(),
-            'topic_users' : Profile.objects.filter(user__post__topics__title=topic).annotate(count=Count('user')).order_by('-count').distinct().count(),
+            'search_count' : posts.count(),
+            'search_users' : circles.count(),
             'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
             'topic_best_post' : Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count').first(),
             'query' : query,
-            'circles' : circles
+            'circles' : circles,
+            'term' : query
             }
 
 #When user clicks on a post
@@ -826,7 +826,8 @@ def search(request, search=None):
             'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
             'topic_best_post' : Post.objects.filter(topics__title=topic).order_by('like').first(),
             'query' : request.POST.get('query'),
-            'circles' : circles
+            'circles' : circles,
+            'term' : query
             }
 
         if (request.POST.get('action') == "Comment"):
@@ -1046,7 +1047,7 @@ def search(request, search=None):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -1378,7 +1379,7 @@ def getTopic(request, topic=None):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -1498,7 +1499,7 @@ def get_user_information(request, username=None, view=None):
         'existing_request' : isRequestExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
-        'media' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted'),
+        'media' : Post.objects.filter(Q(author=profile.user) & ~Q(image="default.jpg", author=profile.user) | ~Q(video="")).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).order_by('-date_posted').count(),
         'user_comments' : Post.objects.filter(reply__author__username=username).order_by('-date_posted').count(),
         'obj' : Post.objects.get(id=3),

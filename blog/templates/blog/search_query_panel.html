@@ -1,0 +1,32 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+<article class="media content-section" style="border-radius: 0.5rem;">
+<div class="media-body" style="border-radius: 0.5rem; ">
+
+  <ul class="mt-1" style="padding:0; list-style-type: none;">
+<li>
+  <div class="m-1" style="">
+    <b class="mt-0" style="font-size:2.5vh" href="">Posts {{search_count}}</b>
+  </div>
+</li>
+<li>
+  <div class="m-1" style="">
+    <b class="mt-0" style="font-size:2.5vh" href="">Users {{search_users}}</b>
+  </div>
+</li>
+
+  <div class="m-2"></div>
+  <a class="mt-0" style="font-size:2vh; color:black;" ><b>Search Query</b></a>
+  <li class="list" style="list-style-type: none;">
+    <ul class="mt-0" style="padding-left:1vh;">
+    <a class="article-title" href="{% url 'user-posts' topic_first_post.author %}"
+    style="font-size:2vh; color:#a300cc"><b>{{term}}</b></a>
+    </ul>
+  </li>
+
+  </ul>
+
+</div>
+</article>

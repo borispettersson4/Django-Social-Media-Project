@@ -116,3 +116,21 @@ class Request(models.Model):
 
     def save(self):
         super().save()
+
+class Report(models.Model):
+    post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None)
+    content = models.TextField(max_length = 500)
+    date_posted = models.DateTimeField(default = timezone.now)
+    author = models.ForeignKey(User, on_delete = models.CASCADE)
+    approved = models.BooleanField(default=False)
+    type = models.IntegerField(default=0)
+
+    def __str__(self):
+        return (f"{self.author} : {self.content}")
+
+    def get_absolute_url(self):
+        return reverse('post-detail',kwargs={'pk' : self.pk})
+
+    def cast_empty_reference(self):
+        self.reply = self
+        super().save()
