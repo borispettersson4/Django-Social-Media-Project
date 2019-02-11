@@ -30,12 +30,14 @@ class ProfileUpdateForm(forms.ModelForm):
 class ProfileSettingsUpdateForm(forms.ModelForm):
     class Meta:
         model = ProfileSettings
-        fields = ['coverImage']
+        fields = ['coverImage', 'quote', 'about']
         labels = {
         "coverImage": "Cover Image"
         }
         help_texts = {
         "coverImage": ('Image will automatically be resized to 1500 x 300 pixels.'),
+        "about": ('Write about yourself! Whatever describes you. ( 160 characters or less. )'),
+        "quote": ('What is your current original idea? ( 80 characters or less. )'),
         }
 
 class ProfileNickUpdateForm(forms.ModelForm):
@@ -46,5 +48,5 @@ class ProfileNickUpdateForm(forms.ModelForm):
         "nick": "Display Name"
         }
         help_texts = {
-            'nick': ('This is your primary display name. 20 characters or less.'),
+            'nick': ('This is your primary display name. ( 20 characters or less. )'),
         }

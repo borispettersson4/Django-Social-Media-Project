@@ -15,6 +15,12 @@ def register(request):
             form.save()
             username = form.cleaned_data.get('username')
             messages.success(request, f"Your Account Has Been Created. Sign In To Get Started, {username}!")
+            try:
+                new_settings = ProfileSettings(user=request.user)
+                new_settings.save()
+            except:
+                pass
+
             return redirect('login')
     else:
         form = UserRegisterForm()

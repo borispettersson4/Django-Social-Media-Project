@@ -100,7 +100,7 @@ class Notification(models.Model):
     def __str__(self):
         return (f"To {self.recepient} From {self.sender}")
 
-    def save(self):
+    def save(self, **kwargs):
         super().save()
 
 

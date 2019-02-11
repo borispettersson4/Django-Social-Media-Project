@@ -116,10 +116,10 @@ def getPost(request, pk=None):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -145,7 +145,7 @@ def getPost(request, pk=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -172,7 +172,7 @@ def getPost(request, pk=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -397,7 +397,7 @@ def home_view(request, pk=3):
             'likes' : Like.objects.all(),
             'activities' : acts,
             'user' : request.user,
-            'obj' : Post.objects.get(id=pk),
+            'obj' : Post.objects.get(id=3),
             'post_form' : post_form,
             'people' : peps,
             'topics' : tops,
@@ -442,10 +442,10 @@ def home_view(request, pk=3):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -474,7 +474,7 @@ def home_view(request, pk=3):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -503,7 +503,7 @@ def home_view(request, pk=3):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -533,7 +533,7 @@ def home_view(request, pk=3):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -568,7 +568,7 @@ def home_view(request, pk=3):
             repost.save()
             new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -649,7 +649,7 @@ def home_view(request, pk=3):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
-            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -840,10 +840,10 @@ def search(request, search=None):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -872,7 +872,7 @@ def search(request, search=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -901,7 +901,7 @@ def search(request, search=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -931,7 +931,7 @@ def search(request, search=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -966,7 +966,7 @@ def search(request, search=None):
             repost.save()
             new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -1047,7 +1047,7 @@ def search(request, search=None):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
-            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ###Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -1172,10 +1172,10 @@ def getTopic(request, topic=None):
             post.save()
             new_activity = Activity(post=obj, author=request.user, type=1)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_activity = Activity(post=post, author=request.user, type=2)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -1204,7 +1204,7 @@ def getTopic(request, topic=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -1233,7 +1233,7 @@ def getTopic(request, topic=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -1263,7 +1263,7 @@ def getTopic(request, topic=None):
                     new_like.save()
                     new_activity = Activity(post=obj, author=request.user, type=0)
                     new_activity.save()
-                    Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
                     new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
                     if(new_notification.sender != new_notification.recepient):
                         new_notification.save()
@@ -1298,7 +1298,7 @@ def getTopic(request, topic=None):
             repost.save()
             new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
             new_activity.save()
-            Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
             new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
             if(new_notification.sender != new_notification.recepient):
                 new_notification.save()
@@ -1379,7 +1379,7 @@ def getTopic(request, topic=None):
 
             new_activity = Activity(post=new_post, author=request.user, type=2)
             new_activity.save()
-            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            ###Profile.objects.filter(user=request.user).update(date_active=timezone.now)
 
             if(tagfield):
                 #Tag filtering
@@ -1440,7 +1440,7 @@ def get_user_information(request, username=None, view=None):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(post__date_posted__day=today.day).order_by('-date')
+    acts = Activity.objects.filter(author=profile.user).order_by('-date')
 
 
     from django.db import models
@@ -1448,7 +1448,7 @@ def get_user_information(request, username=None, view=None):
     circles = Profile.objects.all()
     img = models.ImageField(default = 'default.jpg', upload_to='post_pics')
     if(view == "media"):
-        posts = Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted')
+        posts = Post.objects.filter(Q(author__username=profile.user.username) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted')
     elif(view == "friends"):
         circles = Profile.objects.filter(Q(friends=profile)).order_by('-id')
     elif(view == "followers"):

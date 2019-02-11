@@ -43,7 +43,7 @@ class ProfileSettings(models.Model):
     def __str__(self):
         return(f'{self.user.username} Profile')
 
-    def save(self):
+    def save(self, **kwargs):
         im = Image.open(self.coverImage)
         output = BytesIO()
         im = im.resize((1500,300))
