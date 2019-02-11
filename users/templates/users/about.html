@@ -1,0 +1,58 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+{% load filters %}
+
+
+<div class="content-section" style="">
+<!-- USER EDIT FORM HERE -->
+<form method="POST" action="{% url 'blog-home' %}">
+  {% csrf_token %}
+  <fieldset class="form-group">
+    <div class="media">
+
+    </div>
+    <legend class="border-bottom mb-2"><b>About Mango</b></legend>
+  </fieldset>
+
+<div style="text-align:justify">
+
+  <p>Project Mango (known as Mango) is a social networking web application platform intended to be used personally, publicly, and commercially while being available to every person on the globe. This project was created by and currently being developed by Boris (Ruiz) Pettersson and the contributing team members associated with the Mango Project.</p>
+</div>
+
+<div class="mb-4" style="text-align:center">
+
+  <a>Created By</a>
+  <p><strong>Boris Pettersson <a style="color:#0071e6" href="{% url 'user-posts' 'boris' %}">@boris</a></strong></p>
+
+  <a>Build Date</a>
+  <p><strong>February 11, 2019</strong></p>
+  <a>Current Build</a>
+  <p><strong>v0.1 Private</strong></p>
+  <p></p>
+
+</div>
+
+<div class="mt-4" style="text-align:center">
+  <a style="color:gray; font-size:1.5vh;">&copy; Copyright 2019 Boris Pettersson. All Rights Reserved</a>
+</div>
+
+
+</form>
+</div>
+{% endblock content %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

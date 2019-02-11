@@ -16,8 +16,8 @@
         <div class="carousel-caption" style="padding:0; margin:0; height:0vh; margin-bottom:190%;">
             <img class="rounded-circle article-img mr-0" style=" width: 100px; height: 100px; border: 0.5vh solid #FFFFFF;" src="{{request.user.profile.image.url}}">
             <div class="media-body">
-              <h3><b class="article-title" style="color:">{{user.profile.nick}}</b></h3>
-              <h5><b class="article-title" style="color:#0071e6">@{{user.username}}</b></h5>
+              <h3><b class="article-title">{{user.profile.nick}}</b></h3>
+              <h5><b class="article-title" style="color:#0071e6"><a href="{% url 'user-posts' user %}">@{{user.username}}</a></b></h5>
             </div>
         </div>
     </div>

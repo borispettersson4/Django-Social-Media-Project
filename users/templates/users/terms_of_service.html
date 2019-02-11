@@ -1,0 +1,69 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block about %}
+{% load static %}
+{% load filters %}
+
+
+<div class="content-section" style="">
+<!-- USER EDIT FORM HERE -->
+<form method="POST" action="{% url 'blog-home' %}">
+  {% csrf_token %}
+  <fieldset class="form-group">
+    <div class="media">
+
+    </div>
+    <legend class="border-bottom mb-2"><b>Terms of Service</b></legend>
+  </fieldset>
+
+<div style="text-align:justify">
+
+  <h5 style="text-align: justify;"><strong>Agreeing to the Terms of Service</strong></h5>
+  <p style="text-align: justify;">Please read these Terms of Service ("<strong>Agreement</strong>") carefully before using the services provided by this website (&ldquo;Services&rdquo;). By using or accessing the Services, you ("<strong>User</strong>") agree to be bound by all the terms and conditions of this Agreement. If you don&rsquo;t agree to all the terms and conditions of this Agreement, you shouldn't, and aren't permitted to, use the Services. Processing of the information you share with all of the representative and&nbsp; developing parties involved in mango.com (&ldquo;Mango&rdquo;) is essential to the functionality of the Services which we provide and which you expect, personal data and advertisements displayed on the website, and is a necessary part of our performance of the agreement we have with you.</p>
+  <h5 style="text-align: justify;"><strong>Modifications to the Terms of Service</strong></h5>
+  <p style="text-align: justify;">Mango reserves the right to modify the Agreement by posting a revised Agreement on the website. Modifications will not apply with effect from versions beforehand You are responsible for reviewing and becoming familiar with any future modifications conducted to the Terms of Service.</p>
+  <p style="text-align: justify;">Changes to the terms mentioned in the Terms of Service will take affect immediately and If you do not agree to the modifications, you are not permitted to use, and should discontinue your use of the Services.</p>
+  <h5 style="text-align: justify;"><strong>Use</strong></h5>
+  <p style="text-align: justify;">You may not use the Services, provide any personal information to Mango, or otherwise submit personal information through the Services if you are under the Minimum Age. The Minimum Age is sixteen (16). You may only use the Services if you can form a binding contract with Mango and are not legally prohibited from using the Services by your country of residence.</p>
+  <p style="text-align: justify;">Mango retains the right to create limits on and related to use of the Services in its sole discretion at any time with or without notice. Mango may also impose limits on certain Services or aspects of those Services or restrict your access to parts or all of the Services without notice or liability. Mango may change, suspend, or discontinue any or all of the Services at any time. Mango may also terminate or suspend user created accounts at any time, in its sole discretion.</p>
+  <p style="text-align: justify;">You may not do any of the following while accessing or using the Mango Services: (1) tamper with, or use non-public areas of the Services, or the computer or delivery systems of Mango and/or its service providers, (2) probe, scan, or test any system or network or otherwise attempt to breach or circumvent any security or authentication measures, (3) access or search or attempt to access or search the Services by any means other than through the currently published interfaces that are provided by Mango, (4) use the Services to send altered, deceptive, or false information, or (5) attempt to interfere with, or disrupt, the access of any User, host or network by sending a virus to, spamming, or overloading the Mango Services or it&rsquo;s resources.</p>
+  <h5 style="text-align: justify;"><strong>User Security</strong></h5>
+  <p style="text-align: justify;">As a condition to using certain of the Services and in order for us to provide them to you, you may be required to create an account ("&nbsp;<strong>Account</strong>"), provide your age and an email address and select a password and a username. You agree to provide Mango with accurate, complete, and updated registration information, particularly your email address.</p>
+  <p style="text-align: justify;">You are responsible for maintaining the confidentiality of your Account password and for the security of your Account, Data, and your personal information. You are allowed to notify Mango immediately of any actual or suspected loss, theft, or unauthorized use of your Account.</p>
+  <h5 style="text-align: justify;"><strong>Privacy</strong></h5>
+  <p style="text-align: justify;">You hereby give consent to Mango and it&rsquo;s associated parties (&ldquo;Associates&rdquo;) to utilize your uploaded data and user-generated Data to the website for research, analytical, and monitorial purposes. Mango is not responsible for the data and/or user-generated Data you upload while using the Services.</p>
+  <h5 style="text-align: justify;"><strong>User Data</strong></h5>
+  <p style="text-align: justify;">The term "<strong>Data</strong>" means a creative expression and includes video, audio, photographs, images, illustrations, animations, logos, tools, written posts, replies, comments, information, data, and text, any of which may be generated, provided, or otherwise made accessible on or through the Services. Furthermore, the term "&nbsp;<strong>User Data</strong>" means Data that a User submits, transfers, or otherwise provides to the Services. Data includes all User Data.</p>
+  <p style="text-align: justify;">When you provide User Data to Mango through the Services, you grant Mango a non-exclusive, worldwide, royalty-free, sublicensable, transferable right and license to use, host, store, cache, reproduce, publish, display (publicly or otherwise), perform (publicly or otherwise), distribute, transmit, modify, adapt, and create derivative works of, such User Data. The rights you grant in this license are for the limited purposes of allowing Mango to operate the Services in accordance with their functionality, improve and promote the Services, and develop new Services. Users retain ownership and/or other applicable rights in User Data, and Mango and/or third parties retain ownership and/or other applicable rights in all Data other than User Data.</p>
+  <p style="text-align: justify;">You also agree that you will respect the intellectual property rights of others, and represent and warrant that you have all of the necessary rights to grant us this license for all User Data you transfer to us.</p>
+  <h5 style="text-align: justify;"><strong>Warranty</strong></h5>
+  <p style="text-align: justify;">Your access to and use of the Services or any Data is at your own risk.</p>
+  <p style="text-align: justify;">YOU UNDERSTAND AND AGREE THAT THE SERVICES ARE PROVIDED TO YOU ON AN "AS IS" AND "AS AVAILABLE" BASIS. WITHOUT LIMITING THE FOREGOING, TO THE FULL EXTENT PERMITTED BY LAW, MANGO DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</p>
+  <p style="text-align: justify;">Mango makes no representations or warranties of any kind with respect to the Services, including any representation or warranty that the use of the Services.</p>
+  <h5 style="text-align: justify;"><strong>Releases From Liability</strong></h5>
+  <p style="text-align: justify;">You agree that any claim you may have arising out of or related to the Terms of Service or your relationship with Mango must be filed within one year after such claim arose; otherwise, your claim is permanently barred. Disputes between Users, including those between you and other Users. Disputes concerning any use of or action taken using your Account by you or a third party.</p>
+  <h5 style="text-align: justify;"><strong>Termination of Service</strong></h5>
+  <p style="text-align: justify;">Mango may terminate or suspend your access to or ability to use any and all Services immediately, without prior notice or liability, for any reason or no reason, including if you breach any of the terms or conditions of the Terms of Service. Furthermore, Mango may immediately terminate or suspend user created accounts that have been suspected or deemed for repeat copyright infringement.</p>
+  <p style="text-align: justify;">Upon termination of your access to or ability to use a Service, including but not limited to suspension of your Account on a Service, your right to use or access that Service and any Data will immediately cease. Mango reserves the right to salvage and use the data you have uploaded to Mango.</p>
+  <p style="text-align: justify;">&nbsp;</p>
+
+</div>
+
+
+</form>
+</div>
+{% endblock about %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

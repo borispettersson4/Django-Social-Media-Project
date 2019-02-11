@@ -102,6 +102,7 @@ def profile(request):
 
     return render(request, 'users/profile.html', context)
 
+@login_required
 def feedback(request):
     if (request.method == 'POST'):
         form = FeedbackForm(request.POST, instance=request.user)
@@ -177,6 +178,7 @@ def feedback(request):
 
     return render(request, 'users/feedback.html', context)
 
+@login_required
 def feedback_sent(request):
 
     context = {
@@ -229,3 +231,210 @@ def feedback_sent(request):
             return render(request, 'users/feedback.html', context)
 
     return render(request, 'users/feedback_sent.html', context)
+
+def about(request):
+
+    context = {
+
+    'hide_post' : True,
+    }
+
+    if request.is_ajax():
+        if (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return render(request, 'users/feedback.html', context)
+
+    return render(request, 'users/about.html', context)
+
+@login_required
+def privacy(request):
+
+    context = {
+    'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+    'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+    'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+    Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+    'hide_post' : True,
+    }
+
+    if request.is_ajax():
+        if (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return render(request, 'users/feedback.html', context)
+
+    return render(request, 'users/privacy.html', context)
+
+def terms_of_service(request):
+
+    context = {
+    'hide_post' : True,
+    }
+
+    if request.is_ajax():
+        if (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return render(request, 'users/feedback.html', context)
+
+    return render(request, 'users/terms_of_service.html', context)
+
+@login_required
+def legal(request):
+
+    context = {
+    'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+    'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+    'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+    Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+    'hide_post' : True,
+    }
+
+    if request.is_ajax():
+        if (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return render(request, 'users/feedback.html', context)
+
+    return render(request, 'users/legal.html', context)

@@ -1,0 +1,35 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block about %}
+{% load static %}
+{% load filters %}
+
+
+<div class="content-section" style="">
+<!-- USER EDIT FORM HERE -->
+<form method="POST" action="{% url 'blog-home' %}">
+  {% csrf_token %}
+  <fieldset class="form-group">
+    <div class="media">
+
+    </div>
+    <legend class="border-bottom mb-2"><b>Privacy Policy</b></legend>
+  </fieldset>
+
+</form>
+</div>
+{% endblock about %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

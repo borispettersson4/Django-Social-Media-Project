@@ -105,7 +105,7 @@
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'user-posts' user %}">View Profile</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'profile' %}">Edit Profile</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'feedback' %}">Feedback</a>
-                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="#">About</a>
+                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'about' %}">About</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'logout' %}">Log Out</a>
                 </div>
               </div>
@@ -147,15 +147,45 @@
         {% block content %}{% endblock %}
 
       </div>
+
       {% if 'post' not in request.path %}
-        <div class="col-md-3" style="margin-top: 2rem;">
-      {% else %}
-        <div class="col-md-6" style="margin-top: 2rem;">
-      {% endif %}
-        {% block right %}{% endblock %}
+          <div class="col-md-3" style="margin-top: 2rem;">
+        {% else %}
+          <div class="col-md-6" style="margin-top: 2rem;">
+        {% endif %}
+          {% block right %}{% endblock %}
+        </div>
       </div>
 
+    {% block about %}{% endblock about %}
+
+    {% if hide_post %}
+    <div class="mb-4" style="text-align:center;">
+      <ul style="  list-style-type: none; margin: 0; padding: 0;" >
+        <li class="mr-2" style="display: inline;">
+          <a href="{% url 'blog-home' %}" style="color:black;">
+            <b>©Mango</b></a>
+        </li>
+        <li class="mr-2" style="display: inline;">
+          <a href="{% url 'about' %}" style="color:black;">
+            <b>About</b></a>
+        </li>
+        <li class="mr-2" style="display: inline;">
+          <a href="{% url 'terms_of_service' %}" style="color:black;">
+            <b>Terms of Service</b></a>
+        </li>
+<!--        <li class="mr-2" style="display: inline;">
+          <a href="{% url 'legal' %}" style="color:black;">
+            <b>Legal</b></a>
+        </li>
+       <li class="mr-2" style="display: inline;">
+          <a href="{% url 'privacy' %}" style="color:black;">
+            <b>Privacy</b></a>
+        </li> -->
+      </ul>
     </div>
+    {% endif %}
+
   </main>
 
       <!--Modals go here-->
