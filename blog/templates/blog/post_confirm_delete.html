@@ -1,21 +1,21 @@
 
-  <div class="content-section">
+  <div class="m-3">
 
     <form method="POST">
       {% csrf_token %}
       <fieldset class="form-group">
-        <h3> Are you sure you want to delete this post? </h3>
+        <h5> Are you sure you want to delete this post? </h5>
+            <a>Once you delete this post, there is no going back.</a>
       </fieldset>
 
         <div class="form-group">
           <button class="btn btn-danger deleteConfirmButton" type="submit" data-toggle="modal"
           data-target="#deletePostModalCenter"
           style="background-color:red;color:white;"> Yes, Delete</button>
-          <a class="btn btn-outline-secondary" data-toggle="modal"
+          <a class="btn btn" data-toggle="modal"
           data-target="#deletePostModalCenter" style="color:#a300cc; border-color:#a300cc">Go Back</a>
         </div>
     </form>
-    Note: This action cannot be undone.
   </div> <!--Content Section Div-->
 
 <script>

@@ -432,7 +432,7 @@ def home_view(request, pk=3):
             'slice_custom' : page_limit,
             }
 
-        if (request.POST.get('action') == "Comment"):
+        if (request.POST.get('action') == "Comment" and request.POST.get('content')):
             post_id = request.POST.get('id')
             obj = Post.objects.get(id=post_id)
             cont = request.POST.get('content')

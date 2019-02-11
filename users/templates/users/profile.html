@@ -13,7 +13,7 @@
   <fieldset class="form-group">
     <div class="media">
        <img class="img mb-2 rounded" style="width:100%; height:100%;" alt="Responsive image" src="{{request.user.profilesettings.coverImage.url}}">
-        <div class="carousel-caption" style="padding:0; margin:0; height:0vh; margin-bottom:188%;">
+        <div class="carousel-caption" style="padding:0; margin:0; height:0vh; margin-bottom:190%;">
             <img class="rounded-circle article-img mr-0" style=" width: 100px; height: 100px; border: 0.5vh solid #FFFFFF;" src="{{request.user.profile.image.url}}">
             <div class="media-body">
               <h3><b class="article-title" style="color:">{{user.profile.nick}}</b></h3>
@@ -31,8 +31,22 @@
   </fieldset>
 
     <div class="form-group">
-      <button class="btn btn" style="color:#FFFFFF; border-color:#a300cc; background-color:#a300cc" type="submit">Update Profile</button>
+      <button class="btn btn" style="color:#FFFFFF; border-color:#a300cc; background-color:#a300cc" type="submit">Save Changes</button>
     </div>
 </form>
 </div>
 {% endblock content %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

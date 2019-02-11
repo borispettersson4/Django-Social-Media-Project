@@ -3,7 +3,7 @@
 {% load filters %}
 
 <div class="thumbnail">
- <img class="img mb-2 rounded" style="min-width:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
+ <img class="img mb-2 rounded" style="width:100%; height:100%;" alt="Responsive image" src="{{profile.user.profilesettings.coverImage.url}}">
 
   <div class="carousel-caption" style="">
         <a href="{% url 'user-posts' profile.user %}">

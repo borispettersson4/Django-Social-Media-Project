@@ -14,6 +14,7 @@ class Profile(models.Model):
     following = models.ManyToManyField("self", related_name='followers', blank=True,  symmetrical=False)
     friends = models.ManyToManyField("self", related_name='friends', blank=True, symmetrical=True)
     date_active = models.DateTimeField(default = timezone.now)
+    can_send_feedback = models.BooleanField(default=True)
 
     def __str__(self):
         return(f'{self.user.username} Profile')
@@ -51,3 +52,33 @@ class ProfileSettings(models.Model):
         output.seek(0)
         self.coverImage = InMemoryUploadedFile(output,'ImageField', "%s.jpg" %self.coverImage.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
         super(ProfileSettings,self).save()
+
+class Feedback(models.Model):
+    author = models.ForeignKey(User, on_delete = models.CASCADE, blank=True, null=True)
+    confirmed = models.BooleanField(default=False)
+    date_posted = models.DateTimeField(default = timezone.now)
+
+    choice_1 = 'A'
+    choice_2 = 'B'
+    choice_3 = 'C'
+    choice_4 = 'D'
+    choice_5 = 'F'
+    CHOICES = (
+        (choice_1,'Very Pleased'),
+        (choice_2,'Pleased'),
+        (choice_3,'Neutral'),
+        (choice_4,'Needs Work'),
+        (choice_5,'Unacceptable'),
+    )
+    quality_speed = models.CharField(max_length=1,choices=CHOICES)
+    quality_features = models.CharField(max_length=1,choices=CHOICES)
+    quality_visual = models.CharField(max_length=1,choices=CHOICES)
+    quality_stability = models.CharField(max_length=1,choices=CHOICES)
+    quality_responsiveness = models.CharField(max_length=1,choices=CHOICES)
+    comment = models.CharField(max_length = 300, blank=True)
+
+    def __str__(self):
+        return (f"Feedback From {self.author}")
+
+    def save(self, **kwargs):
+        super().save()

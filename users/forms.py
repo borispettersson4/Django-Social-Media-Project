@@ -40,6 +40,27 @@ class ProfileSettingsUpdateForm(forms.ModelForm):
         "quote": ('What is your current original idea? ( 80 characters or less. )'),
         }
 
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['quality_speed','quality_features','quality_visual','quality_stability','quality_responsiveness','comment']
+        labels = {
+        "comment": "Additional Comments",
+        "quality_speed": "What do you think of load times and overall performance?",
+        "quality_features": "Do you feel like the available features are sufficient?",
+        "quality_visual": "What do you think of the visual design of the application?",
+        "quality_stability": "Does the application give you a stable and bug-free experience?",
+        "quality_responsiveness": "Do you feel like you're getting relevant and important information?",
+        }
+        help_texts = {
+        "comment": ('Additional commentary. What are your ideas to make the app better?'),
+        "quality_speed": ('How long does it take for you to upload a post, like, comment, etc.'),
+        "quality_features": ('Some features : posting, commenting, liking, video playback, profile editing, etc.'),
+        "quality_visual": ('Example : comfortable colors and shapes, text readability, and visual clarity.'),
+        "quality_stability": ('Does the application do anything out of the ordinary? Do buttons work as expected?'),
+        "quality_responsiveness": ('Do notifications, activities, and posts give you information you care about?'),
+        }
+
 class ProfileNickUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile

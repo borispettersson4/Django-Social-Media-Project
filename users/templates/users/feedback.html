@@ -1,0 +1,41 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+{% load filters %}
+
+
+<div class="content-section">
+<!-- USER EDIT FORM HERE -->
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <fieldset class="form-group">
+    <div class="media">
+<a>Please select the choices below based on your sincere opinion of your experience with the application. We greatly appriciate your thoughts on our application.</a>
+    </div>
+    <legend class="border-bottom mb-2"><b>Tell Us What You Think</b></legend>
+    <div style="margin-top:2vh;">
+    {{ form|crispy }}
+    </div>
+  </fieldset>
+
+    <div class="form-group">
+      <button class="btn btn" style="color:#FFFFFF; border-color:#a300cc; background-color:#a300cc" type="submit">Send Feedback</button>
+    </div>
+</form>
+</div>
+{% endblock content %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

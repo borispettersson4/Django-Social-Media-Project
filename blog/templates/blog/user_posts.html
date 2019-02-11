@@ -243,13 +243,13 @@ $(document).ready(function (event) {
 {% endblock content %}
 
 {% block left %}
-<div class="float-right mb-4" id="quote_section"
-style="text-align:left; font-size:2.3vh;">
+<div class="mb-0" id="quote_section"
+style=" font-size:2.3vh;">
   <b class="text-secondary">"{{profile.user.profilesettings.quote}}"</b>
 </div>
 
 <div class="article-content mt-0 mb-4" id="about_section">
-<b> About {{profile.nick}} </b>
+<b> About Me </b>
   {{profile.user.profilesettings.about}}
 </div>
 

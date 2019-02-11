@@ -86,7 +86,7 @@
                 <fieldset class="form">
                   <input id="search" name="search" type="text" style="color:black;" placeholder="Search posts, @people, #topics, etc." >
                 </fieldset>
-                  <img src="{% static 'resources/search_icon.png' %}" style="width: 3.5vh; height: 3.5vh;">
+                  <img src="{% static 'resources/search_icon.png' %}" style="width: 4vh; height: 4vh;">
               </form>
             </div>
           </div>
@@ -102,19 +102,19 @@
                 <img class="dropdown-toggle rounded-circle article-img mr-2" style=" max-width: 5vh; max-height: 5vh; border: 0.3vh solid #FFFFFF; cursor:pointer;"
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="#">About Mango</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'user-posts' user %}">View Profile</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'profile' %}">Edit Profile</a>
-                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'profile' %}">Preferences</a>
+                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'feedback' %}">Feedback</a>
+                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="#">About</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'logout' %}">Log Out</a>
                 </div>
               </div>
 
-
+              {% if not hide_post %}
               <button class="btn btn-normal post_new" style=" width: auto; height: auto; border: 0.3vh solid #FFFFFF;
               cursor:pointer; border-radius: 20px;" id="main_interact_big" data-toggle="modal"
               data-target="#newPostModalCenter"><b>New Post</b></button>
-
+              {% endif %}
             {# <button type="button" class="btn btn-primary btn-9g round">Round</button> #}
             {% endif %}
           </div>
