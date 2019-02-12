@@ -278,4 +278,15 @@ $(document).ready(function (event) {
     </div>
   </div>
 </div>
+<div class="modal fade" id="copyPostModalCenter" tabindex="-2" role="dialog" aria-labelledby="copyPostModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="report_post_display" >
+      {% include 'blog/post_confirm_copylink.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
 {% endblock modal %}

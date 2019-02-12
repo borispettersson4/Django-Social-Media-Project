@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+
+
+  <div class="m-3">
+
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <div class="mb-1">
+          <h5> Post Link Copied to Clipboard </h5>
+          <small>You have copied [{% url 'post-detail' obj %}] to your clipboard.</small>
+        </div>
+      </fieldset>
+
+        <div class="form-group">
+          <a class="btn btn" data-toggle="modal"
+          data-target="#copyPostModalCenter" style="color:#a300cc; border-color:#a300cc">Okay</a>
+        </div>
+    </form>
+  </div> <!--Content Section Div-->

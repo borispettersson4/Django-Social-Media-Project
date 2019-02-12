@@ -26,7 +26,8 @@
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         <a class="dropdown-item" href="{% url 'post-detail' obj.id %}" style="cursor:pointer">View Post</a>
         <a class="dropdown-item" href="{% url 'blog-home' %}"  member_id = {{obj.id}} id="repostButton" style="cursor:pointer">Repost</a>
-        <a class="dropdown-item" href="">Copy Post Link</a>
+        <a class="dropdown-item" id = "copy_btn" copy_id = {{obj.id}} style="cursor:pointer;"
+        data-toggle="modal" data-target="#copyPostModalCenter">Copy Post Link</a>
         {% if user == obj.author %}
         <a class="dropdown-item" id = "delete_btn" delete_id = {{obj.id}} style="color:red; cursor:pointer;"
         data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
