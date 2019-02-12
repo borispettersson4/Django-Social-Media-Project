@@ -8,7 +8,7 @@
       <fieldset class="form-group">
         <div class="mb-1">
           <h5> Post Link Copied to Clipboard </h5>
-          <small>You have copied [{% url 'post-detail' obj %}] to your clipboard.</small>
+          <small>You have copied <b><a style="color:#a300cc" href="{{link}}">{{ link }}</a></b> to your clipboard.</small>
         </div>
       </fieldset>
 
@@ -18,3 +18,49 @@
         </div>
     </form>
   </div> <!--Content Section Div-->
+
+<script>
+  var delete_btn;
+
+  $(document).ready(function(event) {
+    $(document).on('click', '#delete_btn' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      delete_btn = $(this).attr('delete_id');
+      console.log("Delete ID is : " + delete_btn);
+    });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.deleteConfirmButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        var member_id = delete_btn;
+
+          $.ajax({
+            type: "POST",
+            url: "{% url 'blog-home' %}",
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Delete_Post"},
+            dataType: 'json',
+            success : function(response) {
+              $('#reply_display').html(response['post']);
+              $('#post_display').html(response['form']);
+              $('#feed_display').html(response['main']);
+
+              console.log("success:Delete " + " : " + delete_btn);
+            },
+            error : function(rs, e) {
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+
+
+
+
+
+
+</script>

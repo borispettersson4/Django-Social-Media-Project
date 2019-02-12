@@ -81,6 +81,7 @@ def getPost(request, pk=None):
             'page_limit' : page_limit,
             'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
             'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+            'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
             }
 
 #When user clicks on a post
@@ -104,6 +105,7 @@ def getPost(request, pk=None):
             'post_form' : post_form,
             'page_limit' : page_limit,
             'slice_custom' : page_limit,
+            'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
             }
 
         if (request.POST.get('action') == "Comment"):
@@ -462,6 +464,10 @@ def home_view(request, pk=3):
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html, 'main' : html2})
 
+        elif (request.POST.get('action') == "View_Post_Detail"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
         elif (request.POST.get('action') == "View_Content"):
             html = render_to_string('blog/content_view.html', sub_context, request=request)
             return JsonResponse({'form':html})
@@ -570,6 +576,16 @@ def home_view(request, pk=3):
             new_report = Report(author=request.user, report_choice=report, post=post)
             new_report.save()
             html = render_to_string('blog/post_confirm_report_confirmed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Copy_Link"):
+
+            url = request.build_absolute_uri()
+            url_post = request.POST.get('link').replace("LINK",str(post_id))
+            new_context = sub_context
+            new_context["link"] = str(f"{url[:-1]}{url_post}")
+            post = Post.objects.get(id=post_id)
+            html = render_to_string('blog/post_confirm_copylink.html', new_context, request=request)
             return JsonResponse({'form':html})
 
         elif (request.POST.get('action') == "Repost"):
@@ -972,6 +988,15 @@ def search(request, search=None):
             html = render_to_string('blog/post.html', sub_context, request=request)
             return JsonResponse({'form':html,'main':html2,'post':html3})
 
+        elif (request.POST.get('action') == "Report_Post"):
+
+            post = Post.objects.get(id=post_id)
+            report = request.POST.get('choice')
+            new_report = Report(author=request.user, report_choice=report, post=post)
+            new_report.save()
+            html = render_to_string('blog/post_confirm_report_confirmed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
         elif (request.POST.get('action') == "Repost"):
 
             post = Post.objects.get(id=post_id)
@@ -1303,6 +1328,15 @@ def getTopic(request, topic=None):
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             html = render_to_string('blog/post.html', sub_context, request=request)
             return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Report_Post"):
+
+            post = Post.objects.get(id=post_id)
+            report = request.POST.get('choice')
+            new_report = Report(author=request.user, report_choice=report, post=post)
+            new_report.save()
+            html = render_to_string('blog/post_confirm_report_confirmed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
 
         elif (request.POST.get('action') == "Repost"):
 

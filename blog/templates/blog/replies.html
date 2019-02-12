@@ -12,7 +12,9 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
   {% else %}
     <article id="reply_object" class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
   {% endif %}
+  <a href="{% url 'user-posts' comment.author.username %}">
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
+    </a>
     <div class="media-body">
       <div class="article-metadata">
         <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{comment.author.profile.nick}}</a>
@@ -28,7 +30,7 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <a class="dropdown-item" href="{% url 'post-detail' comment.id %}" style="cursor:pointer">View Post</a>
           <a class="dropdown-item" href="{% url 'blog-home' %}"  member_id = {{comment.id}} id="repostButton" style="cursor:pointer">Repost</a>
-          <a class="dropdown-item" id = "copy_btn" copy_id = {{comment.id}} style="cursor:pointer;"
+          <a class="dropdown-item" id = "copy_btn" member_id = {{comment.id}} style="cursor:pointer;"
           data-toggle="modal" data-target="#copyPostModalCenter">Copy Post Link</a>
           {% if user == comment.author %}
           <a class="dropdown-item" id = "delete_btn" delete_id = {{comment.id}} style="color:red; cursor:pointer;"

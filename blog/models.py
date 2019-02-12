@@ -139,7 +139,7 @@ class Report(models.Model):
     comment = models.CharField(max_length = 300, blank=True)
 
     def __str__(self):
-        return (f"Report From {self.author} to {self.post.author}")
+        return (f"Report From {self.author} to {self.post.author} at post : {self.post.id}")
 
     def save(self, **kwargs):
         super().save()

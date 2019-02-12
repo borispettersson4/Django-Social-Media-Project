@@ -155,6 +155,40 @@ $(document).ready(function (event) {
   });
 });
 
+$(document).ready(function(event) {
+    $(document).on('click', '#copy_btn' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
+        var link = "{% url 'post-detail' 'LINK' %}";
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'link':link, 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Copy_Link"},
+          dataType: 'json',
+          success : function(response) {
+            console.log(copylink);
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+        current_link = document.location.origin;
+        new_link = link.replace("LINK", member_id);
+        copylink = current_link + new_link;
+        var input = document.createElement("input");
+        input.type = "text";
+        input.value = copylink;
+        input.id = "myInput";
+        document.body.appendChild(input);
+        var copyText = input;
+        copyText.select();
+        document.execCommand("copy");
+        //alert("Copied the text: " + copyText.value);
+        document.body.removeChild(input);
+    });
+});
+
 </script>
 
 {% if posts or circles %}
@@ -273,17 +307,6 @@ $(document).ready(function (event) {
       {# --------------------------Start----------------------------- #}
       <div id="report_post_display" >
       {% include 'blog/post_confirm_report.html' %}
-      </div>
-      {# --------------------------END----------------------------- #}
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="copyPostModalCenter" tabindex="-2" role="dialog" aria-labelledby="copyPostModalCenterTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
-    <div class="modal-content" style="border-radius: 0.5rem;">
-      {# --------------------------Start----------------------------- #}
-      <div id="report_post_display" >
-      {% include 'blog/post_confirm_copylink.html' %}
       </div>
       {# --------------------------END----------------------------- #}
     </div>

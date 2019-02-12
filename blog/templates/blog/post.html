@@ -26,7 +26,7 @@
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         <a class="dropdown-item" href="{% url 'post-detail' obj.id %}" style="cursor:pointer">View Post</a>
         <a class="dropdown-item" href="{% url 'blog-home' %}"  member_id = {{obj.id}} id="repostButton" style="cursor:pointer">Repost</a>
-        <a class="dropdown-item" id = "copy_btn" copy_id = {{obj.id}} style="cursor:pointer;"
+        <a class="dropdown-item" id = "copy_btn" member_id = {{obj.id}} style="cursor:pointer;"
         data-toggle="modal" data-target="#copyPostModalCenter">Copy Post Link</a>
         {% if user == obj.author %}
         <a class="dropdown-item" id = "delete_btn" delete_id = {{obj.id}} style="color:red; cursor:pointer;"
@@ -229,6 +229,27 @@
         });
       });
 
+      $(document).ready(function(event) {
+          $(document).on('click', '#copy_btn' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+              var member_id = $(this).attr('member_id');
+              var link = "{% url 'post-detail' 'LINK' %}";
+              $.ajax({
+                type: "POST",
+                url: "{% url 'blog-home' %}",
+                data : { 'link':link, 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Copy_Link"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#copy_post_display').html(response['form']);
+
+                },
+                error : function(rs, e) {
+                  console.log(rs.responseText);
+                }
+              });
+          });
+      });
 
 
       function isScrolledIntoView(elem){

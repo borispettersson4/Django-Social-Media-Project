@@ -38,13 +38,16 @@
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         <a class="dropdown-item" href="{% url 'post-detail' post.repost.id %}" style="cursor:pointer">View Post</a>
         <a class="dropdown-item" member_id = {{post.repost.id}} id="repostButton" style="cursor:pointer">Repost</a>
-        <a class="dropdown-item" id = "copy_btn" copy_id = {{post.id}} style="cursor:pointer;"
+        <a class="dropdown-item" id = "copy_btn" member_id = {{post.repost.id}} style="cursor:pointer;"
         data-toggle="modal" data-target="#copyPostModalCenter">Copy Post Link</a>
         {% if user == post.author %}
         <a class="dropdown-item" id = "delete_btn" delete_id = {{post.id}} style="color:red; cursor:pointer;"
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Repost</a>
+        {% elif user == post.repost.author %}
+        <a class="dropdown-item" id = "delete_btn" delete_id = {{post.id}} style="color:red; cursor:pointer;"
         data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
         {% else %}
-        <a class="dropdown-item" id = "report_btn" report_id = {{post.id}} style="cursor:pointer;"
+        <a class="dropdown-item" id = "report_btn" report_id = {{post.repost.id}} style="cursor:pointer;"
         data-toggle="modal" data-target="#reportPostModalCenter">Report Post</a>
         {% endif %}
       </div>
@@ -116,7 +119,7 @@
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <a class="dropdown-item" href="{% url 'post-detail' post.id %}" style="cursor:pointer">View Post</a>
           <a class="dropdown-item" member_id = {{post.id}} id="repostButton" style="cursor:pointer">Repost</a>
-          <a class="dropdown-item" id = "copy_btn" copy_id = {{post.id}} style="cursor:pointer;"
+          <a class="dropdown-item" id = "copy_btn" member_id = {{post.id}} style="cursor:pointer;"
           data-toggle="modal" data-target="#copyPostModalCenter">Copy Post Link</a>
           {% if user == post.author %}
           <a class="dropdown-item" id = "delete_btn" delete_id = {{post.id}} style="color:red; cursor:pointer;"

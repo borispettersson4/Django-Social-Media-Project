@@ -26,7 +26,7 @@
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <a class="dropdown-item" id = "copy_btn" copy_id = {{obj.id}} style="cursor:pointer;"
+        <a class="dropdown-item" id = "copy_btn" member_id = {{obj.id}} style="cursor:pointer;"
         data-toggle="modal" data-target="#copyPostModalCenter">Copy Post Link</a>
         {% if user == obj.author %}
         <a class="dropdown-item" id = "delete_btn" delete_id = {{obj.id}} style="color:red; cursor:pointer;"
@@ -267,6 +267,27 @@ function getCookie(c_name)
      });
  });
 
+ $(document).ready(function(event) {
+     $(document).on('click', '.updateDetailButton' , function(event) {
+       event.preventDefault();
+        event.stopImmediatePropagation();
+         var member_id = $(this).attr('member_id');
+         $.ajax({
+           type: "POST",
+           url: "{% url 'blog-home' %}",
+           data : { 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "View_Post_Detail"},
+           dataType: 'json',
+           success : function(response) {
+             console.log("success");
+             window.location="{% url 'post-detail' obj.id %}";
+           },
+           error : function(rs, e) {
+             console.log(rs.responseText);
+           }
+         });
+     });
+ });
+
  $(document).ready(function (event) {
    $(window).scroll(function (event) {
       if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
@@ -316,6 +337,40 @@ function getCookie(c_name)
              console.log(rs.responseText);
            }
          });
+     });
+ });
+
+ $(document).ready(function(event) {
+     $(document).on('click', '#copy_btn' , function(event) {
+       event.preventDefault();
+       event.stopImmediatePropagation();
+         var member_id = $(this).attr('member_id');
+         var link = "{% url 'post-detail' 'LINK' %}";
+         $.ajax({
+           type: "POST",
+           url: "{% url 'blog-home' %}",
+           data : { 'link':link, 'id':member_id, 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Copy_Link"},
+           dataType: 'json',
+           success : function(response) {
+             console.log(copylink);
+           },
+           error : function(rs, e) {
+             console.log(rs.responseText);
+           }
+         });
+         current_link = document.location.origin;
+         new_link = link.replace("LINK", member_id);
+         copylink = current_link + new_link;
+         var input = document.createElement("input");
+         input.type = "text";
+         input.value = copylink;
+         input.id = "myInput";
+         document.body.appendChild(input);
+         var copyText = input;
+         copyText.select();
+         document.execCommand("copy");
+         //alert("Copied the text: " + copyText.value);
+         document.body.removeChild(input);
      });
  });
 </script>
