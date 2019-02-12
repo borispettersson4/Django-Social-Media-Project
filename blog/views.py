@@ -713,9 +713,11 @@ def home_view(request, pk=3):
 
     return render(request, 'blog/home.html', context)
 
+@login_required
 def get_post(request):
     return HttpResponse('blog/post.html')
 
+@login_required
 def search(request, search=None):
 
     query = request.GET.get('search')
@@ -1121,6 +1123,7 @@ def search(request, search=None):
                     pass
     return render(request, 'blog/search_results.html', context)
 
+@login_required
 def getTopic(request, topic=None):
     page_limit = 10
     post_form = NewPostForm()
@@ -1463,6 +1466,7 @@ def getTopic(request, topic=None):
 
     return render(request, 'blog/topic_posts.html', context)
 
+@login_required
 def get_user_information(request, username=None, view=None):
     page_limit = 10
     profile = Profile.objects.get(user__username=username)

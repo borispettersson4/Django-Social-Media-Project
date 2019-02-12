@@ -25,7 +25,7 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'users/register.html', {'form':form, 'title':'Register'})
+    return render(request, 'users/register.html', {'form':form, 'title':'Register','hide_post' : True})
 
 @login_required
 def profile(request):
@@ -438,3 +438,11 @@ def legal(request):
             return render(request, 'users/feedback.html', context)
 
     return render(request, 'users/legal.html', context)
+
+def welcome(request):
+
+    context = {
+    'hide_post' : True,
+    }
+
+    return render(request, 'users/welcome.html', context)

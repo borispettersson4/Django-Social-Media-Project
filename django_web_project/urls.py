@@ -29,6 +29,7 @@ urlpatterns = [
     path('about/', user_views.about,name='about'),
     path('privacy/', user_views.privacy,name='privacy'),
     path('legal/', user_views.legal,name='legal'),
+    path('welcome/', user_views.welcome,name='welcome'),
     path('terms_of_service/', user_views.terms_of_service,name='terms_of_service'),
     path('feedback/sent', user_views.feedback_sent,name='feedback-sent'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'),name='login'),
