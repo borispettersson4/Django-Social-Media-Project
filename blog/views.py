@@ -368,7 +368,14 @@ class PostModalView(DetailView):
 def home_view(request, pk=3):
     page_limit = 10
     post_form = NewPostForm()
-    posts = Post.objects.all().order_by('-date_posted')
+
+
+
+    posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.following.all()))) |
+                                Q(author=request.user)).order_by('-date_posted')
+
+
+
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, page_limit)
     try:
@@ -384,7 +391,9 @@ def home_view(request, pk=3):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(post__date_posted__day=today.day).order_by('-date')
+    acts = Activity.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.following.all()))) |
+                                   Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.friends.all()))) |
+                                   Q(author=request.user)).order_by('-date')
 
     context = {
             'posts': posts,
