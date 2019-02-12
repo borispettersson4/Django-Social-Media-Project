@@ -118,19 +118,28 @@ class Request(models.Model):
         super().save()
 
 class Report(models.Model):
-    post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None)
-    content = models.TextField(max_length = 500)
+    post = models.ForeignKey(Post, on_delete = models.CASCADE, default=None,blank=True, null=True)
+    author = models.ForeignKey(User, on_delete = models.CASCADE, blank=True, null=True)
+    confirmed = models.BooleanField(default=False)
     date_posted = models.DateTimeField(default = timezone.now)
-    author = models.ForeignKey(User, on_delete = models.CASCADE)
-    approved = models.BooleanField(default=False)
-    type = models.IntegerField(default=0)
+
+    choice_1 = '1'
+    choice_2 = '2'
+    choice_3 = '3'
+    choice_4 = '4'
+    choice_5 = '5'
+    CHOICES = (
+        (choice_1,'Offensive/Abusive Material'),
+        (choice_2,'Illicit Material'),
+        (choice_3,'Personal Threats'),
+        (choice_4,'Security Concern'),
+        (choice_5,'Spam'),
+    )
+    report_choice = models.CharField(max_length=1,choices=CHOICES)
+    comment = models.CharField(max_length = 300, blank=True)
 
     def __str__(self):
-        return (f"{self.author} : {self.content}")
+        return (f"Report From {self.author} to {self.post.author}")
 
-    def get_absolute_url(self):
-        return reverse('post-detail',kwargs={'pk' : self.pk})
-
-    def cast_empty_reference(self):
-        self.reply = self
+    def save(self, **kwargs):
         super().save()

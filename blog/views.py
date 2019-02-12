@@ -403,7 +403,8 @@ def home_view(request, pk=3):
             'topics' : tops,
             'date' : today,
             'page_limit' : page_limit,
-            'search' : request.GET.get('search')
+            'search' : request.GET.get('search'),
+            'report_form' : ReportForm(instance=request.user)
             }
 
 #When user clicks on a post
@@ -430,6 +431,7 @@ def home_view(request, pk=3):
             'post_form' : post_form,
             'page_limit' : page_limit,
             'slice_custom' : page_limit,
+            'report_form' : ReportForm(instance=request.user)
             }
 
         if (request.POST.get('action') == "Comment" and request.POST.get('content')):
@@ -560,6 +562,15 @@ def home_view(request, pk=3):
             html2 = render_to_string('blog/feed.html', sub_context, request=request)
             html = render_to_string('blog/post.html', sub_context, request=request)
             return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Report_Post"):
+
+            post = Post.objects.get(id=post_id)
+            report = request.POST.get('choice')
+            new_report = Report(author=request.user, report_choice=report, post=post)
+            new_report.save()
+            html = render_to_string('blog/post_confirm_report_confirmed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
 
         elif (request.POST.get('action') == "Repost"):
 
@@ -794,7 +805,8 @@ def search(request, search=None):
             'topic_best_post' : Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count').first(),
             'query' : query,
             'circles' : circles,
-            'term' : query
+            'term' : query,
+            'form' : ReportForm(instance=request.user)
             }
 
 #When user clicks on a post
@@ -827,7 +839,8 @@ def search(request, search=None):
             'topic_best_post' : Post.objects.filter(topics__title=topic).order_by('like').first(),
             'query' : request.POST.get('query'),
             'circles' : circles,
-            'term' : query
+            'term' : query,
+            'form' : ReportForm(instance=request.user)
             }
 
         if (request.POST.get('action') == "Comment"):

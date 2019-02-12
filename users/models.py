@@ -15,6 +15,7 @@ class Profile(models.Model):
     friends = models.ManyToManyField("self", related_name='friends', blank=True, symmetrical=True)
     date_active = models.DateTimeField(default = timezone.now)
     can_send_feedback = models.BooleanField(default=True)
+    can_send_reports = models.BooleanField(default=True)
 
     def __str__(self):
         return(f'{self.user.username} Profile')

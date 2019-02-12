@@ -21,6 +21,20 @@ class NewPostForm(forms.Form):
     media = forms.FileField(widget=forms.HiddenInput, required=False)
     tags = forms.CharField(widget=forms.HiddenInput, required=False)
 
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['report_choice', 'comment']
+        labels = {
+        "report_choice": "What Does This Post Contain?",
+        "comment" : "Additional Information"
+        }
+        help_texts = {
+        "coverImage": ('Image will automatically be resized to 1500 x 300 pixels.'),
+        "about": ('Write about yourself! Whatever describes you. ( 160 characters or less. )'),
+        "quote": ('What is your current original idea? ( 80 characters or less. )'),
+        }
+
 class NewImage(forms.ModelForm):
     class Meta:
         model = Post

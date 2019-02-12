@@ -6,7 +6,9 @@
 <form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
 {% csrf_token %}
 <article class="media content-section mb-3;" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+  <a href="{% url 'user-posts' obj.author.username %}">
   <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
+  </a>
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
@@ -25,11 +27,12 @@
         <a class="dropdown-item" href="{% url 'post-detail' obj.id %}" style="cursor:pointer">View Post</a>
         <a class="dropdown-item" href="{% url 'blog-home' %}"  member_id = {{obj.id}} id="repostButton" style="cursor:pointer">Repost</a>
         <a class="dropdown-item" href="">Copy Post Link</a>
-        {% if user == post.author %}
-        <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer"
-        data-toggle="modal" data-target="#deletePostModalCenter" >Delete Repost</a>
+        {% if user == obj.author %}
+        <a class="dropdown-item" id = "delete_btn" delete_id = {{obj.id}} style="color:red; cursor:pointer;"
+        data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
         {% else %}
-        <a class="dropdown-item" href="">Report Post</a>
+        <a class="dropdown-item" id = "report_btn" report_id = {{obj.id}} style="cursor:pointer;"
+        data-toggle="modal" data-target="#reportPostModalCenter">Report Post</a>
         {% endif %}
       </div>
     </div>

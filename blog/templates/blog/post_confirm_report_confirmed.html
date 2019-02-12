@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+
+
+  <div class="m-3">
+
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <div class="mb-1">
+          <h5> Thank you </h5>
+          <small>We appriciate your cooperation. We'll be taking a look at this post and take appropriate action.</small>
+        </div>
+      </fieldset>
+
+        <div class="form-group">
+          <a class="btn btn" data-toggle="modal"
+          data-target="#reportPostModalCenter" style="color:#a300cc; border-color:#a300cc">Finish</a>
+        </div>
+    </form>
+  </div> <!--Content Section Div-->

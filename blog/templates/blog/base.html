@@ -17,9 +17,9 @@
     <!--CSS Inclusion-->
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
     {% if title %}
-    <title>Django Blog - {{ title }}</title>
+    <title>Project Mango - {{ title }}</title>
     {% else %}
-    <title>Django Blog</title>
+    <title>Project Mango</title>
     {% endif %}
   </head>
   <body>
@@ -47,7 +47,7 @@
           setInterval(function(){
             $("#nav_bell").load(" #nav_bell > *");
                   console.log("LOG");
-          }, 2000);
+          }, 8000);
       });
 
       $(document).ready(function(event) {

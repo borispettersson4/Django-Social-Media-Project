@@ -8,4 +8,5 @@ admin.site.register(Topic)
 admin.site.register(Activity)
 admin.site.register(Notification)
 admin.site.register(Request)
+admin.site.register(Report)
 # Register your models here.

@@ -1,0 +1,70 @@
+
+  <div class="m-3">
+
+    <form id="report_form">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <div class="mb-3">
+          <h5> Reporting This Post </h5>
+          <small>Reporting a post is a serious matter. You acknowledge that sending this report means we will investigate every aspect of
+            the situation and that you are liable for potential misconduct as well as the person you are reporting.</small>
+        </div>
+        <h6> What Does This Post Contain? </h6>
+        <ul class="list-group" style="list-style-type: none;">
+        <li><input type="radio" class="message_pri" checked="checked" name="message_pri" value="1"> Offensive/Abusive Material</input></li>
+        <li><input type="radio" class="message_pri" name="message_pri" value="2" > Illicit Material</input></li>
+        <li><input type="radio" class="message_pri" name="message_pri" value="3" /> Personal Threats</li>
+        <li><input type="radio" class="message_pri" name="message_pri" value="4" /> Security Concern</li>
+        <li><input type="radio" class="message_pri" name="message_pri" value="5" /> Spam</li>
+        </ul>
+      </fieldset>
+        <div class="form-group">
+          <button class="btn btn-danger reportConfirmButton" type="submit"
+          style="background-color:red;color:white;">Send Report</button>
+          <a class="btn btn" data-toggle="modal"
+          data-target="#reportPostModalCenter" style="color:#a300cc; border-color:#a300cc">Cancel</a>
+        </div>
+    </form>
+  </div> <!--Content Section Div-->
+
+<script>
+  var report_btn;
+  $(document).ready(function(event) {
+    $(document).on('click', '#report_btn' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      report_btn = $(this).attr('report_id');
+      console.log("Report ID is : " + report_btn);
+    });
+  });
+
+      $(document).ready(function(event) {
+          $(document).on('click', '.reportConfirmButton' , function(event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            var choice = $(".message_pri:checked").val();
+            var member_id = report_btn;
+              $.ajax({
+                type: "POST",
+                url: "{% url 'blog-home' %}",
+                data : { 'choice':choice ,'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Report_Post"},
+                dataType: 'json',
+                success : function(response) {
+                  $('#report_post_display').html(response['form']);
+                  console.log("success:Report " + " : " + report_btn);
+                },
+                error : function(rs, e) {
+                  console.log(rs.responseText);
+                }
+              });
+          });
+      });
+
+
+
+
+
+
+
+</script>

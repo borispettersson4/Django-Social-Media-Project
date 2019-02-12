@@ -22,10 +22,11 @@
   var delete_btn;
 
   $(document).ready(function(event) {
-    $(document).on('click', '.dropdown' , function(event) {
+    $(document).on('click', '#delete_btn' , function(event) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      delete_btn = $(this).attr('select_id');
+      delete_btn = $(this).attr('delete_id');
+      console.log("Delete ID is : " + delete_btn);
     });
   });
 

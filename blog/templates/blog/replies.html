@@ -29,11 +29,12 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
           <a class="dropdown-item" href="{% url 'post-detail' comment.id %}" style="cursor:pointer">View Post</a>
           <a class="dropdown-item" href="{% url 'blog-home' %}"  member_id = {{comment.id}} id="repostButton" style="cursor:pointer">Repost</a>
           <a class="dropdown-item" href="">Copy Post Link</a>
-          {% if user == post.author %}
-          <a class="dropdown-item" id = "delete_btn" style="color:red; cursor:pointer"
-          data-toggle="modal" data-target="#deletePostModalCenter" >Delete Repost</a>
+          {% if user == comment.author %}
+          <a class="dropdown-item" id = "delete_btn" delete_id = {{comment.id}} style="color:red; cursor:pointer;"
+          data-toggle="modal" data-target="#deletePostModalCenter">Delete Post</a>
           {% else %}
-          <a class="dropdown-item" href="">Report Post</a>
+          <a class="dropdown-item" id = "report_btn" report_id = {{comment.id}} style="cursor:pointer;"
+          data-toggle="modal" data-target="#reportPostModalCenter">Report Post</a>
           {% endif %}
         </div>
       </div>
