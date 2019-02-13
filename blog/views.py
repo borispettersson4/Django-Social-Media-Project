@@ -8,12 +8,10 @@ from django.views import generic
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import *
 from django.contrib.auth.models import User
-from betterforms.multiform import MultiModelForm
 from django.contrib.auth.decorators import login_required
 from .forms import *
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from chartjs import *
 from django import template
 from django.db.models import Q
 from bootstrap_modal_forms.mixins import *
@@ -368,8 +366,7 @@ class PostModalView(DetailView):
 def home_view(request, pk=3):
     page_limit = 10
     post_form = NewPostForm()
-
-
+    
 
     posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.following.all()))) |
                                 Q(author=request.user)).order_by('-date_posted')
@@ -1767,23 +1764,6 @@ from django.shortcuts import render_to_response
 import random
 import datetime
 import time
-
-def demo_piechart(request):
-    """
-    pieChart page
-    """
-    xdata = ["Apple", "Apricot", "Avocado", "Banana", "Boysenberries", "Blueberries", "Dates", "Grapefruit", "Kiwi", "Lemon"]
-    ydata = [52, 48, 160, 94, 75, 71, 490, 82, 46, 17]
-
-    extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
-    chartdata = {'x': xdata, 'y1': ydata, 'extra1': extra_serie}
-    charttype = "pieChart"
-
-    data = {
-        'charttype': charttype,
-        'chartdata': chartdata,
-    }
-    return render(request,'blog/test.html', data)
 
 def validate_username(request):
     post_no = request.GET.get('num', None)

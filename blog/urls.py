@@ -19,6 +19,5 @@ urlpatterns = [
     path('post/new', PostCreateView.as_view(),name='post-create'),
 
     path('about/', views.about,name='blog-about'),
-    path('test/', views.demo_piechart,name='test-page'),
 
 ]
