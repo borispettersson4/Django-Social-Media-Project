@@ -5,12 +5,10 @@ from users.models import *
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
-from betterforms.multiform import MultiModelForm
 from django.contrib.auth.decorators import login_required
 from .forms import *
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from chartjs import *
 from django import template
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import *

@@ -46,7 +46,10 @@
 <div style=" border-radius: 0.5rem; background-color:#eedfff;">
 
   <div class="m-3 " style="">
-          <legend class="border-bottom m-8" style="text-align:center;"><b>Create New Post</b></legend>
+          <legend class="border-bottom m-0" style="text-align:center;"><b>Create New Post</b></legend>
+          {% if group %}
+          <div class="border-bottom m-8" style="text-align:center; font-size:1.5vh; color:#a300cc"><b>Posting to {{group.name}}</b></div>
+          {% endif %}
     <form method="POST" enctype="multipart/form-data" style=" ">
       {% csrf_token %}
       <fieldset class="form">

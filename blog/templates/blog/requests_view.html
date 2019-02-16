@@ -33,38 +33,68 @@
     {% if requests %}
 
     {% for activity in requests%}
-    {% if forloop.counter <= 20 %}
+    {% if forloop.counter <= 200 %}
     {% if activity.confirmed == False %}
     <li class="list-group-item list-group-item" style="background-color:#fffab4;">
     {% else %}
     <li class="list-group-item list-group-item" style="">
     {% endif %}
 
-    {% if activity.sender.profile in user.profile.friends.all %}
+    {% if not activity.group %}
+      {% if activity.sender.profile in user.profile.friends.all %}
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">You and {{activity.sender.profile.nick}} are now friends.</b>
+        <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+          <div class="float-right">
+      </div>
+
+      {% else %}
 
       <div class="input-block-level media-body" style="border-radius: 0.0rem;">
         <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
-        <b class="article-title" style="text-decoration: none; font-size:2vh;">You and {{activity.sender.profile.nick}} are now friends.</b>
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} sent you a friend request.</b>
       <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
         <div class="float-right">
-    </div>
 
-    {% else %}
+        <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
+        style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
 
-    <div class="input-block-level media-body" style="border-radius: 0.0rem;">
-      <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
-      <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} sent you a friend request.</b>
-    <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
-      <div class="float-right">
-
-      <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
-      style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
-
-      <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
-       id="requestsDeclineButton"><b>Decline</b></button>
+        <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
+         id="requestsDeclineButton"><b>Decline</b></button>
+        </div>
       </div>
-    </div>
 
+      {% endif %}
+
+    {% elif activity.group and activity.type == 0 %}
+      {% if activity.sender in activity.group.members.all %}
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} is now a member of {{activity.group.name}}</b>
+        <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+          <div class="float-right">
+      </div>
+
+      {% else %}
+
+      <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} wants to join {{activity.group.name}}</b>
+      <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+        <div class="float-right">
+
+        <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
+        style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
+
+        <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
+         id="requestsDeclineButton"><b>Decline</b></button>
+        </div>
+      </div>
+
+      {% endif %}
     {% endif %}
 
     </li>
@@ -83,6 +113,6 @@
 </div></td></tr>
 </table>
 <div class="m-0"style="text-align:center; margin:0vh;">
-  <a style="margin:30px;"><b>mango</b></a> 
+  <a style="margin:30px;"><b>mango</b></a>
 </div>
   </article>

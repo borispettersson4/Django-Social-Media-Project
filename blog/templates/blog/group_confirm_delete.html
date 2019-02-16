@@ -1,0 +1,61 @@
+
+  <div class="m-3">
+
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <h5> Are you sure you want to delete this entire group? </h5>
+            <a>Deleting this group will delete all posts and content posted in the group. This action cannot be undone.</a>
+      </fieldset>
+
+        <div class="form-group">
+          <button class="btn btn-danger deleteConfirmButton" type="submit" data-toggle="modal"
+          data-target="#deleteGrouptModalCenter"
+          style="background-color:red;color:white;"> Yes, Delete</button>
+          <a class="btn btn" data-toggle="modal"
+          data-target="#deleteGroupModalCenter" style="color:#a300cc; border-color:#a300cc">Go Back</a>
+        </div>
+    </form>
+  </div> <!--Content Section Div-->
+
+<script>
+  var delete_btn;
+
+  $(document).ready(function(event) {
+    $(document).on('click', '#delete_btn' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      delete_btn = $(this).attr('delete_id');
+      console.log("Delete ID is : " + delete_btn);
+    });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '.deleteConfirmButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        var member_id = delete_btn;
+
+          $.ajax({
+            type: "POST",
+            url: "{% url 'group_manager' %}",
+            data : { 'id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Delete_Group"},
+            dataType: 'json',
+            success : function(response) {
+              window.location.href = "{% url 'group_manager' %}";
+            },
+            error : function(rs, e) {
+              window.location.href = "{% url 'group_manager' %}";
+            }
+          });
+      });
+  });
+
+
+
+
+
+
+
+</script>

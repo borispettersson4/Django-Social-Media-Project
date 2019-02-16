@@ -1,0 +1,100 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
+
+<div class="content-section">
+<!-- USER EDIT FORM HERE -->
+<div class="mb-2">
+<h4 class="border-bottom mb-2">Manage Groups
+</h4>
+</div>
+
+<article class="media-body">
+
+<div class="mb-3">
+<a style="font-size:2vh;">Groups are spaces where you and your friends can get together and post in the same thread. Only group members can post in groups.</a>
+</div>
+<table style="width:100%" class="mb-3">
+<tr><td><div style="overflow: auto; max-height : 50vh;">
+
+<ul class="list-group" style="margin-bottom:0vh">
+  {% if groups %}
+
+  {% for group in groups %}
+  {% if forloop.counter <= 50 %}
+  {% if activity.confirmed == False %}
+  <li class="list-group-item list-group-item" style="background-color:#f2f2f2;">
+  {% else %}
+  <li class="list-group-item list-group-item" style="background-color:#f2f2f2;">
+  {% endif %}
+<a href="{% url 'group-posts' group.name %}">
+    <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+      <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{group.image.url}}">
+      <b class="article-title" style="text-decoration: none; font-size:2vh;">{{group.name}}</b>
+    <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+      <div class="float-right">
+
+        {% if group.owner == request.user %}
+        <a href="{% url 'group' group.name %}"
+        <button class="btn" style="border-radius:3rem; background-color:#a300cc; color:white;" member_id = {{activity.id}}>
+          <b>Edit</b></button></a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% endif %}
+
+
+</a>
+  </li>
+{% endfor %}
+{% else %}
+<li class="list-group-item list-group-item" style="
+  background-color:#f2f2f2; ">
+
+  <div class="input-block-level media-body" style="border-radius: 0.0rem; text-align:center;">
+    <b class="article-title" style="text-decoration: none; font-size:2vh;">You are not in any group.</b>
+
+  </div>
+</li>
+{% endif %}
+</div></td></tr>
+</table>
+
+<a href="{% url 'group-new' %}">
+  <button class="btn" style="color:#FFFFFF; border-color:#a300cc; background-color:#a300cc" type="submit">Create New Group</button>
+</a>
+
+</article>
+</div>
+
+{% endblock content %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="deleteGroupModalCenter" tabindex="-1" role="dialog" aria-labelledby="deleteGrouptModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="width:auto;">
+    <div class="modal-content" style="border-radius: 0.5rem;">
+      {# --------------------------Start----------------------------- #}
+      <div id="delete_group_display" >
+      {% include 'blog/group_confirm_delete.html' %}
+      </div>
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

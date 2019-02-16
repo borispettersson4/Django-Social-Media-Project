@@ -138,7 +138,7 @@ $(document).ready(function (event) {
             $('#loading_feed').show();
          $.ajax({
            type: "POST",
-           url: "{% url 'search' %}",
+           url: "{% url 'search' query %}",
            data : { 'page_count': page_count, 'query' : '{{query}}' , 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Next"},
            dataType: 'json',
            success : function(response) {

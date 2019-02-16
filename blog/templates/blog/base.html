@@ -56,6 +56,26 @@
             window.location.href = link;
         });
       });
+
+      $(document).ready(function(event) {
+          $(document).on('submit', '#search_form' , function(event) {
+            event.preventDefault();
+              var query = $('#search').val();
+
+              if(query.includes("#")){
+                for(i=0; i < query.length; i++) {
+
+                query= query.replace('#', "[~h]");
+
+                }
+
+              }
+
+              query_link = "{% url 'search' 'SEARCH_QUERY'%}"
+              query_link = query_link.replace('SEARCH_QUERY', query.toString());
+              window.location.href = query_link;
+          });
+      });
     </script>
 
   <!-- Navigation Bar -->
@@ -81,7 +101,7 @@
 
           <div class="" id="searchButton">
             <div class="mr-2" id="wrap">
-              <form action="{% url 'search' %}" method="GET" autocomplete="off">
+              <form id = "search_form" action="" method="GET" autocomplete="off">
 
                 <fieldset class="form">
                   <input id="search" name="search" type="text" style="color:black;" placeholder="Search posts, @people, #topics, etc." >
@@ -104,6 +124,7 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'user-posts' user %}">View Profile</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'profile' %}">Edit Profile</a>
+                  <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'group_manager' %}">Groups</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'feedback' %}">Feedback</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'about' %}">About</a>
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'logout' %}">Log Out</a>
@@ -159,12 +180,12 @@
 
     {% block about %}{% endblock about %}
 
-    {% if hide_post %}
+    {% if show_bottom_detail %}
     <div class="mb-4" style="text-align:center;">
       <ul style="  list-style-type: none; margin: 0; padding: 0;" >
         <li class="mr-2" style="display: inline;">
           <a href="{% url 'blog-home' %}" style="color:black;">
-            <b>©Mango</b></a>
+            <b>Mango</b></a>
         </li>
         <li class="mr-2" style="display: inline;">
           <a href="{% url 'about' %}" style="color:black;">

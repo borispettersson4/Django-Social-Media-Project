@@ -13,7 +13,12 @@
     <div class="article-metadata">
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
       {% if obj.reply != None %}
-      <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ obj.reply.author.username}}</a>
+      <a class="mr-2" href="{% url 'user-posts' obj.reply.author.username %}" style="color:#a300cc">Replied to <b>@{{ obj.reply.author.username}}</b></a>
+      {% elif obj.group != None %}
+      <small>
+      <a class="mr-2 ml-0" href="{% url 'group-posts' obj.group.name %}"
+        style="color:#eb7500">Posted in <b>{{obj.group.name}}</b></a>
+      </small>
       {% endif %}
       <small class="text-muted" style="">{{ obj.date_posted|date:"M d, Y" }}</small>
 

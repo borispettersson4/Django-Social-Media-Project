@@ -158,7 +158,7 @@
           //alert("Copied the text: " + copyText.value);
           document.body.removeChild(input);
       });
-  }); 
+  });
 
   //paginator
 $(document).ready(function (event) {
@@ -189,14 +189,30 @@ $(document).ready(function (event) {
 
 </script>
 
-<div id="feed_display">
-{% include 'blog/feed.html' %}
-</div>
+{% if posts.count > 0 %}
 
-<div id="loading_feed">
-{% include 'blog/loading.html' %}
-<div class="" style="margin-bottom:10vh;"></div>
-</div>
+  <div id="feed_display">
+  {% include 'blog/feed.html' %}
+  </div>
+
+  {% if posts.count > 10 %}
+  <div id="loading_feed">
+  {% include 'blog/loading.html' %}
+  <div class="" style="margin-bottom:10vh;"></div>
+  </div>
+  {% endif %}
+
+{% else %}
+  <article class="post_object" style="border-radius: 0.5rem; margin-bottom:0px">
+    <div style="text-align:center;" class="mt-3 mb-3">
+      <h5 style="text-align: center;"><strong>Looks like there's nothing to see here.</strong></h5>
+      <blockquote>
+      <p style="text-align: justify; margin-left:3vh; margin-right:3vh;">Once you start following people, their posts and activities will display here in your home page. Start following people you might know by seaching for
+        the names of the people you're interested in, or interesting topics on the search bar above.</p>
+      </blockquote>
+    </div>
+  </article>
+{% endif %}
 
 
 {% endblock content %}
@@ -212,6 +228,33 @@ $(document).ready(function (event) {
           </div>
         </article>
       </a>
+
+      {% if groups %}
+      <a class=" mr-0 mb-0" href="{% url 'user-posts' request.user 'groups' %}" style="color:black;">
+      <b> Groups <a style="font-size:2.5vh;">{{groups.count}}</a> </b>
+      </a>
+      <ul class="list-group" style="margin-bottom:2vh">
+        {% for group in groups %}
+
+            {% if forloop.counter <= 5 %}
+        <a href="{% url 'group-posts' group.name %}" style="text-decoration: none !important">
+            {% if forloop.first %}
+        <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+            {% elif forloop.last %}
+        <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+            {% else %}
+        <li class="list-group-item list-group-item" style="">
+            {% endif %}
+            <div class="media-body">
+            <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{group.image.url}}">
+              <b class="article-title" style="font-size:2vh">{{group.name}}</b>
+            </div>
+          </li>
+          </a>
+            {% endif %}
+        {% endfor %}
+      </ul>
+      {% endif %}
 
         <a class=" mr-0 mb-0" href="{% url 'user-posts' request.user 'friends' %}" style="color:black;">
         <b> Friends <a style="font-size:2.5vh;">{{user.profile.friends.count}}</a> </b>

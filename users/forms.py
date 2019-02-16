@@ -40,6 +40,39 @@ class ProfileSettingsUpdateForm(forms.ModelForm):
         "quote": ('What is your current original idea? ( 80 characters or less. )'),
         }
 
+class GroupUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name','private','members','image']
+        labels = {
+        "image": "Group Image",
+        "name": "Group Name",
+        "members": "Group Members",
+        "mods": "Group Moderators",
+        "private": "Private Group"
+        }
+        help_texts = {
+        "image": ('Image will automatically be resized to 500 x 500 pixels.'),
+        "name": ('Name of your group. Must be unique.'),
+        "members": ('Hold down "Control", or "Command" on a Mac, to select more than one.'),
+        "mods": ('Hold down "Control", or "Command" on a Mac, to select more than one.'),
+        "private": ("Once checked, only group members are able to see this group's content"),
+        }
+
+class GroupSettingsUpdateForm(forms.ModelForm):
+    class Meta:
+        model = GroupSettings
+        fields = ['coverImage', 'quote', 'about']
+        labels = {
+        "coverImage": "Cover Image",
+        "about": "Summary"
+        }
+        help_texts = {
+        "coverImage": ('Image will automatically be resized to 1500 x 300 pixels.'),
+        "about": ('Write about your group. What is it? ( 160 characters or less. )'),
+        "quote": ('What is the group motto? ( 80 characters or less. )'),
+        }
+
 class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback

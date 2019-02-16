@@ -88,8 +88,8 @@ def getPost(request, pk=None):
             post_id = request.POST.get('id')
             obj = Post.objects.get(id=post_id)
         else:
-            post_id = 10
-            obj = Post.objects.get(id=post_id)
+            obj = Post.objects.last()
+            post_id = obj.id
 
         sub_context = {
             'profile': request.user.profile,
@@ -366,12 +366,21 @@ class PostModalView(DetailView):
 def home_view(request, pk=3):
     page_limit = 10
     post_form = NewPostForm()
-    
 
-    posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.following.all()))) |
-                                Q(author=request.user)).order_by('-date_posted')
-
-
+    try:
+        try:
+            posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x, group=None) for x in request.user.profile.following.all()))) |
+                                                                                                               Q(author=request.user, group=None) |
+                                                                                                               Q(group__members=request.user) |
+                                                                                                               Q(group__owner=request.user) |
+                                                                                                               Q(repost__author__group__members=request.user) |
+                                                                                                               Q(repost__author__group__owner=request.user)
+                                                                                                               ).order_by('-date_posted')
+        except:
+            posts = None
+    except:
+        new_post = Post(id=None,author=request.user, content="I'm on Mango!\n\n(This post will disappear once you start following people.)")
+        posts = Post.objects.none()
 
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, page_limit)
@@ -388,9 +397,12 @@ def home_view(request, pk=3):
     tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
-    acts = Activity.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.following.all()))) |
-                                   Q(reduce(operator.or_, (Q(author__profile=x) for x in request.user.profile.friends.all()))) |
-                                   Q(author=request.user)).order_by('-date')
+    try:
+        acts = Activity.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x, group=None) for x in request.user.profile.following.all()))) |
+                                       Q(reduce(operator.or_, (Q(author__profile=x, group=None) for x in request.user.profile.friends.all()))) |
+                                       Q(author=request.user, group=None)).order_by('-date')
+    except:
+        acts = Activity.objects.none()
 
     context = {
             'posts': posts,
@@ -405,14 +417,16 @@ def home_view(request, pk=3):
             'likes' : Like.objects.all(),
             'activities' : acts,
             'user' : request.user,
-            'obj' : Post.objects.get(id=3),
+            'obj' : Post.objects.last(),
             'post_form' : post_form,
             'people' : peps,
             'topics' : tops,
             'date' : today,
             'page_limit' : page_limit,
             'search' : request.GET.get('search'),
-            'report_form' : ReportForm(instance=request.user)
+            'report_form' : ReportForm(instance=request.user),
+            'query':"",
+            'groups': Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user)).distinct()
             }
 
 #When user clicks on a post
@@ -421,8 +435,8 @@ def home_view(request, pk=3):
             post_id = request.POST.get('id')
             obj = Post.objects.get(id=post_id)
         else:
-            post_id = 10
-            obj = Post.objects.get(id=post_id)
+            obj = Post.objects.last()
+            post_id = obj.id
 
         sub_context = {
             'posts': posts,
@@ -640,7 +654,12 @@ def home_view(request, pk=3):
 
         elif (request.POST.get('action') == "Accept_Request"):
             request_obj = Request.objects.get(id=request.POST.get('request_id'))
-            request.user.profile.friends.add(request_obj.sender.profile)
+            if(request_obj.group != None):
+                if(request_obj.type == 0):
+                    request_obj.group.members.add(request_obj.sender)
+            else:
+                if(request_obj.type == 0):
+                    request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
@@ -663,7 +682,6 @@ def home_view(request, pk=3):
         post_form = NewPostForm(request.POST, request.FILES)
         if(post_form.is_valid()):
             tagfield = post_form.cleaned_data.get('tags')
-            con = post_form.cleaned_data.get('content')
             new_post = Post(content=con, author=request.user, reply=None)
 
             #Media filtering
@@ -724,12 +742,15 @@ def get_post(request):
     return HttpResponse('blog/post.html')
 
 @login_required
-def search(request, search=None):
+def search(request, query_result=None):
 
-    query = request.GET.get('search')
+    query = str(query_result);
 
     if(query == None):
         query = request.POST.get('query')
+
+    if("[~h]" in query):
+        query = query.replace("[~h]", '#')
 
     content_search = []
     topics_search = []
@@ -771,6 +792,7 @@ def search(request, search=None):
     if(content_posts or topics_posts or people_posts):
         posts = people_posts or topics_posts or content_posts
         posts = posts.distinct()
+        posts = posts.filter(group=None)
         circles = people_circles
         circles = circles.distinct()
     else:
@@ -816,7 +838,7 @@ def search(request, search=None):
             'activities' : acts,
             'activities_last' : last_acts,
             'user' : request.user,
-            'obj' : Post.objects.get(id=10),
+            'obj' : Post.objects.last(),
             'post_form' : post_form,
             'people' : peps,
             'topics' : tops,
@@ -839,8 +861,8 @@ def search(request, search=None):
             post_id = request.POST.get('id')
             obj = Post.objects.get(id=post_id)
         else:
-            post_id = 10
-            obj = Post.objects.get(id=post_id)
+            obj = Post.objects.last()
+            post_id = obj.id
 
         sub_context = {
             'posts': posts,
@@ -1165,7 +1187,7 @@ def getTopic(request, topic=None):
             'activities' : acts,
             'activities_last' : last_acts,
             'user' : request.user,
-            'obj' : Post.objects.get(id=10),
+            'obj' : Post.objects.last(),
             'post_form' : post_form,
             'people' : peps,
             'topics' : tops,
@@ -1185,8 +1207,8 @@ def getTopic(request, topic=None):
             post_id = request.POST.get('id')
             obj = Post.objects.get(id=post_id)
         else:
-            post_id = 10
-            obj = Post.objects.get(id=post_id)
+            obj = Post.objects.last()
+            post_id = obj.id
 
         sub_context = {
             'posts': posts,
@@ -1479,7 +1501,8 @@ def get_user_information(request, username=None, view=None):
     #Profile information is accquired here.
 
     post_form = NewPostForm()
-    posts = Post.objects.filter(Q(author=profile.user) | Q(people=profile.user)).order_by('-date_posted')
+    posts = Post.objects.filter(Q(author=profile.user,group=None, repost__group=None) |
+    Q(people=profile.user,group=None, repost__group=None)).order_by('-date_posted')
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, 10)
 
@@ -1512,6 +1535,8 @@ def get_user_information(request, username=None, view=None):
         circles = Profile.objects.filter(Q(following=profile)).order_by('-id')
     elif(view == "following"):
         circles = Profile.objects.filter(Q(followers=profile))
+    elif(view == "groups"):
+        circles = Group.objects.filter(Q(owner=profile.user) | Q(members=profile.user) | Q(mods=profile.user)).distinct()
     elif(view == "replies"):
         posts = Post.objects.filter(Q(author=profile.user) & ~Q(reply=None)).order_by('-date_posted')
     elif(view == "likes"):
@@ -1535,7 +1560,7 @@ def get_user_information(request, username=None, view=None):
 
     def isRequestExists():
         try:
-            return (Request.objects.get(recepient=profile.user,sender=request.user) != None)
+            return (Request.objects.get(recepient=group.owner.user,sender=request.user) != None)
         except:
             return False
 
@@ -1545,6 +1570,9 @@ def get_user_information(request, username=None, view=None):
         'followers_count' : profile.followers.count(),
         'following_count' : profile.following.count(),
         'friends_count' : profile.friends.count(),
+        'groups_count' : Group.objects.filter(mods=profile.user).count() + Group.objects.filter(members=profile.user).count()
+                                                                         + Group.objects.filter(owner=profile.user).count(),
+        'groups' : Group.objects.filter(Q(owner=profile.user) | Q(mods=profile.user) | Q(members=profile.user)).distinct(),
         'page_obj':paginator,
         'profile': profile,
         'comments' : Comment.objects.all(),
@@ -1559,7 +1587,7 @@ def get_user_information(request, username=None, view=None):
         'media' : Post.objects.filter(Q(author=profile.user) & ~Q(image="default.jpg", author=profile.user) | ~Q(video="")).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).order_by('-date_posted').count(),
         'user_comments' : Post.objects.filter(reply__author__username=username).order_by('-date_posted').count(),
-        'obj' : Post.objects.get(id=3),
+        'obj' : Post.objects.last(),
         'user_likes' : Like.objects.filter(author__username=username).order_by('-date_posted').count(),
         'post_form' : post_form,
         'people' : peps,
@@ -1578,8 +1606,8 @@ def get_user_information(request, username=None, view=None):
             post_id = request.POST.get('id')
             obj = Post.objects.get(id=post_id)
         else:
-            post_id = 10
-            obj = Post.objects.get(id=post_id)
+            obj = Post.objects.last()
+            post_id = obj.id
 
 
         sub_context = {
@@ -1616,7 +1644,7 @@ def get_user_information(request, username=None, view=None):
             return JsonResponse({'form':html})
 
         elif (request.POST.get('action') == "Send_Request"):
-            request = Request(sender=request.user, recepient=profile.user)
+            request = Request(sender=request.user, recepient=group.owner.user, type=0)
             request.save()
             html = render_to_string('blog/profile_overhead.html', context, request=request)
             return JsonResponse({'form':html})
@@ -1624,6 +1652,16 @@ def get_user_information(request, username=None, view=None):
         elif (request.POST.get('action') == "Unfriend"):
             request.user.profile.friends.remove(profile)
             html = render_to_string('blog/profile_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Repost"):
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post)
+            repost.save()
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
             return JsonResponse({'form':html})
 
     #Site Behaviour
@@ -1659,6 +1697,8 @@ def get_user_information(request, username=None, view=None):
 
             new_post.save()
             post_form = NewPostForm()
+            new_activity = Activity(post=new_post, author=request.user, type=2)
+            new_activity.save()
 
             if(tagfield):
                 #Tag filtering
@@ -1691,6 +1731,225 @@ def get_user_information(request, username=None, view=None):
                     pass
 
     return render(request, 'blog/user_posts.html', context)
+
+@login_required
+def get_group_information(request, name=None, view=None):
+    page_limit = 10
+    group = Group.objects.get(name=name)
+    #Profile information is accquired here.
+
+    post_form = NewPostForm()
+    posts = Post.objects.filter(Q(group=group) | Q(repost__group=group)).order_by('-date_posted')
+    page = request.GET.get('page', 1)
+    paginator = Paginator(posts, 10)
+
+    try:
+        pages = paginator.page(page)
+    except PageNotAnInteger:
+        pages = paginator.page(1)
+    except EmptyPage:
+        pages = paginator.page(paginator.num_pages)
+
+    today = datetime.datetime.now()
+    from django.db.models import Count
+
+
+
+    acts = Activity.objects.filter(Q(author__group=group,post__group=group)).order_by('-date')
+
+
+    from django.db import models
+    #Get page filters
+    circles = Profile.objects.all()
+    img = models.ImageField(default = 'default.jpg', upload_to='post_pics')
+    if(view == "media"):
+        posts = Post.objects.filter(Q(group=group) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted')
+    elif(view == "moderators"):
+        circles = Profile.objects.filter(Q(user__mods=group)).order_by('-id')
+    elif(view == "members"):
+        circles = Profile.objects.filter(Q(user__members=group)).order_by('-id')
+    elif(view == "replies"):
+        posts = Post.objects.filter(Q(reply__group=group)).order_by('-date_posted')
+    elif(view == "likes"):
+        posts = Post.objects.filter(Q(like__author__group=group, group=group)).order_by('-date_posted')
+    elif(view == "feed"):
+        posts = Post.objects.filter(Q(group=group)).order_by('-date_posted')
+
+    #Get Profile accquaintences
+
+    def isOwner():
+        try:
+            return (request.user == group.owner)
+        except:
+            return False
+
+    def isMember():
+        try:
+            return (request.user in group.members.all() or request.user in group.mods.all())
+        except:
+            return False
+
+    def isRequestExists():
+        try:
+            r = Request.objects.get(recepient=group.owner,sender=request.user)
+            return (r != None and not r.confirmed)
+        except:
+            return False
+
+    context = {
+        'posts': posts,
+        'pages': pages,
+        'mods_count' : group.mods.count(),
+        'members_count' : group.members.count(),
+        'page_obj':paginator,
+        'group': group,
+        'comments' : Comment.objects.all(),
+        'likes' : Like.objects.all(),
+        'user' : request.user,
+        'activities' : acts,
+        'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'existing_request' : isRequestExists(),
+        'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+        Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+        'media' : Post.objects.filter(Q(group=group) & ~Q(image="default.jpg", group=group) | ~Q(video="")).order_by('-date_posted'),
+        'group_posts' : Post.objects.filter(group=group).order_by('-date_posted').count(),
+        'group_comments' : Post.objects.filter(Q(reply__group=group)).order_by('-date_posted').count(),
+        'obj' : Post.objects.last(),
+        'group_likes' : Like.objects.filter(post__group=group).order_by('-date_posted').count(),
+        'post_form' : post_form,
+        'page_limit' : page_limit,
+        #Functions
+        'is_member' : isMember(),
+        'is_owner' : isOwner(),
+        'view' : view,
+        'circles' : circles,
+        'hide_post' : not (isMember() or isOwner()),
+        }
+
+    if request.is_ajax():
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            obj = Post.objects.last()
+            post_id = obj.id
+
+
+        sub_context = {
+            'posts': posts,
+            'page_obj': paginator,
+            'pages' : pages,
+            'comments' : Comment.objects.all(),
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
+            'likes' : Like.objects.all(),
+            'user' : request.user,
+            'obj' : obj,
+            'media' : Post.objects.filter(Q(group=group) & ~Q(image="default.jpg", group=group) | ~Q(video="")).order_by('-date_posted'),
+            'activities' : acts,
+            'post_form' : post_form,
+            'page_limit' : page_limit,
+            #Functions
+            'is_member' : isMember(),
+            'is_owner' : isOwner(),
+            'view' : view,
+            'circles' : circles,
+            }
+
+        if (request.POST.get('action') == "Send_Request"):
+            request = Request(sender=request.user, recepient=group.owner, type=0, group=group)
+            request.save()
+            html = render_to_string('blog/group_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Leave"):
+            try:
+                group.members.remove(request.user)
+            except:
+                group.mods.remove(request.user)
+
+            html = render_to_string('blog/group_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+                page_count = request.POST.get('page_count')
+                new_context = sub_context
+                new_context["page_limit"] += int(page_count)
+
+                if(view == "members" or view == "mods"):
+                    html = render_to_string('blog/feed_circles.html',new_context, request=request)
+                else:
+                    html = render_to_string('blog/feed.html',new_context, request=request)
+
+                return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Repost"):
+
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post, group=group)
+            repost.save()
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+    elif (request.method == 'POST'):
+        post_form = NewPostForm(request.POST, request.FILES)
+        if(post_form.is_valid()):
+            tagfield = post_form.cleaned_data.get('tags')
+            con = post_form.cleaned_data.get('content')
+            new_post = Post(content=con, author=request.user, reply=None, group=group)
+
+            #Media filtering
+            try:
+                media = request.FILES['media']
+                url = media.name.lower()
+                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    new_post.image = media
+                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                    new_post.video = media
+            except:
+                pass
+
+            new_post.save()
+            post_form = NewPostForm()
+            new_activity = Activity(post=new_post, author=request.user, type=2, group=group)
+            new_activity.save()
+
+            if(tagfield):
+                #Tag filtering
+                try:
+                    tag_dict = tagfield.split()
+                    for tag in tag_dict:
+                        if(tag.startswith("#")):
+                            try:
+                                try:
+                                    topic = Topic.objects.get(title=tag[1:])
+                                    new_post.topics.add(topic)
+                                except:
+                                    topic = Topic(title=tag[1:])
+                                    topic.save()
+                                    new_post.topics.add(topic)
+                            except Exception as e:
+                                new_post.content = e
+
+                        elif(tag.startswith("@")):
+                            try:
+                                try:
+                                    person = User.objects.get(username=tag[1:])
+                                    new_post.people.add(person)
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+                            except Exception as e:
+                                print(f"____________________________{e}")
+
+                except:
+                    pass
+
+    return render(request, 'blog/group_posts.html', context)
 
 class UserPostListView(ListView):
     model = Post

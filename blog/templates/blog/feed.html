@@ -23,8 +23,13 @@
       <a class="mr-2" href="{% url 'user-posts' post.repost.author.username %}">{{ post.repost.author.profile.nick }}</a>
       {% if post.repost.reply != None %}
       <small>
-      <a class="mr-2 ml-0" href="{% url 'user-posts' obj.author.username %}"
+      <a class="mr-2 ml-0" href="{% url 'user-posts' post.repost.reply.author.username %}"
       style="color:#a300cc">Replied to <b>@{{ post.repost.reply.author.username}}</b></a>
+      </small>
+      {% elif post.repost.group != None %}
+      <small>
+      <a class="mr-2 ml-0" href="{% url 'group-posts' post.repost.group.name %}"
+        style="color:#eb7500">Posted in <b>{{post.repost.group.name}}</b></a>
       </small>
       {% endif %}
       <small class="text-muted" style="">{{ post.repost.date_posted|date:"M d, Y" }}</small>
@@ -104,8 +109,13 @@
         <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
         {% if post.reply != None %}
         <small>
-        <a class="mr-2 ml-0" href="{% url 'user-posts' obj.author.username %}"
+        <a class="mr-2 ml-0" href="{% url 'user-posts' post.reply.author.username %}"
         style="color:#a300cc">Replied to <b>@{{ post.reply.author.username}}</b></a>
+        </small>
+        {% elif post.group != None %}
+        <small>
+        <a class="mr-2 ml-0" href="{% url 'group-posts' post.group.name %}"
+        style="color:#eb7500">Posted in <b>{{post.group.name}}</b></a>
         </small>
         {% endif %}
         <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>

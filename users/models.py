@@ -8,7 +8,7 @@ import sys
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nick = models.CharField(default = 'anonymous', max_length = 20)
+    nick = models.CharField(default = 'New User', max_length = 20)
     image = models.ImageField(default = 'default_profile.jpg', upload_to='profile_pics')
     badge = models.CharField(default = 'A', max_length = 1)
     following = models.ManyToManyField("self", related_name='followers', blank=True,  symmetrical=False)
@@ -36,8 +36,8 @@ class Profile(models.Model):
 class ProfileSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     coverImage = models.ImageField(default = 'default_cover.png', upload_to='cover_pics')
-    about = models.CharField(default = 'Write about yourself.', max_length = 160)
-    quote = models.CharField(default = 'Write an original idea!', max_length = 80)
+    about = models.CharField(default = '', max_length = 160, blank=True)
+    quote = models.CharField(default = '', max_length = 80, blank=True)
     #birthday = models.CharField(default = 'Write an original idea!', max_length = 80)
     #location = models.CharField(default = 'Write an original idea!', max_length = 80)
     #To be continued...
@@ -53,6 +53,50 @@ class ProfileSettings(models.Model):
         output.seek(0)
         self.coverImage = InMemoryUploadedFile(output,'ImageField', "%s.jpg" %self.coverImage.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
         super(ProfileSettings,self).save()
+
+class Group(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=20, unique=True)
+    nick = models.CharField(default = 'New Group', max_length = 20)
+    image = models.ImageField(default = 'default_profile.jpg', upload_to='profile_pics')
+    members = models.ManyToManyField(User, blank=True,related_name='members')
+    mods = models.ManyToManyField(User, blank=True,related_name='mods')
+    date_active = models.DateTimeField(default = timezone.now)
+    private = models.BooleanField(default=False)
+
+    def __str__(self):
+        return(f'{self.name} Group')
+
+    def save(self, **kwargs):
+        super().save()
+        #Resize Images upon Profile creation
+        img = Image.open(self.image.path)
+        output_size = (300,300)
+        img.thumbnail(output_size)
+        img.save(self.image.path)
+
+    def defaultValues(self):
+        self.nick = 'default'
+        self.badge = 'd'
+        super(Group, self).save()
+
+class GroupSettings(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE)
+    coverImage = models.ImageField(default = 'default_cover.png', upload_to='cover_pics')
+    about = models.CharField(default = '', max_length = 160, blank=True)
+    quote = models.CharField(default = '', max_length = 80, blank=True)
+
+    def __str__(self):
+        return(f'{self.group.name} Group Settings')
+
+    def save(self, **kwargs):
+        im = Image.open(self.coverImage)
+        output = BytesIO()
+        im = im.resize((1500,300))
+        im.save(output, format='PNG', quality=100)
+        output.seek(0)
+        self.coverImage = InMemoryUploadedFile(output,'ImageField', "%s.jpg" %self.coverImage.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
+        super(GroupSettings,self).save()
 
 class Feedback(models.Model):
     author = models.ForeignKey(User, on_delete = models.CASCADE, blank=True, null=True)
