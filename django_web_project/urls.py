@@ -20,6 +20,7 @@ urlpatterns = [
     path('legal/', user_views.legal,name='legal'),
     path('welcome/', user_views.welcome,name='welcome'),
     path('terms_of_service/', user_views.terms_of_service,name='terms_of_service'),
+    path('versions/', user_views.versions,name='patch_notes'),
     path('feedback/sent', user_views.feedback_sent,name='feedback-sent'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'),name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'),name='logout'),

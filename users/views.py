@@ -148,6 +148,14 @@ def group(request, name=None):
                 if(new_notification.sender != new_notification.recepient):
                     new_notification.save()
 
+            print("USERS ALREADY IN GROUP")
+            for person in group.members.all():
+                print(person.username)
+
+            print("USERS IN NEW GROUP")
+            for person in new_group.members.all():
+                print(person.username)
+
             new_group.save()
             new_groupSettings.save()
 
@@ -643,6 +651,56 @@ def terms_of_service(request):
             return render(request, 'users/feedback.html', context)
 
     return render(request, 'users/terms_of_service.html', context)
+
+def versions(request):
+
+    context = {
+    'hide_post' : True,
+    'show_bottom_detail' : True
+    }
+
+    if request.is_ajax():
+        if (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            request.user.profile.friends.add(request_obj.sender.profile)
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return render(request, 'users/feedback.html', context)
+
+    return render(request, 'users/patch_notes.html', context)
 
 @login_required
 def legal(request):

@@ -12,7 +12,13 @@
         <b><a class="mr-2" style="font-size:3vh;">{{ group.name }}</a></b>
       </div>
       <div class="mb-0">
+        {% if group.members.count > 1 %}
         <a class="text mr-2" style="font-size:2.25vh;">{{ group.members.count }} Members</a>
+        {% elif group.members.count > 0 %}
+        <a class="text mr-2" style="font-size:2.25vh;">{{ group.members.count }} Member</a>
+        {% else %}
+        <a class="text mr-2" style="font-size:2.25vh;">No Members</a>
+        {% endif %}
       </div>
  </a>
       <div>

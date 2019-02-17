@@ -35,6 +35,15 @@ from functools import reduce
 import operator
 from django.urls import resolve
 from django.utils import timezone
+import re
+
+#Functions
+
+def find_url(string):
+    url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', string)
+    return url
+
+#VIEWS
 
 def home(request):
     context = {
@@ -369,13 +378,15 @@ def home_view(request, pk=3):
 
     try:
         try:
-            posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x, group=None) for x in request.user.profile.following.all()))) |
+            posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__profile=x, group=None, reply__group=None) for x in request.user.profile.following.all()))) |
                                                                                                                Q(author=request.user, group=None) |
                                                                                                                Q(group__members=request.user) |
                                                                                                                Q(group__owner=request.user) |
                                                                                                                Q(repost__author__group__members=request.user) |
-                                                                                                               Q(repost__author__group__owner=request.user)
-                                                                                                               ).order_by('-date_posted')
+                                                                                                               Q(repost__author__group__owner=request.user) |
+                                                                                                               Q(reply__group__members=request.user) |
+                                                                                                               Q(reply__group__owner=request.user)
+                                                                                                               ).order_by('-date_posted').distinct()
         except:
             posts = None
     except:
@@ -680,60 +691,68 @@ def home_view(request, pk=3):
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
-        if(post_form.is_valid()):
-            tagfield = post_form.cleaned_data.get('tags')
-            new_post = Post(content=con, author=request.user, reply=None)
+        try:
+            if(post_form.is_valid() or request.FILES['media']):
+                tagfield = post_form.cleaned_data.get('tags')
+                if(post_form.is_valid()):
+                    con = post_form.cleaned_data.get('content')
+                else:
+                    con = ""
+                new_post = Post(content=con, author=request.user, reply=None)
 
-            #Media filtering
-            try:
-                media = request.FILES['media']
-                url = media.name.lower()
-                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
-                    new_post.image = media
-                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
-                    new_post.video = media
-            except:
-                pass
-
-            new_post.save()
-            post_form = NewPostForm()
-
-            new_activity = Activity(post=new_post, author=request.user, type=2)
-            new_activity.save()
-            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
-
-            if(tagfield):
-                #Tag filtering
+                #Media filtering
                 try:
-                    tag_dict = tagfield.split()
-                    for tag in tag_dict:
-                        if(tag.startswith("#")):
-                            try:
-                                try:
-                                    topic = Topic.objects.get(title=tag[1:])
-                                    new_post.topics.add(topic)
-                                except:
-                                    topic = Topic(title=tag[1:])
-                                    topic.save()
-                                    new_post.topics.add(topic)
-                            except Exception as e:
-                                new_post.content = e
-
-                        elif(tag.startswith("@")):
-                            try:
-                                try:
-                                    person = User.objects.get(username=tag[1:])
-                                    new_post.people.add(person)
-                                    new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
-                                    if(new_notification.sender != new_notification.recepient):
-                                        new_notification.save()
-                                except Exception as e:
-                                    print(f"____________________________{e}")
-                            except Exception as e:
-                                print(f"____________________________{e}")
-
+                    media = request.FILES['media']
+                    url = media.name.lower()
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                        new_post.image = media
+                    elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                        new_post.video = media
                 except:
                     pass
+
+                new_post.save()
+                post_form = NewPostForm()
+
+                new_activity = Activity(post=new_post, author=request.user, type=2)
+                new_activity.save()
+                ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+
+                if(tagfield):
+                    #Tag filtering
+                    try:
+                        tag_dict = tagfield.split()
+                        for tag in tag_dict:
+                            if(tag.startswith("#")):
+                                try:
+                                    try:
+                                        topic = Topic.objects.get(title=tag[1:])
+                                        new_post.topics.add(topic)
+                                    except:
+                                        topic = Topic(title=tag[1:])
+                                        topic.save()
+                                        new_post.topics.add(topic)
+                                except Exception as e:
+                                    new_post.content = e
+
+                            elif(tag.startswith("@")):
+                                try:
+                                    try:
+                                        person = User.objects.get(username=tag[1:])
+                                        new_post.people.add(person)
+                                        new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                        if(new_notification.sender != new_notification.recepient):
+                                            new_notification.save()
+                                    except Exception as e:
+                                        print(f"____________________________{e}")
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+
+                    except:
+                        pass
+        except:
+            pass
+        return HttpResponseRedirect('home')
 
     return render(request, 'blog/home.html', context)
 
@@ -852,7 +871,8 @@ def search(request, query_result=None):
             'query' : query,
             'circles' : circles,
             'term' : query,
-            'form' : ReportForm(instance=request.user)
+            'form' : ReportForm(instance=request.user),
+            'hide_post' : True
             }
 
 #When user clicks on a post
@@ -886,7 +906,8 @@ def search(request, query_result=None):
             'query' : request.POST.get('query'),
             'circles' : circles,
             'term' : query,
-            'form' : ReportForm(instance=request.user)
+            'form' : ReportForm(instance=request.user),
+            'hide_post' : True,
             }
 
         if (request.POST.get('action') == "Comment"):
@@ -1094,68 +1115,76 @@ def search(request, query_result=None):
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
-        if(post_form.is_valid()):
-            tagfield = post_form.cleaned_data.get('tags')
-            con = post_form.cleaned_data.get('content')
-            new_post = Post(content=con, author=request.user, reply=None)
+        try:
+            if(post_form.is_valid() or request.FILES['media']):
+                tagfield = post_form.cleaned_data.get('tags')
+                if(post_form.is_valid()):
+                    con = post_form.cleaned_data.get('content')
+                else:
+                    con = ""
+                new_post = Post(content=con, author=request.user, reply=None)
 
-            #Media filtering
-            try:
-                media = request.FILES['media']
-                url = media.name.lower()
-                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
-                    new_post.image = media
-                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
-                    new_post.video = media
-            except:
-                pass
-
-            new_post.save()
-            post_form = NewPostForm()
-
-            new_activity = Activity(post=new_post, author=request.user, type=2)
-            new_activity.save()
-            ###Profile.objects.filter(user=request.user).update(date_active=timezone.now)
-
-            if(tagfield):
-                #Tag filtering
+                #Media filtering
                 try:
-                    tag_dict = tagfield.split()
-                    for tag in tag_dict:
-                        if(tag.startswith("#")):
-                            try:
-                                try:
-                                    topic = Topic.objects.get(title=tag[1:])
-                                    new_post.topics.add(topic)
-                                except:
-                                    topic = Topic(title=tag[1:])
-                                    topic.save()
-                                    new_post.topics.add(topic)
-                            except Exception as e:
-                                new_post.content = e
-
-                        elif(tag.startswith("@")):
-                            try:
-                                try:
-                                    person = User.objects.get(username=tag[1:])
-                                    new_post.people.add(person)
-                                    new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
-                                    if(new_notification.sender != new_notification.recepient):
-                                        new_notification.save()
-                                except Exception as e:
-                                    print(f"____________________________{e}")
-                            except Exception as e:
-                                print(f"____________________________{e}")
-
+                    media = request.FILES['media']
+                    url = media.name.lower()
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                        new_post.image = media
+                    elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                        new_post.video = media
                 except:
                     pass
+
+                new_post.save()
+                post_form = NewPostForm()
+
+                new_activity = Activity(post=new_post, author=request.user, type=2)
+                new_activity.save()
+                ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+
+                if(tagfield):
+                    #Tag filtering
+                    try:
+                        tag_dict = tagfield.split()
+                        for tag in tag_dict:
+                            if(tag.startswith("#")):
+                                try:
+                                    try:
+                                        topic = Topic.objects.get(title=tag[1:])
+                                        new_post.topics.add(topic)
+                                    except:
+                                        topic = Topic(title=tag[1:])
+                                        topic.save()
+                                        new_post.topics.add(topic)
+                                except Exception as e:
+                                    new_post.content = e
+
+                            elif(tag.startswith("@")):
+                                try:
+                                    try:
+                                        person = User.objects.get(username=tag[1:])
+                                        new_post.people.add(person)
+                                        new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                        if(new_notification.sender != new_notification.recepient):
+                                            new_notification.save()
+                                    except Exception as e:
+                                        print(f"____________________________{e}")
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+
+                    except:
+                        pass
+        except:
+            pass
+        return HttpResponseRedirect("home-view")
+
     return render(request, 'blog/search_results.html', context)
 
 @login_required
 def getTopic(request, topic=None):
     page_limit = 10
     post_form = NewPostForm()
-    posts = Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count')
+    posts = Post.objects.filter(topics__title=topic, group=None, reply__group=None).annotate(count=Count('like')).order_by('-count')
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, page_limit)
     try:
@@ -1167,7 +1196,7 @@ def getTopic(request, topic=None):
 
     today = datetime.datetime.now()
     #Get all tags
-    tops = Topic.objects.filter(post__topics__title=topic).annotate(count=Count('post__like')).order_by('-count')
+    tops = Topic.objects.filter(post__topics__title=topic, post__group=None, post__reply__group=None).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__topics__title=topic).annotate(count=Count('post__like')).order_by('-count')
 
     acts = Activity.objects.filter(post__date_posted__day=today.day, post__topics__title=topic).order_by('-date')
@@ -1199,6 +1228,7 @@ def getTopic(request, topic=None):
             'topic_users' : Profile.objects.filter(user__post__topics__title=topic).annotate(count=Count('user')).order_by('-count').distinct().count(),
             'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
             'topic_best_post' : Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count').first(),
+            'hide_post' : True,
             }
 
 #When user clicks on a post
@@ -1436,61 +1466,68 @@ def getTopic(request, topic=None):
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
-        if(post_form.is_valid()):
-            tagfield = post_form.cleaned_data.get('tags')
-            con = post_form.cleaned_data.get('content')
-            new_post = Post(content=con, author=request.user, reply=None)
+        try:
+            if(post_form.is_valid() or request.FILES['media']):
+                tagfield = post_form.cleaned_data.get('tags')
+                if(post_form.is_valid()):
+                    con = post_form.cleaned_data.get('content')
+                else:
+                    con = ""
+                new_post = Post(content=con, author=request.user, reply=None)
 
-            #Media filtering
-            try:
-                media = request.FILES['media']
-                url = media.name.lower()
-                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
-                    new_post.image = media
-                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
-                    new_post.video = media
-            except:
-                pass
-
-            new_post.save()
-            post_form = NewPostForm()
-
-            new_activity = Activity(post=new_post, author=request.user, type=2)
-            new_activity.save()
-            ###Profile.objects.filter(user=request.user).update(date_active=timezone.now)
-
-            if(tagfield):
-                #Tag filtering
+                #Media filtering
                 try:
-                    tag_dict = tagfield.split()
-                    for tag in tag_dict:
-                        if(tag.startswith("#")):
-                            try:
-                                try:
-                                    topic = Topic.objects.get(title=tag[1:])
-                                    new_post.topics.add(topic)
-                                except:
-                                    topic = Topic(title=tag[1:])
-                                    topic.save()
-                                    new_post.topics.add(topic)
-                            except Exception as e:
-                                new_post.content = e
-
-                        elif(tag.startswith("@")):
-                            try:
-                                try:
-                                    person = User.objects.get(username=tag[1:])
-                                    new_post.people.add(person)
-                                    new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
-                                    if(new_notification.sender != new_notification.recepient):
-                                        new_notification.save()
-                                except Exception as e:
-                                    print(f"____________________________{e}")
-                            except Exception as e:
-                                print(f"____________________________{e}")
-
+                    media = request.FILES['media']
+                    url = media.name.lower()
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                        new_post.image = media
+                    elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                        new_post.video = media
                 except:
                     pass
+
+                new_post.save()
+                post_form = NewPostForm()
+
+                new_activity = Activity(post=new_post, author=request.user, type=2)
+                new_activity.save()
+                ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+
+                if(tagfield):
+                    #Tag filtering
+                    try:
+                        tag_dict = tagfield.split()
+                        for tag in tag_dict:
+                            if(tag.startswith("#")):
+                                try:
+                                    try:
+                                        topic = Topic.objects.get(title=tag[1:])
+                                        new_post.topics.add(topic)
+                                    except:
+                                        topic = Topic(title=tag[1:])
+                                        topic.save()
+                                        new_post.topics.add(topic)
+                                except Exception as e:
+                                    new_post.content = e
+
+                            elif(tag.startswith("@")):
+                                try:
+                                    try:
+                                        person = User.objects.get(username=tag[1:])
+                                        new_post.people.add(person)
+                                        new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                        if(new_notification.sender != new_notification.recepient):
+                                            new_notification.save()
+                                    except Exception as e:
+                                        print(f"____________________________{e}")
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+
+                    except:
+                        pass
+        except:
+            pass
+        return HttpResponseRedirect("topic-posts")
 
     return render(request, 'blog/topic_posts.html', context)
 
@@ -1528,7 +1565,7 @@ def get_user_information(request, username=None, view=None):
     circles = Profile.objects.all()
     img = models.ImageField(default = 'default.jpg', upload_to='post_pics')
     if(view == "media"):
-        posts = Post.objects.filter(Q(author__username=profile.user.username) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted')
+        posts = Post.objects.filter(Q(author__username=profile.user.username,group=None) & Q(~Q(image="default.jpg",group=None) | ~Q(video="",group=None))).order_by('-date_posted')
     elif(view == "friends"):
         circles = Profile.objects.filter(Q(friends=profile)).order_by('-id')
     elif(view == "followers"):
@@ -1542,7 +1579,7 @@ def get_user_information(request, username=None, view=None):
     elif(view == "likes"):
         posts = Post.objects.filter(Q(like__author=profile.user)).order_by('-date_posted')
     elif(view == "feed"):
-        posts = Post.objects.filter(Q(author=profile.user)).order_by('-date_posted')
+        posts = Post.objects.filter(Q(author=profile.user,group=None)).order_by('-date_posted')
 
     #Get Profile accquaintences
 
@@ -1584,7 +1621,7 @@ def get_user_information(request, username=None, view=None):
         'existing_request' : isRequestExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
-        'media' : Post.objects.filter(Q(author=profile.user) & ~Q(image="default.jpg", author=profile.user) | ~Q(video="")).order_by('-date_posted'),
+        'media' : Post.objects.filter(Q(author=profile.user,group=None) & ~Q(image="default.jpg", author=profile.user) | ~Q(video="")).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).order_by('-date_posted').count(),
         'user_comments' : Post.objects.filter(reply__author__username=username).order_by('-date_posted').count(),
         'obj' : Post.objects.last(),
@@ -1670,7 +1707,7 @@ def get_user_information(request, username=None, view=None):
                 new_context = sub_context
                 new_context["page_limit"] += int(page_count)
 
-                if(view == "friends" or view == "followers" or view == "following"):
+                if(view == "friends" or view == "followers" or view == "following" or view == "groups"):
                     html = render_to_string('blog/feed_circles.html',new_context, request=request)
                 else:
                     html = render_to_string('blog/feed.html',new_context, request=request)
@@ -1679,56 +1716,69 @@ def get_user_information(request, username=None, view=None):
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
-        if(post_form.is_valid()):
-            tagfield = post_form.cleaned_data.get('tags')
-            con = post_form.cleaned_data.get('content')
-            new_post = Post(content=con, author=request.user, reply=None)
+        try:
+            if(post_form.is_valid() or request.FILES['media']):
+                tagfield = post_form.cleaned_data.get('tags')
+                if(post_form.is_valid()):
+                    con = post_form.cleaned_data.get('content')
+                else:
+                    con = ""
+                new_post = Post(content=con, author=request.user, reply=None)
 
-            #Media filtering
-            try:
-                media = request.FILES['media']
-                url = media.name.lower()
-                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
-                    new_post.image = media
-                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
-                    new_post.video = media
-            except:
-                pass
-
-            new_post.save()
-            post_form = NewPostForm()
-            new_activity = Activity(post=new_post, author=request.user, type=2)
-            new_activity.save()
-
-            if(tagfield):
-                #Tag filtering
+                #Media filtering
                 try:
-                    tag_dict = tagfield.split()
-                    for tag in tag_dict:
-                        if(tag.startswith("#")):
-                            try:
-                                try:
-                                    topic = Topic.objects.get(title=tag[1:])
-                                    new_post.topics.add(topic)
-                                except:
-                                    topic = Topic(title=tag[1:])
-                                    topic.save()
-                                    new_post.topics.add(topic)
-                            except Exception as e:
-                                new_post.content = e
-
-                        elif(tag.startswith("@")):
-                            try:
-                                try:
-                                    person = User.objects.get(username=tag[1:])
-                                    new_post.people.add(person)
-                                except Exception as e:
-                                    print(f"____________________________{e}")
-                            except Exception as e:
-                                print(f"____________________________{e}")
-
+                    media = request.FILES['media']
+                    url = media.name.lower()
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                        new_post.image = media
+                    elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                        new_post.video = media
                 except:
                     pass
+
+                new_post.save()
+                post_form = NewPostForm()
+
+                new_activity = Activity(post=new_post, author=request.user, type=2)
+                new_activity.save()
+                ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+
+                if(tagfield):
+                    #Tag filtering
+                    try:
+                        tag_dict = tagfield.split()
+                        for tag in tag_dict:
+                            if(tag.startswith("#")):
+                                try:
+                                    try:
+                                        topic = Topic.objects.get(title=tag[1:])
+                                        new_post.topics.add(topic)
+                                    except:
+                                        topic = Topic(title=tag[1:])
+                                        topic.save()
+                                        new_post.topics.add(topic)
+                                except Exception as e:
+                                    new_post.content = e
+
+                            elif(tag.startswith("@")):
+                                try:
+                                    try:
+                                        person = User.objects.get(username=tag[1:])
+                                        new_post.people.add(person)
+                                        new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                        if(new_notification.sender != new_notification.recepient):
+                                            new_notification.save()
+                                    except Exception as e:
+                                        print(f"____________________________{e}")
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+
+                    except:
+                        pass
+        except:
+            pass
+        return HttpResponseRedirect(profile.user.username)
+        return render(request, 'blog/home.html', context)
 
     return render(request, 'blog/user_posts.html', context)
 
@@ -1898,56 +1948,68 @@ def get_group_information(request, name=None, view=None):
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
-        if(post_form.is_valid()):
-            tagfield = post_form.cleaned_data.get('tags')
-            con = post_form.cleaned_data.get('content')
-            new_post = Post(content=con, author=request.user, reply=None, group=group)
+        try:
+            if(post_form.is_valid() or request.FILES['media']):
+                tagfield = post_form.cleaned_data.get('tags')
+                if(post_form.is_valid()):
+                    con = post_form.cleaned_data.get('content')
+                else:
+                    con = ""
+                new_post = Post(content=con, author=request.user, reply=None, group=group)
 
-            #Media filtering
-            try:
-                media = request.FILES['media']
-                url = media.name.lower()
-                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
-                    new_post.image = media
-                elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
-                    new_post.video = media
-            except:
-                pass
-
-            new_post.save()
-            post_form = NewPostForm()
-            new_activity = Activity(post=new_post, author=request.user, type=2, group=group)
-            new_activity.save()
-
-            if(tagfield):
-                #Tag filtering
+                #Media filtering
                 try:
-                    tag_dict = tagfield.split()
-                    for tag in tag_dict:
-                        if(tag.startswith("#")):
-                            try:
-                                try:
-                                    topic = Topic.objects.get(title=tag[1:])
-                                    new_post.topics.add(topic)
-                                except:
-                                    topic = Topic(title=tag[1:])
-                                    topic.save()
-                                    new_post.topics.add(topic)
-                            except Exception as e:
-                                new_post.content = e
-
-                        elif(tag.startswith("@")):
-                            try:
-                                try:
-                                    person = User.objects.get(username=tag[1:])
-                                    new_post.people.add(person)
-                                except Exception as e:
-                                    print(f"____________________________{e}")
-                            except Exception as e:
-                                print(f"____________________________{e}")
-
+                    media = request.FILES['media']
+                    url = media.name.lower()
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                        new_post.image = media
+                    elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
+                        new_post.video = media
                 except:
                     pass
+
+                new_post.save()
+                post_form = NewPostForm()
+
+                new_activity = Activity(post=new_post, author=request.user, type=2, group=group)
+                new_activity.save()
+                ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+
+                if(tagfield):
+                    #Tag filtering
+                    try:
+                        tag_dict = tagfield.split()
+                        for tag in tag_dict:
+                            if(tag.startswith("#")):
+                                try:
+                                    try:
+                                        topic = Topic.objects.get(title=tag[1:])
+                                        new_post.topics.add(topic)
+                                    except:
+                                        topic = Topic(title=tag[1:])
+                                        topic.save()
+                                        new_post.topics.add(topic)
+                                except Exception as e:
+                                    new_post.content = e
+
+                            elif(tag.startswith("@")):
+                                try:
+                                    try:
+                                        person = User.objects.get(username=tag[1:])
+                                        new_post.people.add(person)
+                                        new_notification = Notification(sender=request.user, recepient=person, post=new_post, type=2)
+                                        if(new_notification.sender != new_notification.recepient):
+                                            new_notification.save()
+                                    except Exception as e:
+                                        print(f"____________________________{e}")
+                                except Exception as e:
+                                    print(f"____________________________{e}")
+
+                    except:
+                        pass
+        except:
+            pass
+        return HttpResponseRedirect(group.name)
 
     return render(request, 'blog/group_posts.html', context)
 

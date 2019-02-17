@@ -18,8 +18,13 @@
             <img class="rounded-circle article-img mr-0" style=" width: 100px; height: 100px; border: 0.5vh solid #FFFFFF;" src="{{group.image.url}}">
             <div class="media-body">
               <h3><b class="article-title">{{group.name}}</b></h3>
-              <h5><b class="article-title"><a class="text mr-2" style="font-size:2.25vh; color:black;"
-                href="{% url 'group-posts' group.name %}">{{ group.members.count }} Members</a></b></h5>
+              {% if group.members.count > 1 %}
+              <a class="text mr-2" style="font-size:2.25vh;">{{ group.members.count }} Members</a>
+              {% elif group.members.count > 0 %}
+              <a class="text mr-2" style="font-size:2.25vh;">{{ group.members.count }} Member</a>
+              {% else %}
+              <a class="text mr-2" style="font-size:2.25vh;">No Members</a>
+              {% endif %}
             </div>
         </div>
     </div>

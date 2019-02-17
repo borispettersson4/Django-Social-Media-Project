@@ -3,6 +3,22 @@
 {% load static %}
 {% load filters %}
 
+<script>
+   $(document).ready(function () {
+     $("p[id=post_content]").each(function( index ) {
+       // Get the content
+       var str = $(this).html();
+       // Set the regex string
+       var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
+       // Replace plain text links by hyperlinks
+       var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$1</a>");
+       // Echo link
+       $(this).html(replaced_text);
+     });
+
+   });
+</script>
+
 {% block content %}
 <div id="post" style="background-color:#eedfff; border-radius: 0.5rem;">
 <form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
@@ -68,7 +84,7 @@
       </video>
         {% endif %}
       </a>
-    <p class="article-content" style="">{{ obj.content }}</p>
+    <p class="article-content" id="post_content" style="">{{ obj.content }}</p>
 
     {#This is the part where the image information is done#}
     <div id="post_like_comment_P{{obj.id}}">

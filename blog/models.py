@@ -28,7 +28,7 @@ class Post(models.Model):
     reply = models.ForeignKey("self", on_delete = models.CASCADE, blank=True, default = "self", null=True)
     repost = models.ForeignKey("self", on_delete = models.CASCADE,related_name='reposts', blank=True, null=True)
     group = models.ForeignKey(Group, on_delete = models.CASCADE, blank=True, null=True)
-
+    link = models.CharField(max_length = 150,blank=True)
 
     def __str__(self):
         return (f'{self.author} : {self.content}')

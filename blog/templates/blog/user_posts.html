@@ -322,6 +322,7 @@ style=" font-size:2.3vh;">
 </div>
 {% endif %}
 
+{% if media %}
 <a><b> Pictures & Videos </b> <a class="float-right mr-0 mt-0" href="{% url 'user-posts' profile.user 'media' %}">See All</a>
 <div>
   {% for post in media|slice:":6"%}
@@ -333,14 +334,11 @@ style=" font-size:2.3vh;">
       <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{% static 'resources/default_video.jpg' %}"
       style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
       member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
-  {% elif forloop.last %}
-      <div>
-        <a>There is no media content.</a>
-      </div>
   {% endif %}
   {% endfor %}
   </div>
 <p></p>
+{% endif %}
 
 <a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
 <div id="activities" >

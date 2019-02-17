@@ -1,0 +1,80 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block about %}
+{% load static %}
+{% load filters %}
+
+
+<div class="content-section" style="">
+<!-- USER EDIT FORM HERE -->
+<form method="POST" action="{% url 'blog-home' %}">
+  {% csrf_token %}
+  <fieldset class="form-group">
+    <div class="media">
+
+    </div>
+    <legend class="border-bottom mb-2"><b>Project Mango Versions</b></legend>
+  </fieldset>
+
+<div style="text-align:justify">
+
+  <div class="media-body" style="background-color:#a300cc; border-radius:0.3rem;">
+
+  <h5 class="ml-2 mb-2"style=" color:white;"><strong>
+     <a class="ml-1">Version 0.1.5</a>
+    </strong></h5>
+    </div>
+    <a>Released in : February 16, 2019</a>
+  <div>
+  <a style="text-align: justify;"><b>New Features</b></a>
+  <ul class="mt-0" style="margin:0; list-style-type: none;">
+    <li> Added Groups in Profile Navigation.</li>
+    <li> Added Group page.</li>
+    <li> Added <a style="color:#a300cc" href="{% url 'group_manager' %}">Manage Groups</a> page.</li>
+    <li> Added <a style="color:#a300cc" href="{% url 'group-new' %}">New Group</a> page.</li>
+    <li> Added <a style="color:#a300cc" href="">Edit Group</a> page.</li>
+    <li> Added <a style="color:#a300cc" href="{% url 'patch_notes' %}">Versions</a> page.</li>
+  <ul>
+  </div>
+
+  <div>
+  <a style="text-align: justify;"><b>Changes</b></a>
+  <ul class="mt-0" style="margin:0; list-style-type: none;">
+    <li> Profile Groups are now visible in the Home and Profile page.</li>
+    <li> Posts can now recognize hyperlinks and make them accessible.</li>
+    <li> Group posts display in the post feed of the home page.</li>
+  <ul>
+  </div>
+
+  <div>
+  <a style="text-align: justify;"><b>Bug Fixes</b></a>
+  <ul class="mt-0" style="margin:0; list-style-type: none;">
+    <li> Improved performance and stability.</li>
+    <li> Fixed an issue where upon creating posts a Form Resubmission alert would appear.</li>
+    <li> Fixed an issue where posts are duplicted upon posting.</li>
+    <li> Fixed an issue where leaving the content section of a new post blank would prevent the user from creating a new post.</li>
+  <ul>
+  </div>
+
+
+
+</div>
+
+
+</form>
+</div>
+{% endblock about %}
+
+{% block modal %}
+
+<div class="modal fade" id="notificationModalCenter" tabindex="-1" role="dialog" aria-labelledby="notificationModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+
+{% endblock modal %}

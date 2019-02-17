@@ -2,6 +2,22 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
+<script>
+  $(document).ready(function () {
+    $("p[id=post_content]").each(function( index ) {
+      // Get the content
+      var str = $(this).html();
+      // Set the regex string
+      var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
+      // Replace plain text links by hyperlinks
+      var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$1</a>");
+      // Echo link
+      $(this).html(replaced_text);
+    });
+
+  });
+</script>
+
 <li class="list-group"
 style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: list-style-type: none;">
   {% for comment in replies %}
@@ -55,7 +71,7 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
           {% if 'default.jpg' not in comment.image.url%}
         <img class="img-fluid mb-2 mt-2" alt="Responsive image" src="{{comment.image.url}}">
           {% endif %}
-      <p class="article-content">{{ comment.content }}</p>
+      <p class="article-content" id="post_content">{{ comment.content }}</p>
 
       {#This is the part where the image information is done#}
       <div id="reply_like_comment_{{comment.id}}">
