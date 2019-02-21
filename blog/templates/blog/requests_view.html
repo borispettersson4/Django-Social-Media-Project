@@ -32,7 +32,7 @@
 <ul class="list-group" style="margin-bottom:0vh">
     {% if requests %}
 
-    {% for activity in requests%}
+    {% for activity in requests %}
     {% if forloop.counter <= 200 %}
     {% if activity.confirmed == False %}
     <li class="list-group-item list-group-item" style="background-color:#fffab4;">
@@ -41,7 +41,7 @@
     {% endif %}
 
     {% if not activity.group %}
-      {% if activity.sender.profile in user.profile.friends.all %}
+      {% if activity.sender.profile in user.profile.friends.all and activity.accepted %}
 
         <div class="input-block-level media-body" style="border-radius: 0.0rem;">
           <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
@@ -69,7 +69,7 @@
       {% endif %}
 
     {% elif activity.group and activity.type == 0 %}
-      {% if activity.sender in activity.group.members.all %}
+      {% if activity.sender in activity.group.members.all and activity.accepted %}
 
         <div class="input-block-level media-body" style="border-radius: 0.0rem;">
           <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
@@ -95,6 +95,34 @@
       </div>
 
       {% endif %}
+
+      {% elif activity.group and activity.type == 1 %}
+        {% if activity.recepient in activity.group.members.all and activity.accepted %}
+
+          <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+            <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+            <b class="article-title" style="text-decoration: none; font-size:2vh;">You are now a member of {{activity.group.name}}</b>
+          <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+            <div class="float-right">
+        </div>
+
+        {% else %}
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} has invited you to join {{activity.group.name}}</b>
+        <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+          <div class="float-right">
+
+          <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
+          style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
+
+          <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
+           id="requestsDeclineButton"><b>Decline</b></button>
+          </div>
+        </div>
+
+        {% endif %}
     {% endif %}
 
     </li>
@@ -113,6 +141,6 @@
 </div></td></tr>
 </table>
 <div class="m-0"style="text-align:center; margin:0vh;">
-  <a style="margin:30px;"><b>mango</b></a>
+  <img class="mr-0" style=" width: auto; height: 12px; cursor:pointer; margin:10px;" src="{% static 'resources/mangrr_logo_black_full.png' %}"/>
 </div>
   </article>

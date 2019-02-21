@@ -150,6 +150,51 @@
   });
 
   $(document).ready(function(event) {
+      $(document).on('click', '#inviteButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var member_id = $(this).attr('member_id');
+          $.ajax({
+            type: "POST",
+            url: "{% url 'user-posts' profile.user %}",
+            data : { 'group_id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Send_Invite"},
+            dataType: 'json',
+            success : function(response) {
+              console.log("success");
+              $('#profile_overhead_display').html(response['form']);
+              location.reload();
+            },
+            error : function(rs, e) {
+              $('#profile_overhead_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
+      $(document).on('click', '#cancelInviteButton' , function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+          $.ajax({
+            type: "POST",
+            url: "{% url 'user-posts' profile.user %}",
+            data : {'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Cancel_Invite"},
+            dataType: 'json',
+            success : function(response) {
+              console.log("success");
+              $('#profile_overhead_display').html(response['form']);
+              location.reload();
+            },
+            error : function(rs, e) {
+              $('#profile_overhead_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
       $(document).on('click', '#sendRequestButton' , function(event) {
           $.ajax({
             type: "POST",

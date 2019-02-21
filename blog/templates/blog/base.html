@@ -17,9 +17,9 @@
     <!--CSS Inclusion-->
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
     {% if title %}
-    <title>Project Mango - {{ title }}</title>
+    <title>Mangrr - {{ title }}</title>
     {% else %}
-    <title>Project Mango</title>
+    <title>Mangrr</title>
     {% endif %}
   </head>
   <body>
@@ -77,26 +77,15 @@
           });
       });
 
-      $(document).ready(function () {
-        $("p[id=post_content]").each(function( index ) {
-          // Get the content
-          var str = $(this).html();
-          // Set the regex string
-          var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
-          // Replace plain text links by hyperlinks
-          var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$1</a>");
-          // Echo link
-          $(this).html(replaced_text);
-        });
-
-      });
     </script>
 
   <!-- Navigation Bar -->
   <header class="site-header">
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
       <div class="container">
-        <a class="navbar-brand mr-4" style="font-family:Targa MS Hand; font-size:2.5vh;"href="{% url 'blog-home' %}">MANGO</a>
+        <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">
+        <img class="mr-0" style=" width: auto; height: 18px; cursor:pointer;" src="{% static 'resources/mangrr_logo_white_full.png' %}"/>
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
@@ -104,7 +93,7 @@
 
           {% if user.is_authenticated %}
           <div class="navbar-nav mr-auto" id="nav_bell">
-            <img class="mr-0" style=" width: 3.5vh; height: 3.5vh; cursor:pointer;" id="bellButton"
+            <img class="mr-0" style=" width: auto; height: 30px; cursor:pointer;" id="bellButton"
             src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>
             {% if notifications or requests %}
               {% if badge_count != 0 %}
@@ -114,13 +103,13 @@
           </div>
 
           <div class="" id="searchButton">
-            <div class="mr-2" id="wrap">
+            <div class="mr-2" id="wrap" style="margin:0px;">
               <form id = "search_form" action="" method="GET" autocomplete="off">
 
                 <fieldset class="form">
                   <input id="search" name="search" type="text" style="color:black;" placeholder="Search posts, @people, #topics, etc." >
                 </fieldset>
-                  <img src="{% static 'resources/search_icon.png' %}" style="width: 4vh; height: 4vh;">
+                  <img src="{% static 'resources/search_icon.png' %}" style="width: auto; height: 30px;">
               </form>
             </div>
           </div>
@@ -133,7 +122,7 @@
             <a class="nav-item nav-link" href="{% url 'register' %}" style="color:white;">Register</a>
             {% else %}
             <div class="dropdown">
-                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" max-width: 5vh; max-height: 5vh; border: 0.3vh solid #FFFFFF; cursor:pointer;"
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: auto; height: 40px; padding:0; margin:0; border: 3px solid #FFFFFF; cursor:pointer;"
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'user-posts' user %}">View Profile</a>
@@ -146,7 +135,7 @@
               </div>
 
               {% if not hide_post %}
-              <button class="btn btn-normal post_new" style=" width: auto; height: auto; border: 0.3vh solid #FFFFFF;
+              <button class="btn btn-normal post_new" style=" width: auto; height: auto; border: 2px solid #FFFFFF;
               cursor:pointer; border-radius: 20px;" id="main_interact_big" data-toggle="modal"
               data-target="#newPostModalCenter"><b>New Post</b></button>
               {% endif %}
@@ -199,7 +188,7 @@
       <ul style="  list-style-type: none; margin: 0; padding: 0;" >
         <li class="mr-2" style="display: inline;">
           <a href="{% url 'blog-home' %}" style="color:black;">
-            <b>Mango</b></a>
+            <b>Mangrr</b></a>
         </li>
         <li class="mr-2" style="display: inline;">
           <a href="{% url 'about' %}" style="color:black;">

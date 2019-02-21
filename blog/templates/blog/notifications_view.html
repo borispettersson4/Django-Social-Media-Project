@@ -64,6 +64,10 @@
         <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} is now following you.</b>
         {% elif activity.type == 5 %}
         <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} added you to {{activity.group.name}}</b>
+        {% elif activity.type == 6 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} started following {{activity.group.name}}</b>
+        {% elif activity.type == 7 %}
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} joined {{activity.group.name}}</b>
         {% endif %}
       <small class="text-muted" style="">{{ activity.date_posted|date:"M d, Y" }}</small>
       </div>
@@ -86,7 +90,7 @@
 
 
 <div class="m-0"style="text-align:center; margin:0vh;">
-  <a style="margin:30px;"><b>mango</b></a>
+  <img class="mr-0" style=" width: auto; height: 12px; cursor:pointer; margin:10px;" src="{% static 'resources/mangrr_logo_black_full.png' %}"/>
 </div>
 
   </article>

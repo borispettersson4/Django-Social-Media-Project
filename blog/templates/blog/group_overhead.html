@@ -23,40 +23,44 @@
  </a>
       <div>
         <main role="main" class="col">
-          {% if request.user.username in request.path %}
-
-            <button type="button" class="btn btn-primary float-right ml-2" id="editProfile" link="{% url 'profile' %}"
-            style=" background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"
-            href="{% url 'profile' %}"> <b>Edit Profile</b> </button>
-          {% else %}
-            <!--
-            <button type="button" class="btn btn-primary float-left ml-2"
-            style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Message</b></button>
-            -->
 
           {% if is_member %}
             <button type="button" class="btn btn-primary float-right ml-2" id="leaveButton"
             style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Leave</b></button>
 
-            {% elif is_owner %}
+          {% elif is_owner %}
             <button type="button" class="btn btn-primary float-right ml-2" id="editGroup" link="{% url 'group' group.name %}"
             style=" background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"
             href="{% url 'profile' %}"> <b>Edit Group</b> </button>
 
           {% else %}
+                {% if group.type == "1" %}
+                <button type="button" class="btn btn-primary float-right ml-2" id="joinButton"
+                style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Join</b></button>
+                {% endif %}
 
-                {% if not existing_request %}
-                <button type="button" class="btn btn-primary float-right ml-2" id="sendRequestButton"
-                style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Request To Join</b></button>
-                {% else %}
-                <button type="button" class="btn btn-primary float-right ml-2"
-                style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Request Sent</b></button>
+                {% if group.type == "2" or group.type == "3" %}
+                  {% if is_following %}
+                  <button type="button" class="btn btn-primary float-right ml-2" id="followButton"
+                  style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Unfollow</b></button>
+                  {% else %}
+                  <button type="button" class="btn btn-primary float-right ml-2" id="followButton"
+                  style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Follow</b></button>
+                  {% endif %}
+                {% endif %}
+
+                {% if group.type == "2" or group.type == "4" %}
+                  {% if not existing_request %}
+                  <button type="button" class="btn btn-primary float-right ml-2" id="sendRequestButton"
+                  style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Request To Join</b></button>
+                  {% else %}
+                  <button type="button" class="btn btn-primary float-right ml-2"
+                  style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Request Sent</b></button>
+                  {% endif %}
                 {% endif %}
         {% endif %}
-        {% endif %}
-        </main>
 
+        </main>
       </div>
   </div>
-
  </div>

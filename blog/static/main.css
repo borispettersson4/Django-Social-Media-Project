@@ -245,15 +245,15 @@ a.article-title:hover {
 #wrap {
   display: inline-block;
   position: relative;
-  height: 0px;
-  padding-bottom:4vh;
+  height: 30px;
+  padding-bottom:0vh;
   position: relative;
 
 }
 
 #search[type="text"] {
-  height: 4vh;
-  width: 8vh;
+  height: 32px;
+  width: 8vw;
   font-size: 2vh;
   display: inline-block;
   font-family: "Arial";

@@ -27,9 +27,27 @@
             <button type="button" class="btn btn-primary float-left ml-2"
             style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Send Message</b></button>
             -->
+
+            {% if groups_owned.count > 0 and not is_on_board %}
+              {% if existing_invite %}
+              <button type="button" class="btn btn-primary float-left ml-2" id="cancelInviteButton"
+              style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Cancel Invite</b></button>
+              {% else %}
+              <button type="button" class="dropdown btn btn-primary float-left ml-2" id="dropdownMenuButton" data-toggle="dropdown"
+              style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Invite To Group</b></button>
+
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% for group in groups_owned %}
+                <a class="dropdown-item" id="inviteButton" member_id={{group.id}} style="cursor:pointer">{{group.name}}</a>
+                {% endfor %}
+              </div>
+
+              {% endif %}
+            {% endif %}
+
             {% if is_following %}
             <button type="button" class="btn btn-primary float-right ml-2" id="followButton"
-            style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Following</b></button>
+            style="color: #a300cc; background-color:white; border-color:white; border-radius:1rem;"><b>Unfollow</b></button>
             {% else %}
             <button type="button" class="btn btn-primary float-right ml-2" id="followButton"
             style="background-color: #a300cc; border-color: #a300cc; border-radius:1rem;"><b>Follow</b></button>

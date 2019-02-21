@@ -13,13 +13,15 @@ def register(request):
 
     if(request.method == 'POST'):
         form = UserRegisterForm(request.POST)
-        if(form.is_valid()):
+        name = NameRegisterForm(request.POST)
+        if(form.is_valid() and name.is_valid()):
             form.save()
+            nick = name.cleaned_data.get('nick')
             username = form.cleaned_data.get('username')
             messages.success(request, f"Your Account Has Been Created. Sign In To Get Started, {username}!")
             try:
                 new_user = User.objects.get(username=username)
-                new_profile = Profile.objects.create(user=new_user)
+                new_profile = Profile.objects.create(user=new_user, nick=nick)
                 new_settings = ProfileSettings.objects.create(user=new_user)
                 print(f"{request.user.username} account has been created.")
             except:
@@ -27,7 +29,8 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'users/register.html', {'form':form, 'title':'Register','hide_post' : True, 'show_bottom_detail' : True})
+        name = NameRegisterForm()
+    return render(request, 'users/register.html', {'form':form, 'name':name, 'title':'Register','hide_post' : True, 'show_bottom_detail' : True})
 
 @login_required
 def profile(request):
@@ -132,14 +135,14 @@ def group(request, name=None):
             new_name = group_form.cleaned_data.get('name')
             new_image = group_form.cleaned_data.get('image')
             new_members = group_form.cleaned_data.get('members')
-            new_private = group_form.cleaned_data.get('private')
+            new_type = group_form.cleaned_data.get('type')
             group_form.save()
             new_cover = groupSettings_form.cleaned_data.get('coverImage')
             new_quote = groupSettings_form.cleaned_data.get('quote')
             new_about = groupSettings_form.cleaned_data.get('about')
             groupSettings_form.save()
 
-            new_group = Group(name=new_name,image=new_image,private=new_private, id=group.id, owner=group.owner)
+            new_group = Group(name=new_name,image=new_image,type=new_type, id=group.id, owner=group.owner)
             new_group.members.set(new_members)
             new_groupSettings = GroupSettings(coverImage=new_cover,quote=new_quote,about=new_about, group=group, id=groupSettings.id)
 
@@ -220,6 +223,7 @@ def group(request, name=None):
 
     return render(request, 'users/group.html', context)
 
+@login_required
 def group_new(request):
 
     group = Group(name="New Group", owner=request.user)
@@ -234,13 +238,13 @@ def group_new(request):
             new_name = group_form.cleaned_data.get('name')
             new_image = group_form.cleaned_data.get('image')
             new_members = group_form.cleaned_data.get('members')
-            new_private = group_form.cleaned_data.get('private')
+            new_type = group_form.cleaned_data.get('type')
 
             new_cover = groupSettings_form.cleaned_data.get('coverImage')
             new_quote = groupSettings_form.cleaned_data.get('quote')
             new_about = groupSettings_form.cleaned_data.get('about')
 
-            new_group = Group.objects.create(name=new_name,image=new_image,private=new_private, owner=request.user)
+            new_group = Group.objects.create(name=new_name,image=new_image,type=new_type, owner=request.user)
             new_group.members.set(new_members)
             new_groupSettings = GroupSettings.objects.create(coverImage=new_cover,quote=new_quote,about=new_about, group=new_group)
 

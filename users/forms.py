@@ -10,6 +10,17 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
+class NameRegisterForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['nick']
+        labels = {
+        "nick": "Display Name"
+        }
+        help_texts = {
+        'nick': ('This is your primary display name. ( 20 characters or less. )'),
+        }
+
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
     class Meta:
@@ -43,20 +54,20 @@ class ProfileSettingsUpdateForm(forms.ModelForm):
 class GroupUpdateForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = ['name','private','members','image']
+        fields = ['name','type','members','image']
         labels = {
         "image": "Group Image",
         "name": "Group Name",
         "members": "Group Members",
         "mods": "Group Moderators",
-        "private": "Private Group"
+        "type": "Group Type"
         }
         help_texts = {
         "image": ('Image will automatically be resized to 500 x 500 pixels.'),
         "name": ('Name of your group. Must be unique.'),
         "members": ('Hold down "Control", or "Command" on a Mac, to select more than one.'),
         "mods": ('Hold down "Control", or "Command" on a Mac, to select more than one.'),
-        "private": ("Once checked, only group members are able to see this group's content"),
+        "type": ("Once checked, only group members are able to see this group's content"),
         }
 
 class GroupSettingsUpdateForm(forms.ModelForm):

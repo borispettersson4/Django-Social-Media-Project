@@ -256,7 +256,17 @@ def getPost(request, pk=None):
 
         elif (request.POST.get('action') == "Accept_Request"):
             request_obj = Request.objects.get(id=request.POST.get('request_id'))
-            request.user.profile.friends.add(request_obj.sender.profile)
+            if(request_obj.group != None):
+                if(request_obj.type == 0):
+                    request_obj.group.members.add(request_obj.sender)
+                elif(request_obj.type == 1):
+                    request_obj.group.members.add(request_obj.recepient)
+            else:
+                if(request_obj.type == 0):
+                    request.user.profile.friends.add(request_obj.sender.profile)
+
+            request_obj.accepted = True
+            request_obj.save()
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
@@ -382,25 +392,30 @@ def home_view(request, pk=3):
                                                                                                                Q(author=request.user, group=None) |
                                                                                                                Q(group__members=request.user) |
                                                                                                                Q(group__owner=request.user) |
+                                                                                                               Q(group__followers=request.user) |
                                                                                                                Q(repost__author__group__members=request.user) |
                                                                                                                Q(repost__author__group__owner=request.user) |
                                                                                                                Q(reply__group__members=request.user) |
-                                                                                                               Q(reply__group__owner=request.user)
+                                                                                                               Q(reply__group__owner=request.user) |
+                                                                                                               Q(repost__author__group__followers=request.user) |
+                                                                                                               Q(reply__group__followers=request.user)
                                                                                                                ).order_by('-date_posted').distinct()
         except:
             posts = None
     except:
-        new_post = Post(id=None,author=request.user, content="I'm on Mango!\n\n(This post will disappear once you start following people.)")
         posts = Post.objects.none()
 
     page = request.GET.get('page', 1)
     paginator = Paginator(posts, page_limit)
+
     try:
         pages = paginator.page(page)
     except PageNotAnInteger:
         pages = paginator.page(1)
     except EmptyPage:
         pages = paginator.page(paginator.num_pages)
+    except:
+        pages = None;
 
     today = datetime.datetime.now()
     from django.db.models import Count
@@ -414,6 +429,12 @@ def home_view(request, pk=3):
                                        Q(author=request.user, group=None)).order_by('-date')
     except:
         acts = Activity.objects.none()
+
+    try:
+        myGroup = Group.objects.get(followers=request.user, members=request.user)
+        myGroup.followers.remove(request.user)
+    except:
+        pass
 
     context = {
             'posts': posts,
@@ -437,7 +458,7 @@ def home_view(request, pk=3):
             'search' : request.GET.get('search'),
             'report_form' : ReportForm(instance=request.user),
             'query':"",
-            'groups': Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user)).distinct()
+            'groups': Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user) | Q(followers=request.user)).distinct()
             }
 
 #When user clicks on a post
@@ -668,9 +689,14 @@ def home_view(request, pk=3):
             if(request_obj.group != None):
                 if(request_obj.type == 0):
                     request_obj.group.members.add(request_obj.sender)
+                elif(request_obj.type == 1):
+                    request_obj.group.members.add(request_obj.recepient)
             else:
                 if(request_obj.type == 0):
                     request.user.profile.friends.add(request_obj.sender.profile)
+
+            request_obj.accepted = True
+            request_obj.save()
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
@@ -1094,7 +1120,17 @@ def search(request, query_result=None):
 
         elif (request.POST.get('action') == "Accept_Request"):
             request_obj = Request.objects.get(id=request.POST.get('request_id'))
-            request.user.profile.friends.add(request_obj.sender.profile)
+            if(request_obj.group != None):
+                if(request_obj.type == 0):
+                    request_obj.group.members.add(request_obj.sender)
+                elif(request_obj.type == 1):
+                    request_obj.group.members.add(request_obj.recepient)
+            else:
+                if(request_obj.type == 0):
+                    request.user.profile.friends.add(request_obj.sender.profile)
+
+            request_obj.accepted = True
+            request_obj.save()
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
     #Site Behaviour
@@ -1445,7 +1481,17 @@ def getTopic(request, topic=None):
 
         elif (request.POST.get('action') == "Accept_Request"):
             request_obj = Request.objects.get(id=request.POST.get('request_id'))
-            request.user.profile.friends.add(request_obj.sender.profile)
+            if(request_obj.group != None):
+                if(request_obj.type == 0):
+                    request_obj.group.members.add(request_obj.sender)
+                elif(request_obj.type == 1):
+                    request_obj.group.members.add(request_obj.recepient)
+            else:
+                if(request_obj.type == 0):
+                    request.user.profile.friends.add(request_obj.sender.profile)
+
+            request_obj.accepted = True
+            request_obj.save()
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
@@ -1573,7 +1619,7 @@ def get_user_information(request, username=None, view=None):
     elif(view == "following"):
         circles = Profile.objects.filter(Q(followers=profile))
     elif(view == "groups"):
-        circles = Group.objects.filter(Q(owner=profile.user) | Q(members=profile.user) | Q(mods=profile.user)).distinct()
+        circles = Group.objects.filter(Q(owner=profile.user) | Q(members=profile.user) | Q(mods=profile.user) | Q(followers=profile.user)).distinct()
     elif(view == "replies"):
         posts = Post.objects.filter(Q(author=profile.user) & ~Q(reply=None)).order_by('-date_posted')
     elif(view == "likes"):
@@ -1597,7 +1643,21 @@ def get_user_information(request, username=None, view=None):
 
     def isRequestExists():
         try:
-            return (Request.objects.get(recepient=group.owner.user,sender=request.user) != None)
+            r = Request.objects.get(recepient=group.owner,sender=request.user)
+            return (not r.accepted)
+        except:
+            return False
+
+    def isInviteExists():
+        try:
+            r = Request.objects.get(Q(recepient=profile.user,sender=request.user,type=1) & ~Q(group=None))
+            return (not r.accepted)
+        except:
+            return False
+
+    def isOnBoard():
+        try:
+            return (Group.objects.filter(owner=request.user).count() == Group.objects.filter(members=profile.user).count())
         except:
             return False
 
@@ -1608,8 +1668,10 @@ def get_user_information(request, username=None, view=None):
         'following_count' : profile.following.count(),
         'friends_count' : profile.friends.count(),
         'groups_count' : Group.objects.filter(mods=profile.user).count() + Group.objects.filter(members=profile.user).count()
+                                                                         + Group.objects.filter(followers=profile.user).count()
                                                                          + Group.objects.filter(owner=profile.user).count(),
-        'groups' : Group.objects.filter(Q(owner=profile.user) | Q(mods=profile.user) | Q(members=profile.user)).distinct(),
+        'groups_owned' : Group.objects.filter(Q(owner=request.user) & ~Q(members=profile.user)),
+        'groups' : Group.objects.filter(Q(owner=profile.user) | Q(mods=profile.user) | Q(members=profile.user) | Q(followers=profile.user)).distinct(),
         'page_obj':paginator,
         'profile': profile,
         'comments' : Comment.objects.all(),
@@ -1619,6 +1681,7 @@ def get_user_information(request, username=None, view=None):
         'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
         'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
         'existing_request' : isRequestExists(),
+        'existing_invite' : isInviteExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
         'media' : Post.objects.filter(Q(author=profile.user,group=None) & ~Q(image="default.jpg", author=profile.user) | ~Q(video="")).order_by('-date_posted'),
@@ -1634,6 +1697,7 @@ def get_user_information(request, username=None, view=None):
         #Functions
         'is_friend' : isFriend(),
         'is_following' : isFollowing(),
+        'is_on_board' : isOnBoard(),
         'view' : view,
         'circles' : circles,
         }
@@ -1665,6 +1729,7 @@ def get_user_information(request, username=None, view=None):
             #Functions
             'is_friend' : isFriend(),
             'is_following' : isFollowing(),
+            'is_on_board' : isOnBoard(),
             'view' : view,
             'circles' : circles,
             }
@@ -1681,8 +1746,24 @@ def get_user_information(request, username=None, view=None):
             return JsonResponse({'form':html})
 
         elif (request.POST.get('action') == "Send_Request"):
-            request = Request(sender=request.user, recepient=group.owner.user, type=0)
-            request.save()
+            new_request = Request(sender=request.user, recepient=profile.user)
+            new_request.save()
+            html = render_to_string('blog/profile_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Invite"):
+            new_group = Group.objects.get(id=request.POST.get('group_id'))
+            new_request = Request(sender=request.user, recepient=profile.user, type=1, group=new_group)
+            new_request.save()
+            html = render_to_string('blog/profile_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Cancel_Invite"):
+            try:
+                new_request = Request.objects.filter(Q(sender=request.user, recepient=profile.user, type=1) & ~Q(group=None))
+                new_request.delete()
+            except:
+                pass
             html = render_to_string('blog/profile_overhead.html', context, request=request)
             return JsonResponse({'form':html})
 
@@ -1818,6 +1899,8 @@ def get_group_information(request, name=None, view=None):
         circles = Profile.objects.filter(Q(user__mods=group)).order_by('-id')
     elif(view == "members"):
         circles = Profile.objects.filter(Q(user__members=group)).order_by('-id')
+    elif(view == "followers"):
+        circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user=x) for x in group.followers.all())))).order_by('-id').distinct()
     elif(view == "replies"):
         posts = Post.objects.filter(Q(reply__group=group)).order_by('-date_posted')
     elif(view == "likes"):
@@ -1841,10 +1924,22 @@ def get_group_information(request, name=None, view=None):
 
     def isRequestExists():
         try:
-            r = Request.objects.get(recepient=group.owner,sender=request.user)
-            return (r != None and not r.confirmed)
+            r = Request.objects.get(recepient=group.owner,sender=request.user, group=group)
+            return (not r.accepted)
         except:
             return False
+
+    def isFollowing():
+        try:
+            return (group.followers.get(id=request.user.id) != None)
+        except:
+            return False
+
+    try:
+        myGroup = Group.objects.get(followers=request.user, members=request.user)
+        myGroup.followers.remove(request.user)
+    except:
+        pass
 
     context = {
         'posts': posts,
@@ -1872,6 +1967,7 @@ def get_group_information(request, name=None, view=None):
         #Functions
         'is_member' : isMember(),
         'is_owner' : isOwner(),
+        'is_following' : isFollowing(),
         'view' : view,
         'circles' : circles,
         'hide_post' : not (isMember() or isOwner()),
@@ -1903,19 +1999,45 @@ def get_group_information(request, name=None, view=None):
             #Functions
             'is_member' : isMember(),
             'is_owner' : isOwner(),
+            'is_following' : isFollowing(),
             'view' : view,
             'circles' : circles,
             }
 
         if (request.POST.get('action') == "Send_Request"):
-            request = Request(sender=request.user, recepient=group.owner, type=0, group=group)
-            request.save()
+            new_request = Request(sender=request.user, recepient=group.owner, type=0, group=group)
+            new_request.save()
             html = render_to_string('blog/group_overhead.html', context, request=request)
             return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Follow"):
+            if(isFollowing()):
+                group.followers.remove(request.user)
+            else:
+                group.followers.add(request.user)
+                new_notification = Notification(sender=request.user, recepient=group.owner, group=group, type=6)
+                if(new_notification.sender != new_notification.recepient):
+                    new_notification.save()
+            html = render_to_string('blog/group_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Join"):
+            group.members.add(request.user)
+            new_notification = Notification(sender=request.user, recepient=group.owner, group=group, type=7)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/group_overhead.html', context, request=request)
+            return JsonResponse({'form':html})
+
 
         elif (request.POST.get('action') == "Leave"):
             try:
                 group.members.remove(request.user)
+                try:
+                    Request.objects.filter(recepient=group.owner,sender=request.user, group=group).delete()
+                    Request.objects.filter(recepient=request.user,sender=group.owner, group=group).delete()
+                except:
+                    pass
             except:
                 group.mods.remove(request.user)
 
@@ -1928,7 +2050,7 @@ def get_group_information(request, name=None, view=None):
                 new_context = sub_context
                 new_context["page_limit"] += int(page_count)
 
-                if(view == "members" or view == "mods"):
+                if(view == "members" or view == "mods" or view == "followers"):
                     html = render_to_string('blog/feed_circles.html',new_context, request=request)
                 else:
                     html = render_to_string('blog/feed.html',new_context, request=request)

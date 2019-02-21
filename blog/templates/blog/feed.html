@@ -4,7 +4,7 @@
 
 <script>
   $(document).ready(function () {
-    $("p[id=post_content]").each(function( index ) {
+    $("p[id=feed_content]").each(function( index ) {
       // Get the content
       var str = $(this).html();
       // Set the regex string
@@ -102,7 +102,7 @@
         </video>
         {% endif %}
         </a>
-    <p class="article-content" id="post_content" style="">{{ post.repost.content }}</p>
+    <p class="article-content" id="feed_content" style="">{{ post.repost.content }}</p>
 
         <small class="float-left" style="font-size:1.4vh">
         Reposted by <a class="text-secondary" href="{% url 'user-posts' obj.author.username %}"
@@ -185,7 +185,7 @@
           </video>
           {% endif %}
         </a>
-      <p class="article-content" id="post_content" style="">{{ post.content }}</p>
+      <p class="article-content" id="feed_content" style="">{{ post.content }}</p>
 
       {#This is the part where the image information is done#}
       <div id="feed_like_comment_{{post.id}}">

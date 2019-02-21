@@ -150,6 +150,26 @@
   });
 
   $(document).ready(function(event) {
+      $(document).on('click', '#joinButton' , function(event) {
+          $.ajax({
+            type: "POST",
+            url: "{% url 'group-posts' group.name %}",
+            data : {'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Join"},
+            dataType: 'json',
+            success : function(response) {
+              console.log("success");
+              $('#profile_overhead_display').html(response['form']);
+              location.reload();
+            },
+            error : function(rs, e) {
+              $('#profile_overhead_display').html("an error occured");
+              console.log(rs.responseText);
+            }
+          });
+      });
+  });
+
+  $(document).ready(function(event) {
       $(document).on('click', '#sendRequestButton' , function(event) {
           $.ajax({
             type: "POST",
@@ -261,9 +281,9 @@ $(document).ready(function(event) {
 
 </script>
 
-{% if not group.private or is_member or is_owner %}
+{% if group.type != "4" and group.type != "5" or is_member or is_owner %}
 <div id="feed_display">
-{% if view == "moderators" or view == "members" %}
+{% if view == "moderators" or view == "members" or view == "followers" %}
 
   {% if circles.count > 0 %}
     {% include 'blog/feed_circles.html' %}
@@ -300,7 +320,7 @@ $(document).ready(function(event) {
     <div style="text-align:center;" class="mt-2 mb-2">
       <h5 style="text-align: center;"><strong>Looks like there's nothing to see here.</strong></h5>
       <blockquote>
-      <p style="text-align: center; margin-left:5vh; margin-right:5vh;">This group is set to private (invite-only).</p>
+      <p style="text-align: center; margin-left:5vh; margin-right:5vh;">This group is set to private.</p>
       </blockquote>
     </div>
 </article>
@@ -401,12 +421,11 @@ style=" font-size:2.3vh;">
   {% endif %}
 
 
-
+{% if group.members.all %}
 <a class=" mr-0 mb-0" href="{% url 'group-posts' group.name 'members' %}" style="color:black;">
 <b> Members <a style="font-size:2.5vh;">{{group.members.count}}</a></b>
 </a>
 <ul class="list-group">
-{% if group.members.all %}
   {% for member in group.members.all %}
       {% if forloop.counter <= 5 %}
     <a href="{% url 'user-posts' member.username %}" style="text-decoration: none !important">
@@ -426,13 +445,38 @@ style=" font-size:2.3vh;">
     {% endif %}
   {% endfor %}
 
-{% else %}
-  Nobody is following this user yet.
+{% endif %}
+</ul>
+
+{% if group.followers.count > 0 %}
+<a class=" mr-0 mb-0" href="{% url 'group-posts' group.name 'followers' %}" style="color:black;">
+<b> Followers <a style="font-size:2.5vh;">{{group.followers.count}}</a></b>
+</a>
+<ul class="list-group">
+  {% for member in group.followers.all %}
+      {% if forloop.counter <= 5 %}
+    <a href="{% url 'user-posts' member %}" style="text-decoration: none !important">
+        {% if forloop.first %}
+    <li class="list-group-item list-group-item" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+        {% elif forloop.last %}
+    <li class="list-group-item list-group-item" style="border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+        {% else %}
+    <li class="list-group-item list-group-item" style="">
+        {% endif %}
+      <div class="media-body">
+        <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{member.profile.image.url}}">
+          <b class="article-title" style="font-size:2vh">{{member.profile.nick}}</b>
+      </div>
+    </li>
+    </a>
+    {% endif %}
+  {% endfor %}
+
 {% endif %}
 </ul>
 
 
-{% endif %}
+{% endif %} <!--END-->
 
 {% endblock right %}
 

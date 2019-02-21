@@ -60,9 +60,22 @@ class Group(models.Model):
     nick = models.CharField(default = 'New Group', max_length = 20)
     image = models.ImageField(default = 'default_profile.jpg', upload_to='profile_pics')
     members = models.ManyToManyField(User, blank=True,related_name='members')
+    followers = models.ManyToManyField(User, blank=True,related_name='followers')
     mods = models.ManyToManyField(User, blank=True,related_name='mods')
     date_active = models.DateTimeField(default = timezone.now)
-    private = models.BooleanField(default=False)
+    choice_1 = '1'
+    choice_2 = '2'
+    choice_3 = '3'
+    choice_4 = '4'
+    choice_5 = '5'
+    CHOICES = (
+        (choice_1,'Open'),
+        (choice_2,'Public'),
+        (choice_3,'Public Invite-Only'),
+        (choice_4,'Private'),
+        (choice_5,'Private Invite-Only'),
+    )
+    type = models.CharField(max_length=1,choices=CHOICES, default=choice_2)
 
     def __str__(self):
         return(f'{self.name} Group')
