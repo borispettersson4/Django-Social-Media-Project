@@ -17,9 +17,9 @@
     <!--CSS Inclusion-->
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
     {% if title %}
-    <title>Mangrr - {{ title }}</title>
+    <title>Pinbitt - {{ title }}</title>
     {% else %}
-    <title>Mangrr</title>
+    <title>Pinbitt</title>
     {% endif %}
   </head>
   <body>
@@ -84,7 +84,7 @@
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
       <div class="container">
         <a class="navbar-brand mr-4" href="{% url 'blog-home' %}">
-        <img class="mr-0" style=" width: auto; height: 18px; cursor:pointer;" src="{% static 'resources/mangrr_logo_white_full.png' %}"/>
+        <img class="mr-0" style=" width: auto; height: 24px; cursor:pointer;" src="{% static 'resources/pinbitt_logo_white_full.png' %}"/>
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -188,7 +188,7 @@
       <ul style="  list-style-type: none; margin: 0; padding: 0;" >
         <li class="mr-2" style="display: inline;">
           <a href="{% url 'blog-home' %}" style="color:black;">
-            <b>Mangrr</b></a>
+            <b>Pinbitt</b></a>
         </li>
         <li class="mr-2" style="display: inline;">
           <a href="{% url 'about' %}" style="color:black;">

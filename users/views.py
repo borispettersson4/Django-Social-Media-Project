@@ -163,6 +163,13 @@ def group(request, name=None):
             new_groupSettings.save()
 
             messages.success(request, f"Your Group Settings Have Been Updated!")
+
+            try:
+                if(new_group.type != "2" and new_group.type != "3"):
+                    new_group.followers.clear()
+            except:
+                pass
+
             return redirect('group',group.name)
 
     else:
@@ -312,7 +319,7 @@ def group_new(request):
 @login_required
 def group_manager(request):
 
-    groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user) ).distinct()
+    groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user) | Q(followers=request.user) ).distinct()
 
 
     context = {
@@ -660,7 +667,6 @@ def versions(request):
 
     context = {
     'hide_post' : True,
-    'show_bottom_detail' : True
     }
 
     if request.is_ajax():

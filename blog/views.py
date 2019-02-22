@@ -385,6 +385,7 @@ class PostModalView(DetailView):
 def home_view(request, pk=3):
     page_limit = 10
     post_form = NewPostForm()
+    groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user) | Q(followers=request.user)).distinct()
 
     try:
         try:
@@ -431,7 +432,7 @@ def home_view(request, pk=3):
         acts = Activity.objects.none()
 
     try:
-        myGroup = Group.objects.get(followers=request.user, members=request.user)
+        myGroup = Group.objects.filter(followers=request.user, members=request.user)
         myGroup.followers.remove(request.user)
     except:
         pass
@@ -458,7 +459,7 @@ def home_view(request, pk=3):
             'search' : request.GET.get('search'),
             'report_form' : ReportForm(instance=request.user),
             'query':"",
-            'groups': Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user) | Q(followers=request.user)).distinct()
+            'groups': groups
             }
 
 #When user clicks on a post
@@ -1643,7 +1644,7 @@ def get_user_information(request, username=None, view=None):
 
     def isRequestExists():
         try:
-            r = Request.objects.get(recepient=group.owner,sender=request.user)
+            r = Request.objects.get(recepient=profile.user,sender=request.user)
             return (not r.accepted)
         except:
             return False

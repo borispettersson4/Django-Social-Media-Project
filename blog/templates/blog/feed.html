@@ -37,21 +37,9 @@
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
       <a class="mr-2" href="{% url 'user-posts' post.repost.author.username %}">{{ post.repost.author.profile.nick }}</a>
-      {% if post.repost.reply != None %}
-      <small>
-      <a class="mr-2 ml-0" href="{% url 'user-posts' post.repost.reply.author.username %}"
-      style="color:#a300cc">Replied to <b>@{{ post.repost.reply.author.username}}</b></a>
-      </small>
-      {% elif post.repost.group != None %}
-      <small>
-      <a class="mr-2 ml-0" href="{% url 'group-posts' post.repost.group.name %}"
-        style="color:#eb7500">Posted in <b>{{post.repost.group.name}}</b></a>
-      </small>
-      {% endif %}
-      <small class="text-muted" style="">{{ post.repost.date_posted|date:"M d, Y" }}</small>
 
       <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
-      style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+      style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
       style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
@@ -72,6 +60,19 @@
         data-toggle="modal" data-target="#reportPostModalCenter">Report Post</a>
         {% endif %}
       </div>
+
+      {% if post.repost.reply != None %}
+      <small>
+      <a class="mr-2 ml-0" href="{% url 'user-posts' post.repost.reply.author.username %}"
+      style="color:#a300cc">Replied to <b>@{{ post.repost.reply.author.username}}</b></a>
+      </small>
+      {% elif post.repost.group != None %}
+      <small>
+      <a class="mr-2 ml-0" href="{% url 'group-posts' post.repost.group.name %}"
+        style="color:#eb7500">Posted in <b>{{post.repost.group.name}}</b></a>
+      </small>
+      {% endif %}
+      <small class="text-muted" style="">{{ post.repost.date_posted|date:"M d, Y" }}</small>
 
     </div>
     <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.repost.id%}">{{ post.repost.title }}</a></h2>
@@ -123,21 +124,9 @@
     <div class="media-body" style="border-radius: 0.5rem;">
       <div class="article-metadata">
         <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-        {% if post.reply != None %}
-        <small>
-        <a class="mr-2 ml-0" href="{% url 'user-posts' post.reply.author.username %}"
-        style="color:#a300cc">Replied to <b>@{{ post.reply.author.username}}</b></a>
-        </small>
-        {% elif post.group != None %}
-        <small>
-        <a class="mr-2 ml-0" href="{% url 'group-posts' post.group.name %}"
-        style="color:#eb7500">Posted in <b>{{post.group.name}}</b></a>
-        </small>
-        {% endif %}
-        <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
 
         <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
-        style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
+        style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
         <img src="{% static 'resources/more.png' %}"
         style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
         </button>
@@ -155,6 +144,19 @@
           data-toggle="modal" data-target="#reportPostModalCenter">Report Post</a>
           {% endif %}
         </div>
+
+        {% if post.reply != None %}
+        <small>
+        <a class="mr-2 ml-0" href="{% url 'user-posts' post.reply.author.username %}"
+        style="color:#a300cc">Replied to <b>@{{ post.reply.author.username}}</b></a>
+        </small>
+        {% elif post.group != None %}
+        <small>
+        <a class="mr-2 ml-0" href="{% url 'group-posts' post.group.name %}"
+        style="color:#eb7500">Posted in <b>{{post.group.name}}</b></a>
+        </small>
+        {% endif %}
+        <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
 
       </div>
       <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>

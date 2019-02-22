@@ -336,7 +336,7 @@ $(document).ready(function(event) {
 
 {% block left %}
 
-{% if not group.private or is_member or is_owner %}
+{% if group.type != "4" and group.type != "5" or is_member or is_owner %}
 
 {% if group.groupsettings.quote %}
 <div class="mb-2" id="quote_section"
@@ -383,7 +383,7 @@ style=" font-size:2.3vh;">
 
 {% block right %}
 
-{% if not group.private or is_member or is_owner %}
+{% if group.type != "4" and group.type != "5" or is_member or is_owner %}
 
     <article class="media content-section" style="margin-bottom:1vh; text-decoration: none !important; border-radius:0.5rem;">
       <div class="media-body" style="border-radius: 0rem;">
