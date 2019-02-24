@@ -2,6 +2,8 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
+{% if not request.user_agent.is_mobile %}
+
 <article class="media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white; ">
 
   <div class="btn-group m-3" data-toggle="buttons" style="border-radius: 10rem;">
@@ -144,3 +146,151 @@
   <img class="mr-0" style=" width: auto; height: 15px; cursor:pointer; margin:10px;" src="{% static 'resources/pinbitt_logo_black_full.png' %}"/>
 </div>
   </article>
+
+
+
+
+{% else %}
+
+<article class="media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white; ">
+
+  <div class="btn-group ml-3 mt-3" data-toggle="buttons" style="border-radius: 10rem;">
+    <label class="mr-3" style="font-size:2.5vh; color:#981ceb; cursor:pointer;" id="notificationButton">
+      <a name="options" autocomplete="off" checked> <b> Notifications </b> </a>
+    </label>
+    <label class="" style="font-size:2.5vh; cursor:pointer;">
+      <a name="options"id="requestButton" autocomplete="off"> <b> <u>Requests</u> </b> </a>
+      {% if requests %}
+        {% if requests.confirmed %}
+        <span class="badge badge-danger" style="">{{requests.count}}</span>
+        {% else %}
+        <span class="badge badge-secondary" style="">{{requests.count}}</span>
+        {% endif %}
+      {% endif %}
+    </label>
+  </div>
+
+  <div class="btn-group" data-toggle="buttons" style="border-radius: 10rem; float:right; margin-top:2.5vh; margin-right:2.5vh">
+    <label class="" style="font-size:2vh; color:#981ceb; cursor:pointer;" id="requestsClearButton">
+      <a name="options" id="option3" autocomplete="off"> <b> <u> Clear All </u> </b> </a>
+    </label>
+  </div>
+
+  <table style="width:100%">
+  <tr><td><div style="overflow: auto; max-height : 100%;">
+
+<ul class="list-group" style="margin-bottom:0vh">
+    {% if requests %}
+
+    {% for activity in requests %}
+    {% if forloop.counter <= 200 %}
+    {% if activity.confirmed == False %}
+    <li class="list-group-item list-group-item" style="background-color:#fffab4;">
+    {% else %}
+    <li class="list-group-item list-group-item" style="">
+    {% endif %}
+
+    {% if not activity.group %}
+      {% if activity.sender.profile in user.profile.friends.all and activity.accepted %}
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">You and {{activity.sender.profile.nick}} are now friends.</b>
+        <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+          <div class="float-right">
+      </div>
+
+      {% else %}
+
+      <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} sent you a friend request.</b>
+      <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+        <div class="float-right">
+
+        <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
+        style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
+
+        <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
+         id="requestsDeclineButton"><b>Decline</b></button>
+        </div>
+      </div>
+
+      {% endif %}
+
+    {% elif activity.group and activity.type == 0 %}
+      {% if activity.sender in activity.group.members.all and activity.accepted %}
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} is now a member of {{activity.group.name}}</b>
+        <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+          <div class="float-right">
+      </div>
+
+      {% else %}
+
+      <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} wants to join {{activity.group.name}}</b>
+      <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+        <div class="float-right">
+
+        <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
+        style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
+
+        <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
+         id="requestsDeclineButton"><b>Decline</b></button>
+        </div>
+      </div>
+
+      {% endif %}
+
+      {% elif activity.group and activity.type == 1 %}
+        {% if activity.recepient in activity.group.members.all and activity.accepted %}
+
+          <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+            <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+            <b class="article-title" style="text-decoration: none; font-size:2vh;">You are now a member of {{activity.group.name}}</b>
+          <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+            <div class="float-right">
+        </div>
+
+        {% else %}
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{activity.sender.profile.image.url}}">
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">{{activity.sender.profile.nick}} has invited you to join {{activity.group.name}}</b>
+        <small class="text-muted" style="">{{ activity.date_posted|date:"M j" }}</small>
+          <div class="float-right">
+
+          <button class="btn btn-primary" id="acceptRequestButton" member_id = {{activity.id}}
+          style="background-color:#a300cc; border-color:#a300cc;border-radius:3rem;""> <b>Accept</b></button>
+
+          <button class="btn btn-secondary ml-2" style="border-radius:3rem;" member_id = {{activity.id}}
+           id="requestsDeclineButton"><b>Decline</b></button>
+          </div>
+        </div>
+
+        {% endif %}
+    {% endif %}
+
+    </li>
+  {% endif %}
+  {% endfor %}
+  {% else %}
+  <li class="list-group-item list-group-item" style="
+    background-color:#f2f2f2; ">
+
+    <div class="input-block-level media-body" style="border-radius: 0.0rem; text-align:center;">
+      <b class="article-title" style="text-decoration: none; font-size:2vh;">There are no new requests.</b>
+
+    </div>
+  </li>
+  {% endif %}
+</div></td></tr>
+</table>
+
+  </article>
+
+{% endif %}

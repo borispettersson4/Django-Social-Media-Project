@@ -28,15 +28,6 @@
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
-      {% if obj.reply != None %}
-      <a class="mr-2" href="{% url 'user-posts' obj.reply.author.username %}" style="color:#a300cc">Replied to <b>@{{ obj.reply.author.username}}</b></a>
-      {% elif obj.group != None %}
-      <small>
-      <a class="mr-2 ml-0" href="{% url 'group-posts' obj.group.name %}"
-        style="color:#eb7500">Posted in <b>{{obj.group.name}}</b></a>
-      </small>
-      {% endif %}
-      <small class="text-muted" style="">{{ obj.date_posted|date:"M d, Y" }}</small>
 
       <button class="dropdown" id="hidden_interact" select_id = {{obj.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
@@ -57,6 +48,17 @@
         data-toggle="modal" data-target="#reportPostModalCenter">Report Post</a>
         {% endif %}
       </div>
+
+      {% if obj.reply != None %}
+      <a class="mr-2" href="{% url 'user-posts' obj.reply.author.username %}" style="color:#a300cc">Replied to <b>@{{ obj.reply.author.username}}</b></a>
+      {% elif obj.group != None %}
+      <small>
+      <a class="mr-2 ml-0" href="{% url 'group-posts' obj.group.name %}"
+        style="color:#eb7500">Posted in <b>{{obj.group.name}}</b></a>
+      </small>
+      {% endif %}
+      <small class="text-muted" style="">{{ obj.date_posted|date:"M d, Y" }}</small>
+
     </div>
     <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=obj.id%}">{{ obj.title }}</a></h2>
     <div>

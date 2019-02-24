@@ -277,6 +277,19 @@ a.article-title:hover {
 
 }
 
+#search_mobile[type="text"] {
+  height: 32px;
+  font-family: "Arial";
+  border: 1px solid #a300cc;
+  outline: none;
+  color: black;
+  padding-left: 2vh;
+  padding-right: 2vh;
+  border-radius: 1rem;
+  width:100%;
+  cursor: pointer;
+}
+
 #search_button:hover {
   width: 40vh;
   z-index: 1;
@@ -326,4 +339,26 @@ a.article-title:hover {
   cursor: text;
   padding-bottom:0px;
   background-color:white;
+}
+
+/* Horizontal Scrollbar */
+
+div.scrollmenu {
+  background-color: none;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+div.scrollmenu a {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 5px;
+  text-decoration: none;
+  font-size:15px;
+
+}
+
+div.scrollmenu a:hover {
+  background-color: #777;
 }

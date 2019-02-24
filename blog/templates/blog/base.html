@@ -61,6 +61,11 @@
           $(document).on('submit', '#search_form' , function(event) {
             event.preventDefault();
               var query = $('#search').val();
+              var query_mobile = $('#search_mobile').val();
+
+              if(query_mobile){
+                query = query_mobile
+              }
 
               if(query.includes("#")){
                 for(i=0; i < query.length; i++) {
@@ -79,6 +84,7 @@
 
     </script>
 
+{% if not request.user_agent.is_mobile %}
   <!-- Navigation Bar -->
   <header class="site-header">
     <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
@@ -146,9 +152,89 @@
       </div>
     </nav>
   </header>
+{% endif %}
+
+  {% if request.user_agent.is_mobile %}
+  <header class="site-header">
+    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" style="background-color:white; border-bottom: 1px solid #a300cc;">
+      <div class="container">
+
+        {% if user.is_authenticated %}
+        <button class="navbar-toggler mr-0" type="button" data-toggle="collapse" data-target="#navbarToggle"
+        aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation" style="outline: none; float:left; padding:0; margin:0;">
+          <img class="rounded-circle article-img mr-0" style=" width: auto; height: 40px; padding:0; margin:0; border: 3px solid #FFFFFF; cursor:pointer;"
+          src="{{user.profile.image.url}}" />
+        </button>
+
+        <form id = "search_form" action="" method="GET" autocomplete="off" style="float:left;">
+          <fieldset class="form" style="margin-left:0vw">
+            <input id="search_mobile" name="search" type="text" style="color:black; "
+            placeholder="Search posts, @people, #topics, etc." >
+          </fieldset>
+        </form>
+
+        {% else %}
+        <div style="text-align:center; width:100%">
+          <a class="navbar-brand" style="" href="{% url 'blog-home' %}">
+            <img class="" style=" width: auto; height: 24px; cursor:pointer;"  src="{% static 'resources/pinbitt_logo_purple_full.png' %}"/>
+          </a>
+        </div>
+
+        {% endif %}
+
+        <div class="collapse navbar-collapse" id="navbarToggle">
+          <!-- Navbar Right Side -->
+          <div class="navbar-nav" style="">
+            {% if not user.is_authenticated %}
+            <a class="nav-item nav-link" href="{% url 'login' %}" style="cursor:pointer;">Sign In</a>
+            <a class="nav-item nav-link" href="{% url 'register' %}" style="cursor:pointer;">Register</a>
+            {% else %}
+
+            <a class="dropdown-item" style="cursor:pointer; padding-left:2%;" id="drop_menu" link="{% url 'user-posts' user %}">View Profile</a>
+            <a class="dropdown-item" style="cursor:pointer; padding-left:2%;" id="drop_menu" link="{% url 'profile' %}">Edit Profile</a>
+            <a class="dropdown-item" style="cursor:pointer; padding-left:2%;" id="drop_menu" link="{% url 'group_manager' %}">Groups</a>
+            <a class="dropdown-item" style="cursor:pointer; padding-left:2%;" id="drop_menu" link="{% url 'feedback' %}">Feedback</a>
+            <a class="dropdown-item" style="cursor:pointer; padding-left:2%;" id="drop_menu" link="{% url 'about' %}">About</a>
+            <a class="dropdown-item" style="cursor:pointer; padding-left:2%;" id="drop_menu" link="{% url 'logout' %}">Log Out</a>
+
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+
+
+  <header class="site-header">
+    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-bottom" style="background-color:white; border-top: 1px solid #a300cc;" >
+
+          <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'blog-home' %}">
+            <img src="{% static 'resources/mobile/home.png' %}" style="width: 50%; height: 100%; text-align:center;"/>
+          </a>
+          <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'notifications' %}">
+            <img src="{% static 'resources/mobile/bell.png' %}" style="width: 50%; height: 100%; text-align:center"/>
+          </a>
+          <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'user-posts' request.user %}">
+            <img src="{% static 'resources/mobile/profile.png' %}" style="width: 50%; height: 100%; text-align:center"/>
+          </a>
+          {% if not hide_post %}
+          <a class="col post_new" style="text-align:center; list-style-type: none;" data-toggle="modal" data-target="#newPostModalCenter" href="{% url 'post-create' %}">
+            <img class="align-middle" src="{% static 'resources/mobile/add.png' %}" style="width: 50%; height: 100%; text-align:center"/>
+          </a>
+          {% else %}
+          <a class="col post_new" style="text-align:center; list-style-type: none;" href="{% url 'blog-home' %}">
+            <img class="align-middle" src="{% static 'resources/mobile/add.png' %}" style="width: 50%; height: 100%; text-align:center"/>
+          </a>
+          {% endif %}
+
+    </nav>
+  </header>
+  {% endif %}
 
 {% block overhead %}{% endblock %}
   <!-- Container Area -->
+{% if not request.user_agent.is_mobile %}
   <main role="main" class="container">
     <div class="row">
       <!--Friends-->
@@ -168,8 +254,11 @@
         {% endfor %}
         {% endif %}
 
+{% endif %}
+      <div {% if request.user_agent.is_mobile and not is_dropdown %} style="margin-top: 3.5rem; margin-bottom: 3.0rem;" {% endif %}>
         {% block content %}{% endblock %}
-
+      </div>
+{% if not request.user_agent.is_mobile %}
       </div>
 
       {% if 'post' not in request.path %}
@@ -180,8 +269,6 @@
           {% block right %}{% endblock %}
         </div>
       </div>
-
-    {% block about %}{% endblock about %}
 
     {% if show_bottom_detail %}
     <div class="mb-4" style="text-align:center;">
@@ -211,6 +298,10 @@
     {% endif %}
 
   </main>
+  {% endif %}
+
+  {% block about %}{% endblock about %}
+
 
       <!--Modals go here-->
 

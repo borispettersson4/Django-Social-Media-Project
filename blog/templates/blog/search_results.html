@@ -191,21 +191,64 @@ $(document).ready(function(event) {
 
 </script>
 
+{% if not request.user_agent.is_mobile %}
+
 {% if posts or circles %}
 
-<div id="feed_display">
-{% include 'blog/feed.html' %}
-</div>
+  <div id="feed_display">
+  {% include 'blog/feed.html' %}
+  </div>
 
-<div id="loading_feed">
-{% include 'blog/loading.html' %}
-<div class="" style="margin-bottom:10vh;"></div>
-</div>
+  <div id="loading_feed">
+  {% include 'blog/loading.html' %}
+  <div class="" style="margin-bottom:10vh;"></div>
+  </div>
+
+  {% else %}
+  <div class="mt-2" style="text-align:center;">
+  <h4>No information availabe for <a style="color:#a300cc"><b>{{query}}</b></a></h4>
+  </div>
+  {% endif %}
 
 {% else %}
-<div class="mt-2" style="text-align:center;">
-<h4>No information availabe for <a style="color:#a300cc"><b>{{query}}</b></a></h4>
+
+{% if posts or circles %}
+
+{% if circles %}
+<div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
+<h5 class="ml-2 mb-0"style=" color:white;"><strong>
+   <a class="ml-1">Users</a>
+  </strong></h5>
+  </div>
+{% endif %}
+
+<div id="people_display" >
+{% include 'blog/feed_circles.html' %}
 </div>
+
+{% if posts %}
+<div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
+<h5 class="ml-2 mb-0"style=" color:white;"><strong>
+   <a class="ml-1">Posts</a>
+  </strong></h5>
+  </div>
+{% endif %}
+
+  <div id="feed_display">
+  {% include 'blog/feed.html' %}
+  </div>
+
+  <div id="loading_feed">
+  {% include 'blog/loading.html' %}
+  <div class="" style="margin-bottom:10vh;"></div>
+  </div>
+
+  {% else %}
+  <div class="mt-2" style="text-align:center;">
+  <h4>No information availabe for <a style="color:#a300cc"><b>{{query}}</b></a></h4>
+  </div>
+  {% endif %}
+
 {% endif %}
 
 

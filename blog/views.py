@@ -459,7 +459,7 @@ def home_view(request, pk=3):
             'search' : request.GET.get('search'),
             'report_form' : ReportForm(instance=request.user),
             'query':"",
-            'groups': groups
+            'groups': groups,
             }
 
 #When user clicks on a post
@@ -899,7 +899,7 @@ def search(request, query_result=None):
             'circles' : circles,
             'term' : query,
             'form' : ReportForm(instance=request.user),
-            'hide_post' : True
+            'hide_post' : True,
             }
 
 #When user clicks on a post
@@ -1701,6 +1701,7 @@ def get_user_information(request, username=None, view=None):
         'is_on_board' : isOnBoard(),
         'view' : view,
         'circles' : circles,
+        'is_dropdown' : True,
         }
 
     if request.is_ajax():
@@ -1900,6 +1901,8 @@ def get_group_information(request, name=None, view=None):
         circles = Profile.objects.filter(Q(user__mods=group)).order_by('-id')
     elif(view == "members"):
         circles = Profile.objects.filter(Q(user__members=group)).order_by('-id')
+    elif(view == "owner"):
+        circles = Profile.objects.filter(Q(user=group.owner)).order_by('-id')
     elif(view == "followers"):
         circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user=x) for x in group.followers.all())))).order_by('-id').distinct()
     elif(view == "replies"):
@@ -1972,6 +1975,7 @@ def get_group_information(request, name=None, view=None):
         'view' : view,
         'circles' : circles,
         'hide_post' : not (isMember() or isOwner()),
+        'is_dropdown' : True,
         }
 
     if request.is_ajax():
@@ -2051,7 +2055,7 @@ def get_group_information(request, name=None, view=None):
                 new_context = sub_context
                 new_context["page_limit"] += int(page_count)
 
-                if(view == "members" or view == "mods" or view == "followers"):
+                if(view == "members" or view == "mods" or view == "followers" or view == "owner"):
                     html = render_to_string('blog/feed_circles.html',new_context, request=request)
                 else:
                     html = render_to_string('blog/feed.html',new_context, request=request)
@@ -2135,6 +2139,275 @@ def get_group_information(request, name=None, view=None):
         return HttpResponseRedirect(group.name)
 
     return render(request, 'blog/group_posts.html', context)
+
+@login_required
+def notifications(request):
+    context = {
+        'profile': request.user.profile,
+        'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+        Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+        'comments' : Comment.objects.all(),
+        'likes' : Like.objects.all(),
+        'user' : request.user,
+        'obj' : Post.objects.last(),
+        'search' : request.GET.get('search'),
+        'report_form' : ReportForm(instance=request.user),
+        'query':"",
+        }
+
+#When user clicks on a post
+    if request.is_ajax():
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            obj = Post.objects.last()
+            post_id = obj.id
+
+        sub_context = {
+            'profile': request.user.profile,
+            'page_obj': paginator,
+            'comments' : Comment.objects.all(),
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
+            'likes' : Like.objects.all(),
+            'user' : request.user,
+            'obj' : obj,
+            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'report_form' : ReportForm(instance=request.user),
+            'hide_post': True,
+            }
+
+        if (request.POST.get('action') == "Comment" and request.POST.get('content')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            cont = request.POST.get('content')
+            post = Post.objects.get(id=request.POST.get('id'))
+            author = request.user
+            post = Post(content=cont,author=author, reply=post)
+            post.save()
+            new_activity = Activity(post=obj, author=request.user, type=1)
+            new_activity.save()
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_activity = Activity(post=post, author=request.user, type=2)
+            new_activity.save()
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            html3 = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
+
+        elif (request.POST.get('action') == "View_Post"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "View_Post_Detail"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "View_Content"):
+            html = render_to_string('blog/content_view.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Like_Post"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Post_Reply"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Feed"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2})
+
+        elif (request.POST.get('action') == "New_Post"):
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Post"):
+
+            post = Post.objects.get(id=post_id)
+            post.delete()
+            html3 = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Report_Post"):
+
+            post = Post.objects.get(id=post_id)
+            report = request.POST.get('choice')
+            new_report = Report(author=request.user, report_choice=report, post=post)
+            new_report.save()
+            html = render_to_string('blog/post_confirm_report_confirmed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Copy_Link"):
+
+            url = request.build_absolute_uri()
+            url_post = request.POST.get('link').replace("LINK",str(post_id))
+            new_context = sub_context
+            new_context["link"] = str(f"{url[:-1]}{url_post}")
+            post = Post.objects.get(id=post_id)
+            html = render_to_string('blog/post_confirm_copylink.html', new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Repost"):
+
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post)
+            repost.save()
+            new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
+            new_activity.save()
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        #User Actions
+
+        elif (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            if(request_obj.group != None):
+                if(request_obj.type == 0):
+                    request_obj.group.members.add(request_obj.sender)
+                elif(request_obj.type == 1):
+                    request_obj.group.members.add(request_obj.recepient)
+            else:
+                if(request_obj.type == 0):
+                    request.user.profile.friends.add(request_obj.sender.profile)
+
+            request_obj.accepted = True
+            request_obj.save()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/feed.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Next_Reply"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/replies.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+    return render(request, 'blog/notifications_main_mobile.html', context)
 
 class UserPostListView(ListView):
     model = Post

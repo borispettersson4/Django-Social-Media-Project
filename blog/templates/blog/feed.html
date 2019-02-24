@@ -10,7 +10,7 @@
       // Set the regex string
       var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
       // Replace plain text links by hyperlinks
-      var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$1</a>");
+      var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$2</a>");
       // Echo link
       $(this).html(replaced_text);
     });
@@ -187,7 +187,7 @@
           </video>
           {% endif %}
         </a>
-      <p class="article-content" id="feed_content" style="">{{ post.content }}</p>
+      <p class="article-content" id="feed_content" style="text-overflow: clip;">{{ post.content }}</p>
 
       {#This is the part where the image information is done#}
       <div id="feed_like_comment_{{post.id}}">

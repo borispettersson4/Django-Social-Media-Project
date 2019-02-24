@@ -192,6 +192,8 @@ $(document).ready(function(event) {
 
 </script>
 
+{% if not request.user_agent.is_mobile %}
+
 <div id="feed_display">
 {% include 'blog/feed.html' %}
 </div>
@@ -201,6 +203,50 @@ $(document).ready(function(event) {
 <div class="" style="margin-bottom:10vh;"></div>
 </div>
 
+{% else %}
+
+{% if posts %}
+<div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
+<h5 class="ml-2 mb-0"style=" color:white;"><strong>
+   <a class="ml-1">Related</a>
+  </strong></h5>
+  </div>
+{% endif %}
+
+<div id="popular_topics" >
+{% include 'blog/related_topics.html' %}
+</div>
+
+{% if posts %}
+<div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
+<h5 class="ml-2 mb-0"style=" color:white;"><strong>
+   <a class="ml-1">Information</a>
+  </strong></h5>
+  </div>
+{% endif %}
+
+<div id="popular_topics" >
+{% include 'blog/topic_query_panel.html' %}
+</div>
+
+{% if posts %}
+<div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
+<h5 class="ml-2 mb-0"style=" color:white;"><strong>
+   <a class="ml-1">Posts</a>
+  </strong></h5>
+  </div>
+{% endif %}
+
+<div id="feed_display">
+{% include 'blog/feed.html' %}
+</div>
+
+<div id="loading_feed">
+{% include 'blog/loading.html' %}
+<div class="" style="margin-bottom:10vh;"></div>
+</div>
+
+{% endif %}
 
 {% endblock content %}
 

@@ -1,5 +1,4 @@
-
-
+{% if not request.user_agent.is_mobile %}
 
 {% if view == "groups" %}
 <ul style="padding:0;list-style-type: none;">
@@ -41,4 +40,52 @@
 {% endif %}
 {% endfor %}
 </ul>
+{% endif %}
+
+
+
+{% else %}
+
+{% if view == "groups" %}
+<ul style="padding:0;list-style-type: none;">
+{% for group in circles %}
+{% if forloop.counter <= page_limit %}
+<li class="ml-0 mb-0" style="float:left; width:100%;">
+<article class="post_object" id="profile_object" style="width:100%;" >
+  <a href="{% url 'group-posts' group.name %}" style="text-decoration: none !important">
+    <article class="media content-section mb-0" style="border-radius: 0.0rem;">
+      <img class="rounded-circle article-img" src="{{group.image.url}}">
+        <ul class="" style="padding:0;list-style-type: none;">
+          <li><b class="article-title" style="margin-right:2v; text-decoration:none;">{{group.name}}</b></li>
+        <li><b class="text" style="color:#eb7500">@{{group.owner.username}}</b></li>
+      </ul>
+    </article>
+
+
+</li>
+{% endif %}
+{% endfor %}
+</ul>
+{% else %}
+<ul style="padding:0;list-style-type: none;">
+{% for person in circles %}
+{% if forloop.counter <= page_limit %}
+<li class="ml-0 mb-0" style="float:left; width:100%;">
+<article class="post_object" id="profile_object" style="width:100%; " >
+  <a href="{% url 'user-posts' person.user %}" style="text-decoration: none !important">
+    <article class="media content-section mb-0" style="border-radius: 0.0rem;">
+      <img class="rounded-circle article-img" src="{{person.image.url}}">
+        <ul class="" style="padding:0;list-style-type: none;">
+          <li><b class="article-title" style="margin-right:0; text-decoration:none;">{{person.nick}}</b></li>
+        <li><b class="text" style="color:#0071e6">@{{person.user.username}}</b></li>
+      </ul>
+    </article>
+
+
+</li>
+{% endif %}
+{% endfor %}
+</ul>
+{% endif %}
+
 {% endif %}

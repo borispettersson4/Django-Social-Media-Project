@@ -2,6 +2,8 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
+{% if not request.user_agent.is_mobile %}
+
 <article class="media content-section" style="border-radius: 0.5rem;">
 <div class="media-body" style="border-radius: 0.5rem; ">
 
@@ -50,3 +52,56 @@
 
 </div>
 </article>
+
+{% else %}
+
+<article class="media content-section" style="border-radius: 0.0rem;  margin-bottom:0">
+<div class="media-body" style="border-radius: 0.0rem; ">
+
+  <ul class="mt-1" style="padding:0; list-style-type: none;">
+<li>
+  <div class="m-1" style="">
+    <b class="mt-0" style="font-size:2.5vh" href="">Posts {{topic_count}}</b>
+  </div>
+</li>
+<li>
+  <div class="m-1" style="">
+    <b class="mt-0" style="font-size:2.5vh" href="">Likes {{topic_likes}}</b>
+  </div>
+</li>
+<li>
+  <div class="m-1" style="">
+    <b class="mt-0" style="font-size:2.5vh" href="">Users {{topic_users}}</b>
+  </div>
+</li>
+
+  <div class="m-2"></div>
+  <a class="mt-0" style="font-size:2vh; color:black;" href="{% url 'post-detail' topic_first_post.id %}"><b>First Posted By</b></a>
+  <li class="list" style="list-style-type: none;">
+    <ul class="mt-0" style="padding-left:1vh;">
+    <a class="article-title" href="{% url 'user-posts' topic_first_post.author %}"
+    style="font-size:2vh; color:#0071e6"><b>@{{topic_first_post.author.username}}</b></a>
+    </ul>
+    <ul class="mt-0" style="padding-left:1vh;">
+      <small class="text-muted" style=""><b>{{ topic_first_post.date_posted|date:"M j, Y" }}</b></small>
+    </ul>
+  </li>
+
+  <div class="m-1"></div>
+  <a class="mt-0" style="font-size:2vh; color:black;" href="{% url 'post-detail' topic_best_post.id %}"><b>Last Popularized By</b></a>
+  <li class="list" style="list-style-type: none;">
+    <ul class="mt-0" style="padding-left:1vh;">
+    <a class="article-title"  href="{% url 'user-posts' topic_best_post.author %}"
+    style="font-size:2vh; color:#0071e6"><b>@{{topic_best_post.author.username}}</b></a>
+    </ul>
+    <ul class="mt-0" style="padding-left:1vh;">
+      <small class="text-muted" style=""><b>{{ topic_best_post.date_posted|date:"M j, Y" }}</b></small>
+    </ul>
+  </li>
+
+  </ul>
+
+</div>
+</article>
+
+{% endif %}

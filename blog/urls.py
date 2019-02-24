@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.home_view,name='blog-home'),
     url(r'^ajaxtest/', views.get_post, name='ajaxtest'),
     path('<pk>', views.home_view,name='post-open'),
+    path('mobile/notifications', views.notifications,name='notifications'),
     path('user/<str:username>', views.get_user_information,name='user-posts'),
     path('user/<str:username>/<str:view>', views.get_user_information,name='user-posts'),
     path('group/<str:name>', views.get_group_information,name='group-posts'),

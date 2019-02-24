@@ -283,7 +283,7 @@ $(document).ready(function(event) {
 
 {% if group.type != "4" and group.type != "5" or is_member or is_owner %}
 <div id="feed_display">
-{% if view == "moderators" or view == "members" or view == "followers" %}
+{% if view == "moderators" or view == "members" or view == "followers" or view == "owner" %}
 
   {% if circles.count > 0 %}
     {% include 'blog/feed_circles.html' %}

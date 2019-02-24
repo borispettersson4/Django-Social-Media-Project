@@ -2,8 +2,10 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
+{% if not request.user_agent.is_mobile %}
+
 <article class="media content-section" style="border-radius: 0.5rem;">
-<div class="media-body" style="border-radius: 0.5rem; ">
+<div class="media-body mb-2" style="border-radius: 0.5rem; ">
   <b class="mt-2" style="font-size:3vh; color:#e60000" href="">#{{topic}}</b>
 
     <div class="m-2"></div>
@@ -37,3 +39,43 @@
     </li>
 </div>
 </article>
+
+{% else %}
+
+<article class="media content-section mb-2" style="border-radius: 0.0rem; margin-bottom:0">
+<div class="media-body" style="border-radius: 0.0rem; ">
+  <b class="mt-2" style="font-size:3vh; color:#e60000" href="">#{{topic}}</b>
+
+    <div class="m-2"></div>
+    {% if topics %}
+    <b class="" style="font-size:2vh" href="">Related Topics</b>
+    {% endif %}
+    <li class="list" style="list-style-type: none;">
+      {% for tag in topics %}
+      {% if forloop.counter <= 5 %}
+      <ul class="mt-1" style="padding-left:1vh;">
+      <a class="article-title" href="{% url 'topic-posts' tag.title  %}"
+      style="color:#e60000"><b>#{{tag.title}}</b></a>
+      </ul>
+      {% endif %}
+      {% endfor%}
+    </li>
+
+    <div class="m-3"></div>
+    {% if people %}
+    <b class="mt-0" style="font-size:2vh" href="">Notable People</b>
+    {% endif %}
+    <li class="list" style="list-style-type: none;">
+      {% for tag in people %}
+      {% if forloop.counter <= 10 %}
+      <ul class="mt-1" style="padding-left:1vh;">
+      <a class="article-title"  href="{% url 'user-posts' tag.username  %}"
+      style="color:#0071e6"><b>@{{tag.username}}</b></a>
+      </ul>
+      {% endif %}
+      {% endfor%}
+    </li>
+</div>
+</article>
+
+{% endif %}
