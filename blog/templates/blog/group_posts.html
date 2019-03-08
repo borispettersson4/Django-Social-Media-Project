@@ -5,6 +5,22 @@
 
 {% block overhead %}
 
+<script>
+  $(document).ready(function () {
+    $("div[id=group_info]").each(function( index ) {
+      // Get the content
+      var str = $(this).html();
+      // Set the regex string
+      var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
+      // Replace plain text links by hyperlinks
+      var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$2</a>");
+      // Echo link
+      $(this).html(replaced_text);
+    });
+
+  });
+</script>
+
 <div id="profile_overhead_display">
 {% include 'blog/group_overhead.html' %}
 </div>
@@ -224,7 +240,11 @@ $(document).ready(function (event) {
         event.preventDefault();
         event.stopImmediatePropagation();
          var page_count = $("article[class*='post_object']").length;
-         if({{posts.count }} > page_count){
+         if(
+         ( ("{{view}}" == "{{null}}" || "{{view}}" == "feed" || "{{view}}" == "media") && {{posts.count}} > page_count )
+         ||
+         ( ("{{view}}" == "followers" || "{{view}}" == "groups" || "{{view}}" == "following" || "{{view}}" == "friends") && {{circles.count}} > page_count )
+         ){
             $('#loading_feed').show();
          $.ajax({
            type: "POST",
@@ -291,7 +311,7 @@ $(document).ready(function(event) {
     <article class="post_object" style="border-radius: 0.5rem; margin-bottom:0px">
 
         <div style="text-align:center;" class="mt-2 mb-2">
-          <h5 style="text-align: center;"><strong>There's noboday here.</strong></h5>
+          <h5 style="text-align: center;"><strong>There's nobody here.</strong></h5>
           <blockquote>
           <p style="text-align: center; margin-left:5vh; margin-right:5vh;">Just an empty void for now.</p>
           </blockquote>
@@ -335,48 +355,50 @@ $(document).ready(function(event) {
 {% endblock content %}
 
 {% block left %}
+<div id="group_info">
+  {% if group.type != "4" and group.type != "5" or is_member or is_owner %}
 
-{% if group.type != "4" and group.type != "5" or is_member or is_owner %}
-
-{% if group.groupsettings.quote %}
-<div class="mb-2" id="quote_section"
-style=" font-size:2.3vh;">
-  <b class="text-secondary">"{{group.groupsettings.quote}}"</b>
-</div>
-{% endif %}
-
-{% if group.groupsettings.about %}
-<div class="article-content mt-0 mb-2" id="about_section">
-<b> Summary </b>
-  {{group.groupsettings.about}}
-</div>
-{% endif %}
-
-{% if media %}
-<a><b> Pictures & Videos </b> <a class="float-right mr-0 mt-0" href="{% url 'group-posts' group.name 'media' %}">See All</a>
-<div>
-  {% for post in media|slice:":6"%}
-  {% if post.video == "" %}
-      <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
-      style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
-      member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
-  {% elif post.group %}
-      <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{% static 'resources/default_video.jpg' %}"
-      style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
-      member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
-  {% endif %}
-  {% endfor %}
+  {% if group.groupsettings.quote %}
+  <div class="mb-2" id="quote_section"
+  style=" font-size:2.3vh; color:#a300cc">
+    <b class="text">{{group.groupsettings.quote}}</b>
   </div>
-<p></p>
-{% endif %}
+  {% endif %}
 
-<a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
-<div id="activities" >
-{% include 'blog/activities.html' %}
+  {% if group.groupsettings.about %}
+  <div class="article-content mt-0 mb-2" id="about_section">
+  <b> Summary </b>
+    {{group.groupsettings.about}}
+  </div>
+  {% endif %}
+
+  {% if media %}
+  <a><b> Pictures & Videos </b> <a class="float-right mr-0 mt-0" href="{% url 'group-posts' group.name 'media' %}">See All</a>
+  <div>
+    {% for post in media|slice:":6"%}
+    {% if post.video == "" and post.group == group %}
+        <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
+        style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
+        member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
+    {% elif post.group %}
+        <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{% static 'resources/default_video.jpg' %}"
+        style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
+        member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
+    {% endif %}
+    {% endfor %}
+    </div>
+  <p></p>
+  {% endif %}
+
+  {% if group.anonymity == "1" %}
+    <a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
+    <div id="activities" >
+    {% include 'blog/activities.html' %}
+    </div>
+  {% endif %}
+
+  {% endif %}
 </div>
-
-{% endif %}
-
 {% endblock left %}
 
 
@@ -404,20 +426,22 @@ style=" font-size:2.3vh;">
       </div>
       </article>
 
-  <a class=" mr-0 mb-0" href="{% url 'user-posts' group.owner.username %}" style="color:black;">
-  <b> Owner <a style="font-size:2.5vh;"></a> </b>
-  </a>
-  <ul class="list-group" style="margin-bottom:2vh">
-{% if group.owner %}
-    <a href="{% url 'user-posts' group.owner.username %}" style="text-decoration: none !important">
-    <li class="list-group-item list-group-item" style="border-radius: 0.5rem;">
-        <div class="media-body">
-        <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{group.owner.profile.image.url}}">
-          <b class="article-title" style="font-size:2vh">{{group.owner.profile.nick}}</b>
-        </div>
-      </li>
-      </a>
-  </ul>
+{% if group.anonymity == "1" %}
+    <a class=" mr-0 mb-0" href="{% url 'user-posts' group.owner.username %}" style="color:black;">
+    <b> Owner <a style="font-size:2.5vh;"></a> </b>
+    </a>
+    <ul class="list-group" style="margin-bottom:2vh">
+  {% if group.owner %}
+      <a href="{% url 'user-posts' group.owner.username %}" style="text-decoration: none !important">
+      <li class="list-group-item list-group-item" style="border-radius: 0.5rem;">
+          <div class="media-body">
+          <img class="rounded-circle article-img" style="width:3vh; height:3vh; margin-right:1vh;" src="{{group.owner.profile.image.url}}">
+            <b class="article-title" style="font-size:2vh">{{group.owner.profile.nick}}</b>
+          </div>
+        </li>
+        </a>
+    </ul>
+    {% endif %}
   {% endif %}
 
 
@@ -426,6 +450,7 @@ style=" font-size:2.3vh;">
 <b> Members <a style="font-size:2.5vh;">{{group.members.count}}</a></b>
 </a>
 <ul class="list-group">
+  {% if group.anonymity == "1" %}
   {% for member in group.members.all %}
       {% if forloop.counter <= 5 %}
     <a href="{% url 'user-posts' member.username %}" style="text-decoration: none !important">
@@ -444,6 +469,7 @@ style=" font-size:2.3vh;">
     </a>
     {% endif %}
   {% endfor %}
+{% endif %}
 
 {% endif %}
 </ul>
@@ -453,6 +479,7 @@ style=" font-size:2.3vh;">
 <b> Followers <a style="font-size:2.5vh;">{{group.followers.count}}</a></b>
 </a>
 <ul class="list-group">
+  {% if group.anonymity == "1" %}
   {% for member in group.followers.all %}
       {% if forloop.counter <= 5 %}
     <a href="{% url 'user-posts' member %}" style="text-decoration: none !important">
@@ -471,6 +498,7 @@ style=" font-size:2.3vh;">
     </a>
     {% endif %}
   {% endfor %}
+  {% endif %}
 
 {% endif %}
 </ul>
@@ -537,6 +565,15 @@ style=" font-size:2.3vh;">
     <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="messageModalCenter" tabindex="-1" role="dialog" aria-labelledby="messageModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/messages.html' %}
       {# --------------------------END----------------------------- #}
     </div>
   </div>

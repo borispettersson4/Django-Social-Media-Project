@@ -2,6 +2,9 @@
 {% load filters %}
 {% load crispy_forms_tags %}
 
+<a  style="cursor:pointer" data-toggle="modal"
+data-target="#viewContentPostModalCenter" member_id = {{post.repost.id}}>
+
 {% if obj.repost %}
 
 {% if 'default.jpg' not in obj.repost.image.url%}
@@ -31,3 +34,5 @@ alt="Responsive image" src="{{obj.image.url}}">
 {% endif %}
 
 {% endif %}
+
+</a>

@@ -1,0 +1,124 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+
+  <div id="chat_board">
+  {% if messages %}
+
+  {% for post in messages %}
+  {% if forloop.counter <= 100 %}
+  <article class="post_object" style="border-radius: 0.0rem; margin-bottom:0px">
+    {% if forloop.last %}
+      <article class="media content-section" id="last_message" last_message_id={{post.id}} style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+    {% else %}
+      <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+    {% endif %}
+      <a href="{% url 'user-posts' post.sender.username %}">
+        <img class="rounded-circle article-img" style=" width: 35px; height: 35px;" src="{{post.sender.profile.image.url}}">
+      </a>
+      <div class="media-body" style="border-radius: 0.5rem;">
+        <div class="article-metadata">
+          <a class="mr-2" href="{% url 'user-posts' post.sender.username %}">{{ post.sender.profile.nick }}</a>
+          <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
+          style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
+          <img src="{% static 'resources/more.png' %}"
+          style="width: 20px; height: 20px; border:none; cursor:pointer; display: inline-block;"></img>
+          </button>
+
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            {% if user == post.sender %}
+            <a class="dropdown-item" id = "delete_message_btn" message_id = {{post.id}} style="color:red; cursor:pointer;"
+            >Delete Message</a>
+            {% else %}
+            <a class="dropdown-item" id = "report_btn" report_id = {{post.id}} style="cursor:pointer;"
+            data-toggle="modal" data-target="#reportPostModalCenter">Report Message</a>
+            {% endif %}
+          </div>
+
+          {% if post.reply != None %}
+          <small>
+            {% if not post.reply.group or post.reply.group.anonymity == "1" %}
+              <a class="mr-2" href="{% url 'user-posts' obj.sender.username %}" style="color:#a300cc">Replied to <b>@{{ post.reply.sender.username}}</b></a>
+              {% else %}
+              <a class="mr-2" href="" style="color:#a300cc">Replied to <b>@?</b></a>
+            {% endif %}
+          </small>
+          {% elif post.group != None %}
+          <small>
+          <a class="mr-2 ml-0" href="{% url 'group-posts' post.group.name %}"
+          style="color:#eb7500">Posted in <b>{{post.group.name}}</b></a>
+          </small>
+          {% endif %}
+          <small class="text-muted" style="">{{ post.date_posted|date:"M d, Y" }}</small>
+
+          <a id="message_confirmation">
+          {% if request.user == post.sender %}
+            {% if not post.confirmed %}
+              <small class="text-secondary" id="feed_content" style="text-overflow: clip;">Not Seen</small>
+            {% else %}
+              <small class="text-secondary" id="feed_content" style="text-overflow: clip;">Seen by <b>{{post.recepient.profile.nick}}</b></small>
+            {% endif %}
+          {% endif %}
+          </a>
+
+        </div>
+        <h2><a class="article-title" style="font-size:3vh" href="{% url 'post-detail' pk=post.id%}">{{ post.title }}</a></h2>
+        <div>
+
+          {% for topic in post.topics.all %}
+            <a href="{% url 'topic-posts' topic.title  %}" class="article-content-sm mr-2"
+              style="color:#e60000">
+            <b>#{{topic.title}}</b></a>
+          {% endfor %}
+
+          {% for person in post.people.all %}
+            <a href="{% url 'user-posts' person.username  %}" class="article-content-sm mr-2"
+              style="color:#0071e6">
+            <b>@{{person.username}}</b></a>
+          {% endfor %}
+        </div>
+          <a class = "viewButtonContent" style="cursor:pointer" data-toggle="modal"
+          data-target="#viewContentPostModalCenter" member_id = {{post.id}}>
+            {% if 'default.jpg' not in post.image.url%}
+            <img class="img-fluid mb-2 mt-2" style="min-width:100%; border-radius: 1rem;"
+            alt="Responsive image" src="{{post.image.url}}">
+            {% elif post.video %}
+            <video width="100%" height="100%" preload="auto" loop style ="border-radius: 1rem;"
+              class="mb-2" controls>
+              <source src="{{post.video.url}}#t=0.0" type="video/mp4" style ="border-radius: 1rem;">
+              Your browser does not support the video tag.
+            </video>
+            {% endif %}
+          </a>
+          {% if post.audio %}
+          <audio style="width:100%;" height="100%" preload="auto" loop
+            class="mb-2" controls>
+            <source src="{{post.audio.url}}" type="audio/mpeg">
+            Your browser does not support the audio tag.
+          </audio>
+          {% endif %}
+        <p class="article-content" id="feed_content" style="text-overflow: clip;">{{ post.content }}</p>
+
+
+      {% endif %}
+
+  <!-- Button trigger modal -->
+  </article>
+  </article>
+  {% endfor %}
+
+  {% else %}
+  <article class="post_object" style="border-radius: 0.5rem; margin-bottom:0px">
+  <article class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
+
+  <div class="media-body" style="border-radius: 0.5rem;">
+
+    <p class="article-content" id="feed_content" style="text-overflow: clip;">There are no messages to {{partner.profile.nick}}. Send them a message!</p>
+    <div>
+
+<!-- Button trigger modal -->
+</article>
+</article>
+
+  {% endif %}

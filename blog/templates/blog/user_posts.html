@@ -5,6 +5,22 @@
 
 {% block overhead %}
 
+<script>
+  $(document).ready(function () {
+    $("div[id=user_info]").each(function( index ) {
+      // Get the content
+      var str = $(this).html();
+      // Set the regex string
+      var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
+      // Replace plain text links by hyperlinks
+      var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$2</a>");
+      // Echo link
+      $(this).html(replaced_text);
+    });
+
+  });
+</script>
+
 <div id="profile_overhead_display">
 {% include 'blog/profile_overhead.html' %}
 </div>
@@ -249,7 +265,11 @@ $(document).ready(function (event) {
         event.preventDefault();
         event.stopImmediatePropagation();
          var page_count = $("article[class*='post_object']").length;
-         if({{posts.count }} > page_count){
+         if(
+         ( ("{{view}}" == "{{null}}" || "{{view}}" == "feed" || "{{view}}" == "media") && {{posts.count}} > page_count )
+         ||
+         ( ("{{view}}" == "followers" || "{{view}}" == "groups" || "{{view}}" == "following" || "{{view}}" == "friends") && {{circles.count}} > page_count )
+         ){
             $('#loading_feed').show();
          $.ajax({
            type: "POST",
@@ -259,7 +279,9 @@ $(document).ready(function (event) {
            success : function(response) {
              $('#feed_display').html(response['form']);
              $('#loading_feed').hide();
-
+             console.log("AAAAA");
+             console.log("{{posts.count}}");
+             console.log("{{circles.count}}");
            },
            error : function(rs, e) {
              console.log(rs.responseText);
@@ -316,7 +338,7 @@ $(document).ready(function(event) {
     <article class="post_object" style="border-radius: 0.5rem; margin-bottom:0px">
 
         <div style="text-align:center;" class="mt-2 mb-2">
-          <h5 style="text-align: center;"><strong>There's noboday here.</strong></h5>
+          <h5 style="text-align: center;"><strong>There's nobody here.</strong></h5>
           <blockquote>
           <p style="text-align: center; margin-left:5vh; margin-right:5vh;">Just an empty void for now.</p>
           </blockquote>
@@ -353,43 +375,44 @@ $(document).ready(function(event) {
 {% endblock content %}
 
 {% block left %}
-{% if profile.user.profilesettings.quote %}
-<div class="mb-2" id="quote_section"
-style=" font-size:2.3vh;">
-  <b class="text-secondary">"{{profile.user.profilesettings.quote}}"</b>
-</div>
-{% endif %}
-
-{% if profile.user.profilesettings.about %}
-<div class="article-content mt-0 mb-2" id="about_section">
-<b> About Me </b>
-  {{profile.user.profilesettings.about}}
-</div>
-{% endif %}
-
-{% if media %}
-<a><b> Pictures & Videos </b> <a class="float-right mr-0 mt-0" href="{% url 'user-posts' profile.user 'media' %}">See All</a>
-<div>
-  {% for post in media|slice:":6"%}
-  {% if post.video == "" %}
-      <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
-      style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
-      member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
-  {% elif post.author == profile.user %}
-      <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{% static 'resources/default_video.jpg' %}"
-      style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
-      member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
-  {% endif %}
-  {% endfor %}
+<div id="user_info">
+  {% if profile.user.profilesettings.quote %}
+  <div class="mb-2" id="quote_section"
+  style=" font-size:2.3vh; color:#a300cc">
+    <b class="text">{{profile.user.profilesettings.quote}}</b>
   </div>
-<p></p>
-{% endif %}
+  {% endif %}
 
-<a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
-<div id="activities" >
-{% include 'blog/activities.html' %}
+  {% if profile.user.profilesettings.about %}
+  <div class="article-content mt-0 mb-2" id="about_section">
+  <b> About Me </b>
+    {{profile.user.profilesettings.about}}
+  </div>
+  {% endif %}
+
+  {% if media %}
+  <a><b> Pictures & Videos </b> <a class="float-right mr-0 mt-0" href="{% url 'user-posts' profile.user 'media' %}">See All</a>
+  <div>
+    {% for post in media|slice:":6"%}
+    {% if post.video == "" %}
+        <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{{post.image.url}}"
+        style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
+        member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
+    {% elif post.author == profile.user %}
+        <img class="updateButton mb-2 mt-2" alt="Responsive image" src="{% static 'resources/default_video.jpg' %}"
+        style="width:10.3vh; height:10.3vh; border-radius:0.5rem; cursor:pointer;"
+        member_id = {{post.id}} data-toggle="modal" data-target="#postModalCenter">
+    {% endif %}
+    {% endfor %}
+    </div>
+  <p></p>
+  {% endif %}
+
+  <a><b> Recent Activity </b> <a class="float-right mr-0"></a></a>
+  <div id="activities" >
+  {% include 'blog/activities.html' %}
+  </div>
 </div>
-
 {% endblock left %}
 
 
@@ -601,6 +624,15 @@ style=" font-size:2.3vh;">
     <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="messageModalCenter" tabindex="-1" role="dialog" aria-labelledby="messageModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/messages.html' %}
       {# --------------------------END----------------------------- #}
     </div>
   </div>

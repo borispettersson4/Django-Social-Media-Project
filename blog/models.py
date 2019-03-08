@@ -19,7 +19,8 @@ class Topic(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length = 100,blank=True)
     image = models.ImageField(default = 'default.jpg', upload_to='post_pics')
-    video = models.FileField(upload_to='video_files', null=True, verbose_name="", blank=True)
+    video = models.FileField(upload_to='video_files', null=True, verbose_name="Video", blank=True)
+    audio = models.FileField(upload_to='audio_files', null=True, verbose_name="Audio", blank=True)
     content = models.TextField(max_length = 500, blank=True)
     date_posted = models.DateTimeField(default = timezone.now)
     author = models.ForeignKey(User, on_delete = models.CASCADE)
@@ -46,10 +47,42 @@ class Post(models.Model):
         super().save()
         #Resize Images upon Profile creation
         img = Image.open(self.image.path)
-        if (img.height > 1920 or img.width > 1080):
+        if (img.height > 1920 and img.width > 1080):
             output_size = (1080,720)
             img.thumbnail(output_size)
             img.save(self.image.path)
+
+class Message(models.Model):
+    image = models.ImageField(default = 'default.jpg', upload_to='post_pics')
+    video = models.FileField(upload_to='video_files', null=True, verbose_name="Video", blank=True)
+    audio = models.FileField(upload_to='audio_files', null=True, verbose_name="Audio", blank=True)
+    content = models.TextField(max_length = 500, blank=True)
+    date_posted = models.DateTimeField(default = timezone.now)
+    recepient = models.ForeignKey(User, on_delete = models.CASCADE,related_name='msgrecepient', blank=True, null=True)
+    sender = models.ForeignKey(User, on_delete = models.CASCADE,related_name='msgsender', blank=True, null=True)
+    topics = models.ManyToManyField(Topic, blank=True, symmetrical=False)
+    people = models.ManyToManyField(User, blank=True, symmetrical=False)
+    confirmed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return (f'Message From {self.sender} : To {self.recepient}')
+
+    def get_absolute_url(self):
+        return reverse('post-detail',kwargs={'pk' : self.pk})
+
+    def cast_empty_reference(self):
+        self.reply = self
+        super().save()
+
+    def save(self, **kwargs):
+        super().save()
+        #Resize Images upon Profile creation
+        img = Image.open(self.image.path)
+        if (img.height > 1920 and img.width > 1080):
+            output_size = (1080,720)
+            img.thumbnail(output_size)
+            img.save(self.image.path)
+
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete = models.CASCADE)

@@ -18,7 +18,7 @@ def register(request):
             form.save()
             nick = name.cleaned_data.get('nick')
             username = form.cleaned_data.get('username')
-            messages.success(request, f"Your Account Has Been Created. Sign In To Get Started, {username}!")
+            #messages.success(request, f"Your Account Has Been Created. Sign In To Get Started, {username}!")
             try:
                 new_user = User.objects.get(username=username)
                 new_profile = Profile.objects.create(user=new_user, nick=nick)
@@ -31,6 +31,11 @@ def register(request):
         form = UserRegisterForm()
         name = NameRegisterForm()
     return render(request, 'users/register.html', {'form':form, 'name':name, 'title':'Register','hide_post' : True, 'show_bottom_detail' : True})
+
+def handler404(request):
+    return render(request, 'users/err_404.html', status=404)
+def handler500(request):
+    return render(request, 'users/err_500.html', status=500)
 
 @login_required
 def profile(request):
@@ -49,7 +54,7 @@ def profile(request):
             ps = request.user.profilesettings
             ps = ProfileSettings(user=ps.user,about=ps.about, quote=ps.quote, coverImage=cover, id=ps.id)
             ps.save()
-            messages.success(request, f"Your Account Has Been Updated!")
+            #messages.success(request, f"Your Account Has Been Updated!")
             return redirect('profile')
 
     else:
@@ -57,6 +62,11 @@ def profile(request):
         p_form = ProfileUpdateForm(instance=request.user.profile)
         profile_form = ProfileNickUpdateForm(instance=request.user.profile)
         profileSettings_form = ProfileSettingsUpdateForm(instance=request.user.profilesettings)
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     context = {
     'u_form' : u_form,
@@ -68,7 +78,11 @@ def profile(request):
     'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
     Notification.objects.filter(recepient=request.user, confirmed=False).count(),
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
+
     }
 
     if request.is_ajax():
@@ -106,6 +120,94 @@ def profile(request):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     return render(request, 'users/profile.html', context)
 
 @login_required
@@ -126,6 +228,11 @@ def group(request, name=None):
         except:
             return False
 
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     if (request.method == 'POST'):
         group_form = GroupUpdateForm(request.POST, request.FILES, instance=group)
         groupSettings_form = GroupSettingsUpdateForm(request.POST, request.FILES, instance=groupSettings)
@@ -136,13 +243,14 @@ def group(request, name=None):
             new_image = group_form.cleaned_data.get('image')
             new_members = group_form.cleaned_data.get('members')
             new_type = group_form.cleaned_data.get('type')
+            new_ann = group_form.cleaned_data.get('anonymity')
             group_form.save()
             new_cover = groupSettings_form.cleaned_data.get('coverImage')
             new_quote = groupSettings_form.cleaned_data.get('quote')
             new_about = groupSettings_form.cleaned_data.get('about')
             groupSettings_form.save()
 
-            new_group = Group(name=new_name,image=new_image,type=new_type, id=group.id, owner=group.owner)
+            new_group = Group(name=new_name,image=new_image,type=new_type, id=group.id, owner=group.owner, anonymity=new_ann)
             new_group.members.set(new_members)
             new_groupSettings = GroupSettings(coverImage=new_cover,quote=new_quote,about=new_about, group=group, id=groupSettings.id)
 
@@ -162,7 +270,7 @@ def group(request, name=None):
             new_group.save()
             new_groupSettings.save()
 
-            messages.success(request, f"Your Group Settings Have Been Updated!")
+            #messages.success(request, f"Your Group Settings Have Been Updated!")
 
             try:
                 if(new_group.type != "2" and new_group.type != "3"):
@@ -191,6 +299,9 @@ def group(request, name=None):
     'groupSettings' : groupSettings,
     'is_moderator' : isMod(),
     'is_owner' : isOwner(),
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -228,6 +339,94 @@ def group(request, name=None):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     return render(request, 'users/group.html', context)
 
 @login_required
@@ -235,6 +434,11 @@ def group_new(request):
 
     group = Group(name="New Group", owner=request.user)
     groupSettings = GroupSettings(group=group)
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     if (request.method == 'POST'):
         group_form = GroupUpdateForm(request.POST, request.FILES, instance=group)
@@ -246,12 +450,12 @@ def group_new(request):
             new_image = group_form.cleaned_data.get('image')
             new_members = group_form.cleaned_data.get('members')
             new_type = group_form.cleaned_data.get('type')
-
+            new_ann = group_form.cleaned_data.get('anonymity')
             new_cover = groupSettings_form.cleaned_data.get('coverImage')
             new_quote = groupSettings_form.cleaned_data.get('quote')
             new_about = groupSettings_form.cleaned_data.get('about')
 
-            new_group = Group.objects.create(name=new_name,image=new_image,type=new_type, owner=request.user)
+            new_group = Group.objects.create(name=new_name,image=new_image,type=new_type, owner=request.user, anonymity=new_ann)
             new_group.members.set(new_members)
             new_groupSettings = GroupSettings.objects.create(coverImage=new_cover,quote=new_quote,about=new_about, group=new_group)
 
@@ -277,6 +481,9 @@ def group_new(request):
     'show_bottom_detail' : True,
     'group' : group,
     'groupSettings' : groupSettings,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -312,6 +519,94 @@ def group_new(request):
             request_obj = Request.objects.get(id=request.POST.get('request_id'))
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
             return JsonResponse({'form':html})
 
     return render(request, 'users/new_group.html', context)
@@ -321,6 +616,10 @@ def group_manager(request):
 
     groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) | Q(mods=request.user) | Q(followers=request.user) ).distinct()
 
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     context = {
     'groups': groups,
@@ -330,6 +629,9 @@ def group_manager(request):
     Notification.objects.filter(recepient=request.user, confirmed=False).count(),
     'hide_post' : True,
     'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -367,16 +669,110 @@ def group_manager(request):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
         elif (request.POST.get('action') == "Delete_Group"):
             group_obj = Group.objects.get(id=request.POST.get('id'))
             group_obj.delete()
-            messages.success(request, f"Group Deleted Successfully")
+            #messages.success(request, f"Group Deleted Successfully")
             return redirect('group_manager')
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/groups_manager.html', context)
 
 @login_required
 def feedback(request):
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     if (request.method == 'POST'):
         form = FeedbackForm(request.POST, instance=request.user)
         if (form.is_valid()):
@@ -393,7 +789,7 @@ def feedback(request):
             ,quality_responsiveness=op5,comment=op6, author=request.user)
             feedback.save()
 
-            messages.success(request, f"Your feedback has been sent.")
+            #messages.success(request, f"Your feedback has been sent.")
             return redirect('feedback-sent')
 
     else:
@@ -406,7 +802,10 @@ def feedback(request):
     'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
     Notification.objects.filter(recepient=request.user, confirmed=False).count(),
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -449,19 +848,115 @@ def feedback(request):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/feedback.html', context)
 
 @login_required
 def feedback_sent(request):
 
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     context = {
     'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
     'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
     'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
     Notification.objects.filter(recepient=request.user, confirmed=False).count(),
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -504,15 +999,115 @@ def feedback_sent(request):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/feedback_sent.html', context)
 
 def about(request):
 
+    try:
+        msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+        ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+        unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+    except:
+        msg_people = Profile.objects.none()
+        unread_messages = Message.objects.none()
+
     context = {
 
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -555,19 +1150,115 @@ def about(request):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/about.html', context)
 
 @login_required
 def privacy(request):
 
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     context = {
     'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
     'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
     'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
     Notification.objects.filter(recepient=request.user, confirmed=False).count(),
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -610,14 +1301,114 @@ def privacy(request):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/privacy.html', context)
 
 def terms_of_service(request):
 
+    try:
+        msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+        ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+        unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+    except:
+        msg_people = Profile.objects.none()
+        unread_messages = Message.objects.none()
+
     context = {
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -660,13 +1451,113 @@ def terms_of_service(request):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/terms_of_service.html', context)
 
 def versions(request):
 
+    try:
+        msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+        ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+        unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+    except:
+        msg_people = Profile.objects.none()
+        unread_messages = Message.objects.none()
+
     context = {
     'hide_post' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -709,19 +1600,115 @@ def versions(request):
             request.user.profile.friends.add(request_obj.sender.profile)
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
 
     return render(request, 'users/patch_notes.html', context)
 
 @login_required
 def legal(request):
 
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     context = {
     'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
     'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
     'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
     Notification.objects.filter(recepient=request.user, confirmed=False).count(),
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     if request.is_ajax():
@@ -765,13 +1752,113 @@ def legal(request):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return render(request, 'users/feedback.html', context)
 
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     return render(request, 'users/legal.html', context)
 
 def welcome(request):
 
+    try:
+        msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+        ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+        unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+    except:
+        msg_people = Profile.objects.none()
+        unread_messages = Message.objects.none()
+
     context = {
     'hide_post' : True,
-    'show_bottom_detail' : True
+    'show_bottom_detail' : True,
+    'msg_people' : msg_people,
+    'partner' : request.user,
+    'unread_messages': unread_messages
     }
 
     return render(request, 'users/welcome.html', context)

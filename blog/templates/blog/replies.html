@@ -34,8 +34,11 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
     <div class="media-body">
       <div class="article-metadata">
         <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">{{comment.author.profile.nick}}</a>
-        <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">@{{ comment.reply.author.username}}</a>
-
+        {% if not obj.group or obj.group.anonymity == "1" %}
+        <a class="mr-2" href="{% url 'user-posts' comment.author.username %}" style="color:#a300cc">Replied to <b>@{{ comment.reply.author.username}}</b></a>
+        {% else %}
+        <a class="mr-2" href="" style="color:#a300cc">Replied to <b>@?</b></a>
+        {% endif %}
         <button class="dropdown" id="hidden_interact" select_id = {{comment.id}} aria-haspopup="true" aria-expanded="false"
         style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
         <img src="{% static 'resources/more.png' %}"
@@ -75,7 +78,7 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
 
       {#This is the part where the image information is done#}
       <div id="reply_like_comment_{{comment.id}}">
-      {% include 'blog/like_comment.html' with p=comment %}
+      {% include 'blog/like_comment_reply.html' with p=comment %}
       </div>
     </div>
   </article>

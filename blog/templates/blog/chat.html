@@ -1,0 +1,132 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+<script>
+  $(document).ready(function () {
+    $("p[id=feed_content]").each(function( index ) {
+      // Get the content
+      var str = $(this).html();
+      // Set the regex string
+      var regex = /(https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/ig
+      // Replace plain text links by hyperlinks
+      var replaced_text = str.replace(regex, "<a style='color:#a300cc' href='$1' target='_blank'>$2</a>");
+      // Echo link
+      $(this).html(replaced_text);
+    });
+
+  });
+
+  $(document).ready(function(){
+    var scrollBottom = Math.max($('#table_main').height() + $('#table_body').height() , 0);
+    $('#table_main').scrollTop(scrollBottom*100);
+  });
+
+  $(document).ready(function() {
+    var partner = $('#chat_board').attr('member_id');
+    var last = $('#last_message').attr('last_message_id');
+      setInterval(function(){
+        if($('#messageModalCenter').is(':visible')) {
+          $("#message_confirmation").load(" #message_confirmation > *");
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'partner_id' : partner, 'last_message_id':last , 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Get_Chat"},
+          dataType: 'json',
+          success : function(response) {
+            if(response['new'] == 0) {
+            last = $('#last_message').attr('last_message_id');
+            $('#chat_board').html(response['form']);
+            var scrollBottom = Math.max($('#table_main').height() + $('#table_body').height() , 0);
+            $('#table_main').scrollTop(scrollBottom*100);
+            }
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+
+      }
+      }, 3000);
+  });
+</script>
+
+{% if not request.user_agent.is_mobile %}
+  <article class="media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white;">
+    <div class="btn-group mt-3 ml-3" data-toggle="buttons" style="border-radius: 10rem;">
+      <label class="mr-3" style="font-size:2.5vh; cursor:pointer;" id="notificationButton">
+            {% if partner != request.user %}
+            <a class="mr-2" style="color:black;" href="{% url 'user-posts' partner.username %}"><b>{{ partner.profile.nick }}</b></a>
+            {% endif %}
+      </label>
+    </div>
+
+    <div class="btn-group" data-toggle="buttons" style="border-radius: 10rem; float:right; margin-top:2.5vh; margin-right:2.5vh">
+      <label class="" style="font-size:2vh; color:#981ceb; cursor:pointer;" id ="backButton">
+        <a name="options" id="option3" autocomplete="off"> <b> <u> Go Back </u> </b> </a>
+      </label>
+    </div>
+
+    <div id="table_body">
+
+    <table style="width:100%;">
+    <tr><td><div id="table_main" style="overflow: auto; max-height : 50vh;">
+
+      <div id="chat_board" member_id={{partner.id}}>
+        {% include 'blog/chat_feed.html' %}
+      </div>
+
+
+  </table>
+  </div>
+
+
+  <div id="message_form">
+    {% include 'blog/message_form.html' %}
+  </div>
+
+    </article>
+{% else %}
+
+<div class="fixed-top mb-0" style="width:100%; padding:0; margin:0; height:100vh" id="messageModalCenter">
+
+<article class="media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white;">
+  <div class="btn-group mt-3 ml-3" data-toggle="buttons" style="border-radius: 10rem;">
+    <label class="mr-3" style="font-size:20px; cursor:pointer;" id="notificationButton">
+          {% if partner != request.user %}
+          <a class="mr-2" style="color:black;" href="{% url 'user-posts' partner.username %}"><b>{{ partner.profile.nick }}</b></a>
+          {% endif %}
+    </label>
+  </div>
+
+  <div class="btn-group" data-toggle="buttons" style="border-radius: 10rem; float:right; margin-top:5%; margin-right:5%">
+    <label class="" style="font-size:2opx; color:#981ceb; cursor:pointer;" id ="backButton">
+      <a name="options" id="option3" autocomplete="off"> <b> <u> Go Back </u> </b> </a>
+    </label>
+  </div>
+
+  </article>
+
+  <div id="table_body" style="">
+
+  <table style="width:100%;">
+  <tr><td>
+
+    <div id="table_main" style="overflow: auto;">
+
+      <div id="chat_board" member_id={{partner.id}} style="height : 83.5vh">
+        {% include 'blog/chat_feed.html' %}
+      </div>
+    </div>
+
+</table>
+</div>
+
+  </div>
+
+  <div class="fixed-bottom m-0" id="message_form" style="margin:0; padding:0">
+    {% include 'blog/message_form.html' %}
+  </div>
+
+
+{% endif %}

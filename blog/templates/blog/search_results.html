@@ -193,7 +193,7 @@ $(document).ready(function(event) {
 
 {% if not request.user_agent.is_mobile %}
 
-{% if posts or circles %}
+{% if posts or circles or groups %}
 
   <div id="feed_display">
   {% include 'blog/feed.html' %}
@@ -212,7 +212,7 @@ $(document).ready(function(event) {
 
 {% else %}
 
-{% if posts or circles %}
+{% if posts or circles or groups %}
 
 {% if circles %}
 <div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
@@ -220,11 +220,23 @@ $(document).ready(function(event) {
    <a class="ml-1">Users</a>
   </strong></h5>
   </div>
-{% endif %}
 
 <div id="people_display" >
 {% include 'blog/feed_circles.html' %}
 </div>
+{% endif %}
+
+{% if groups %}
+<div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
+<h5 class="ml-2 mb-0"style=" color:white;"><strong>
+   <a class="ml-1">Groups</a>
+  </strong></h5>
+  </div>
+
+<div id="people_display" >
+{% include 'blog/feed_circles.html' with view="groups" circles=groups %}
+</div>
+{% endif %}
 
 {% if posts %}
 <div class="media-body" style="background-color:#a300cc; border-radius:0.0rem;">
@@ -232,7 +244,6 @@ $(document).ready(function(event) {
    <a class="ml-1">Posts</a>
   </strong></h5>
   </div>
-{% endif %}
 
   <div id="feed_display">
   {% include 'blog/feed.html' %}
@@ -242,6 +253,8 @@ $(document).ready(function(event) {
   {% include 'blog/loading.html' %}
   <div class="" style="margin-bottom:10vh;"></div>
   </div>
+
+{% endif %}
 
   {% else %}
   <div class="mt-2" style="text-align:center;">
@@ -257,9 +270,33 @@ $(document).ready(function(event) {
 <!--Profile Page-->
 {% block left %}
 
+{% if circles %}
+
+<div class="media-body ml-2" style="background-color:#a300cc; border-radius:0.0rem; width:100%; border-radius:0.5rem">
+<h5 class="ml-2 mb-2"style=" color:white;"><strong>
+   <a class="ml-1">Users</a>
+  </strong></h5>
+  </div>
+
 <div id="people_display" >
 {% include 'blog/feed_circles.html' %}
 </div>
+
+{% endif %}
+
+{% if groups %}
+
+<div class="media-body ml-2" style="background-color:#a300cc; border-radius:0.0rem; width:100%; border-radius:0.5rem">
+<h5 class="ml-2 mb-2"style=" color:white;"><strong>
+   <a class="ml-1">Groups</a>
+  </strong></h5>
+  </div>
+
+<div id="people_display" >
+{% include 'blog/feed_circles.html' with view="groups" circles=groups %}
+</div>
+
+{% endif %}
 
 {% endblock left %}
 
@@ -323,6 +360,15 @@ $(document).ready(function(event) {
     <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="messageModalCenter" tabindex="-1" role="dialog" aria-labelledby="messageModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/messages.html' %}
       {# --------------------------END----------------------------- #}
     </div>
   </div>

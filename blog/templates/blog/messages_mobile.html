@@ -1,0 +1,134 @@
+{% extends "blog/base.html" %}
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+{% block js_code %}
+<script>
+  $(document).ready(function(event) {
+      $('#notifications_display').show();
+      $('#requests_display').hide();
+      $(document).on('click', '#requestButton' , function(event) {
+        $('#notifications_display').hide();
+        $('#requests_display').show();
+      });
+
+      $(document).on('click', '#notificationButton' , function(event) {
+        $('#notifications_display').show();
+        $('#requests_display').hide();
+      });
+  });
+
+$(document).ready(function(event) {
+  $('#chat_display').hide();
+  $('#circles_loading_display').hide();
+    $(document).on('click', '#message_chat' , function(event) {
+      $('#circles_loading_display').show();
+      $('#chat_display').show();
+      $('#circles_display').hide();
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      var member_id = $(this).attr('member_id');
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'partner_id':member_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Open_Chat"},
+          dataType: 'json',
+          success : function(response) {
+            $('#circles_loading_display').hide();
+            $('#chat_display').html(response['form']);
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#message_send' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      var member_id = $(this).attr('member_id');
+      var message = $('.message_content').val();
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'partner_id':member_id,'message':message,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Send_Chat"},
+          dataType: 'json',
+          success : function(response) {
+            $('#chat_display').html(response['form']);
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#delete_message_btn' , function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      var message_id = $(this).attr('message_id');
+      $("#message_bottom_btns").hide();
+      $("#message_form_loading").show();
+        $.ajax({
+          type: "POST",
+          url: "{% url 'blog-home' %}",
+          data : { 'message_id':message_id,'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Delete_Message"},
+          dataType: 'json',
+          success : function(response) {
+            $('#chat_display').html(response['form']);
+            console.log("success");
+          },
+          error : function(rs, e) {
+            console.log(rs.responseText);
+          }
+        });
+    });
+});
+
+$(document).ready(function(event) {
+    $(document).on('click', '#backButton' , function(event) {
+      $('#chat_display').hide();
+      $('#circles_display').show();
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      $.ajax({
+        type: "POST",
+        url: "{% url 'blog-home' %}",
+        data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Content"},
+        dataType: 'json',
+        success : function(response) {
+          $("#circles_display").html(response['msg']);
+          $('#chat_display').html("");
+        },
+        error : function(rs, e) {
+          console.log(rs.responseText);
+        }
+      });
+    });
+});
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div id="circles_display" >
+{% include 'blog/messages_circles.html' %}
+</div>
+
+<div id="chat_display" >
+
+</div>
+
+<div id="circles_loading_display" >
+  <article class="m-3 media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white;">
+    {% include 'blog/loading_small.html' %}
+  <article>
+</div>
+
+{% endblock content %}

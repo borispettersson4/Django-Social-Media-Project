@@ -1,0 +1,52 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
+{% block content %}
+
+  <script>
+  $(function() {
+    var refreshCallback = function(loader) {
+      setTimeout(function(){
+        //loader.finish();
+      }, 1000);
+    };
+    var cancelRefreshing = function() {
+    };
+    $("#draggable").pulltorefresh({
+      async: true,
+      // event triggered when refreshing start
+      refresh: function(event, finishCallback) {
+        element = $(this)
+        setTimeout(function(){
+          alert("refresh");
+          // you must call this function if refreshing process runs asynchronusly
+          finishCallback();
+        }, 1000);
+      },
+      abort: function() {
+        alert("abort");
+      }
+    });
+  });
+  </script>
+
+<div data-role="page">
+
+	<div data-role="header">
+		<h1>My Title</h1>
+	</div><!-- /header -->
+
+	<div class="content-primary" id="draggable">
+        <ul data-role="listview">
+            <li><a href="#">Acura</a></li>
+            <li><a href="#">Audi</a></li>
+            <li><a href="#">BMW</a></li>
+            <li><a href="#">Cadillac</a></li>
+            <li><a href="#">Ferrari</a></li>
+        </ul>
+    </div>
+</div><!-- /page -->
+
+{% endblock content %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.conf.urls import include
+from django.conf.urls import include, handler404, handler500
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
 from users import views as user_views
@@ -8,7 +8,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('super-auth', admin.site.urls),
+    path('super-auth/', admin.site.urls),
     path('register/', user_views.register,name='register'),
     path('profile/', user_views.profile,name='profile'),
     path('group/edit/<str:name>', user_views.group,name='group'),
@@ -26,6 +26,9 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'),name='logout'),
     path('', include('blog.urls')),
 ]
+
+handler404 = user_views.handler404
+handler500 = user_views.handler500
 
 if(settings.DEBUG):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

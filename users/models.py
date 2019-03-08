@@ -24,9 +24,10 @@ class Profile(models.Model):
         super().save()
         #Resize Images upon Profile creation
         img = Image.open(self.image.path)
-        output_size = (300,300)
-        img.thumbnail(output_size)
-        img.save(self.image.path)
+        if (img.height > 1000 and img.width > 1000):
+            output_size = (300,300)
+            img.thumbnail(output_size)
+            img.save(self.image.path)
 
     def defaultValues(self):
         self.nick = 'default'
@@ -75,7 +76,17 @@ class Group(models.Model):
         (choice_4,'Private'),
         (choice_5,'Private Invite-Only'),
     )
+
     type = models.CharField(max_length=1,choices=CHOICES, default=choice_2)
+
+    choice_1 = '1'
+    choice_2 = '2'
+    CHOICES = (
+        (choice_1,'None'),
+        (choice_2,'Hide Owner and Member Identities'),
+    )
+
+    anonymity = models.CharField(max_length=1,choices=CHOICES, default=choice_1)
 
     def __str__(self):
         return(f'{self.name} Group')
@@ -84,9 +95,10 @@ class Group(models.Model):
         super().save()
         #Resize Images upon Profile creation
         img = Image.open(self.image.path)
-        output_size = (300,300)
-        img.thumbnail(output_size)
-        img.save(self.image.path)
+        if (img.height > 1000 and img.width > 1000):
+            output_size = (300,300)
+            img.thumbnail(output_size)
+            img.save(self.image.path)
 
     def defaultValues(self):
         self.nick = 'default'

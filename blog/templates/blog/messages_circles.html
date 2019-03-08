@@ -1,0 +1,122 @@
+{% load static %}
+{% load filters %}
+{% load crispy_forms_tags %}
+
+
+{% if not request.user_agent.is_mobile %}
+
+  <article class="media-body" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white;" id="#messages_circles">
+    <div class="btn-group mt-3 ml-3" data-toggle="buttons" style="border-radius: 10rem;">
+      <label class="mr-3" style="font-size:2.5vh; cursor:pointer;" id="notificationButton">
+        <a name="options" autocomplete="off" checked> <b> Conversations </b> </a>
+      </label>
+    </div>
+
+    <table style="width:100%;">
+    <tr><td><div style="overflow: auto; max-height : 50vh">
+
+  <ul class="list-group" style="margin-bottom:0vh;">
+      {% if msg_people %}
+      {% for person in msg_people %}
+      {% if forloop.counter <= 200 %}
+
+      <a id="message_chat" member_id={{person.user.id}} style="text-decoration: none !important; display:block; cursor:pointer;">
+        <li class="list-group-item list-group-item" style=" border-top:1px solid #F0F0F0;
+        {% if person|get_messages_unconfirmed:request.user %} background-color:#fffab4; {% else %} background-color:white;{% endif %}
+        {% if forloop.last  %} border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;
+        {% else %} border-radius: 0.0rem; {% endif %}">
+
+        <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+          <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{person.image.url}}">
+
+          <b class="article-title" style="text-decoration: none; font-size:2vh;">{{person.nick}}</b>
+          <small class="text-muted" style="">{{ person|get_message_last_date:request.user|date:"M d, Y" }}</small>
+
+          <div class="new_badge" style="margin-left:8%; color:#909090">
+            {{person|get_message_content:request.user}}
+          </div>
+
+        </div>
+
+
+      </li></a>
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    <li class="list-group-item list-group-item" style="
+      background-color:#f2f2f2; ">
+
+      <div class="input-block-level media-body" style="border-radius: 0.0rem; text-align:center;">
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">There are no messages. </b>
+
+      </div>
+    </li>
+    </ul>
+    {% endif %}
+  </div></td></tr>
+  </table>
+
+  <div class="m-0"style="text-align:center; margin:0vh;">
+    <img class="mr-0" style=" width: auto; height: 15px; cursor:pointer; margin:10px;" src="{% static 'resources/pinbitt_logo_black_full.png' %}"/>
+  </div>
+
+    </article>
+
+{% else %}
+
+<article class="media-body fixed-top" style="border-radius: 0.5rem; margin-bottom:0px;  background-color:white;" id="#messages_circles">
+  <div class="btn-group mt-3 ml-3" data-toggle="buttons" style="border-radius: 10rem;">
+    <label class="mr-3" style="font-size:2.5vh; cursor:pointer;" id="notificationButton">
+      <a name="options" autocomplete="off" checked> <b> Conversations </b> </a>
+    </label>
+  </div>
+
+  </article>
+
+  <table style="width:100%;">
+  <tr><td><div style="overflow: auto; max-height : 100%">
+
+<ul class="list-group" style="margin-bottom:0vh;">
+    {% if msg_people %}
+    {% for person in msg_people %}
+    {% if forloop.counter <= 200 %}
+
+    <a id="message_chat" member_id={{person.user.id}} style="text-decoration: none !important; display:block; cursor:pointer;">
+      <li class="list-group-item list-group-item" style=" border-top:1px solid #F0F0F0;
+      {% if person|get_messages_unconfirmed:request.user %} background-color:#fffab4; {% else %} background-color:white;{% endif %}
+      {% if forloop.last  %} border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;
+      {% else %} border-radius: 0.0rem; {% endif %}">
+
+      <div class="input-block-level media-body" style="border-radius: 0.0rem;">
+        <img class="rounded-circle article-img mr-1 ml-0" style="width:5vh; height:5vh" src="{{person.image.url}}">
+
+        <b class="article-title" style="text-decoration: none; font-size:2vh;">{{person.nick}}</b>
+        <small class="text-muted" style="">{{ person|get_message_last_date:request.user|date:"M d, Y" }}</small>
+
+        <div class="new_badge" style="margin-left:15%; font-size:2vh;">
+          {{person|get_message_content:request.user}}
+        </div>
+
+      </div>
+
+
+    </li></a>
+  {% endif %}
+  {% endfor %}
+  {% else %}
+  <li class="list-group-item list-group-item" style="
+    background-color:#f2f2f2; ">
+
+    <div class="input-block-level media-body" style="border-radius: 0.0rem; text-align:center;">
+      <b class="article-title" style="text-decoration: none; font-size:2vh;">There are no messages. </b>
+
+    </div>
+  </li>
+  </ul>
+  {% endif %}
+</div></td></tr>
+</table>
+
+  </article>
+
+{% endif %}

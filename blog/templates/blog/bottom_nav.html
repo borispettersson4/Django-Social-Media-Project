@@ -1,0 +1,39 @@
+{% load crispy_forms_tags %}
+{% load static %}
+{% load filters %}
+
+<header class="site-header" >
+  <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-bottom" style="background-color:white; border-top: 1px solid #a300cc;" >
+
+        <a class="col" style="text-align:center; list-style-type: none; " id="hidden_interactt" href="{% url 'blog-home' %}">
+          <img src="{% static 'resources/mobile/home.png' %}" style="width: 30px; height: 100%; text-align:center;"/>
+        </a>
+
+        <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'notifications' %}">
+        {% if notifications or requests %}
+          <img src="{% static 'resources/mobile/bell_active.png' %}" style="width: 30px; height: 100%; text-align:center"/>
+        {% else %}
+          <img src="{% static 'resources/mobile/bell.png' %}" style="width: 30px; height: 100%; text-align:center"/>
+        {% endif %}
+        </a>
+
+        <a class="col" style="text-align:center; list-style-type: none;" id="msgButton" href="{% url 'messages' %}">
+          {% if unread_messages %}
+          <img src="{% static 'resources/mobile/message_active.png' %}" style="width: 30px; height: 100%; text-align:center"/>
+          {% else %}
+          <img src="{% static 'resources/mobile/message.png' %}" style="width: 30px; height: 100%; text-align:center"/>
+        {% endif %}
+        </a>
+
+        {% if not hide_post %}
+        <a class="col post_new" style="text-align:center; list-style-type: none;" data-toggle="modal" data-target="#newPostModalCenter" href="{% url 'post-create' %}">
+          <img class="align-middle" src="{% static 'resources/mobile/add.png' %}" style="width: 30px; height: 100%; text-align:center"/>
+        </a>
+        {% else %}
+        <a class="col post_new" style="text-align:center; list-style-type: none;" href="{% url 'blog-home' %}">
+          <img class="align-middle" src="{% static 'resources/mobile/add.png' %}" style="width: 30px;; height: 100%; text-align:center"/>
+        </a>
+        {% endif %}
+
+  </nav>
+</header>

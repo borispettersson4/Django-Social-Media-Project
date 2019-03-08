@@ -37,6 +37,71 @@ def set_value(variable,value):
 def has_like(post,user):
     return post.like_set.filter(author=user)
 
+@register.filter
+def get_message_content(profile, user):
+    try:
+        rec_msg = profile.user.msgrecepient.filter(Q(sender=user)).last()
+    except:
+        rec_msg = ""
+    try:
+        sen_msg = profile.user.msgsender.filter(Q(recepient=user)).last()
+    except:
+        sen_msg = ""
+
+    if(sen_msg and rec_msg):
+        return rec_msg.content if rec_msg.date_posted > sen_msg.date_posted else sen_msg.content
+    elif(sen_msg):
+        return sen_msg.content
+    elif(rec_msg):
+        return rec_msg.content
+    else:
+        return ""
+
+@register.filter
+def get_message_last(profile, user):
+    try:
+        rec_msg = profile.user.msgrecepient.filter(Q(sender=user)).last()
+    except:
+        rec_msg = ""
+    try:
+        sen_msg = profile.user.msgsender.filter(Q(recepient=user)).last()
+    except:
+        sen_msg = ""
+
+    if(sen_msg and rec_msg):
+        return rec_msg if rec_msg.date_posted > sen_msg.date_posted else sen_msg
+    elif(sen_msg):
+        return sen_msg
+    elif(rec_msg):
+        return rec_msg
+    else:
+        return ""
+
+@register.filter
+def get_messages_unconfirmed(profile, user):
+    return(Message.objects.filter(recepient=user, sender=profile.user, confirmed=False))
+
+
+@register.filter
+def get_message_last_date(profile, user):
+    try:
+        rec_msg = profile.user.msgrecepient.filter(Q(sender=user)).last()
+    except:
+        rec_msg = ""
+    try:
+        sen_msg = profile.user.msgsender.filter(Q(recepient=user)).last()
+    except:
+        sen_msg = ""
+
+    if(sen_msg and rec_msg):
+        return rec_msg.date_posted if rec_msg.date_posted > sen_msg.date_posted else sen_msg.date_posted
+    elif(sen_msg):
+        return sen_msg.date_posted
+    elif(rec_msg):
+        return rec_msg.date_posted
+    else:
+        return ""
+
 #User Posts Profile
 
 @register.filter

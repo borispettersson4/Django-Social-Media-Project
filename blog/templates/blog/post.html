@@ -22,13 +22,20 @@
 <form class="mb-3" id="myForm" action="{% url 'blog-home' %}" method="post" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
 {% csrf_token %}
 <article class="media content-section mb-3;" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+  {% if not obj.group or obj.group.anonymity == "1" %}
   <a href="{% url 'user-posts' obj.author.username %}">
-  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
   </a>
+  {% else %}
+  <a>
+    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{% static 'resources/ann.png' %}">
+  </a>
+  {% endif %}
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
+      {% if not obj.group or obj.group.anonymity == "1" %}
       <a class="mr-2" href="{% url 'user-posts' obj.author.username %}">{{ obj.author.profile.nick }}</a>
-
+      {% endif %}
       <button class="dropdown" id="hidden_interact" select_id = {{obj.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
@@ -50,7 +57,11 @@
       </div>
 
       {% if obj.reply != None %}
-      <a class="mr-2" href="{% url 'user-posts' obj.reply.author.username %}" style="color:#a300cc">Replied to <b>@{{ obj.reply.author.username}}</b></a>
+        {% if not obj.reply.group or obj.reply.group.anonymity == "1" %}
+          <a class="mr-2" href="{% url 'user-posts' obj.author.username %}" style="color:#a300cc">Replied to <b>@{{ obj.reply.author.username}}</b></a>
+          {% else %}
+          <a class="mr-2" href="" style="color:#a300cc">Replied to <b>@?</b></a>
+        {% endif %}
       {% elif obj.group != None %}
       <small>
       <a class="mr-2 ml-0" href="{% url 'group-posts' obj.group.name %}"
@@ -79,9 +90,15 @@
         {% elif obj.video %}
       <video width="100%" height="auto"preload="auto" loop style ="border-radius: 1rem;"
         class="mb-2" controls>
-        <source src="{{obj.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+        <source src="{{obj.video.url}}#t=0.0" type="video/mp4" style ="border-radius: 1rem;">
         Your browser does not support the video tag.
       </video>
+      {% elif obj.audio %}
+      <audio style="width:100%;" height="100%" preload="auto" loop
+        class="mb-2" controls>
+        <source src="{{obj.audio.url}}" type="audio/mpeg">
+        Your browser does not support the audio tag.
+      </audio>
         {% endif %}
     <p class="article-content" id="post_content" style="">{{ obj.content }}</p>
 

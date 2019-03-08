@@ -45,15 +45,43 @@
     <script>
       $(document).ready(function(event) {
           setInterval(function(){
-            $("#nav_bell").load(" #nav_bell > *");
-                  console.log("LOG");
-          }, 8000);
+            $("#nav_bar").load(" #nav_bar > *");
+            $.ajax({
+              type: "POST",
+              url: "{% url 'blog-home' %}",
+              data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Content"},
+              dataType: 'json',
+              success : function(response) {
+                $('#nav_bar_mobile').html(response['nav']);
+              },
+              error : function(rs, e) {
+                console.log(rs.responseText);
+              }
+            });
+          }, 3000);
       });
 
       $(document).ready(function(event) {
         $(document).on('click', '#drop_menu' , function(event) {
             var link = $(this).attr('link');
             window.location.href = link;
+        });
+      });
+
+      $(document).ready(function(event) {
+        $(document).on('click', '#msgButton' , function(event) {
+            $.ajax({
+              type: "POST",
+              url: "{% url 'blog-home' %}",
+              data : { 'csrfmiddlewaretoken': '{{csrf_token}}', 'action' : "Load_Content"},
+              dataType: 'json',
+              success : function(response) {
+                $("#circles_display").html(response['msg']);
+              },
+              error : function(rs, e) {
+                console.log(rs.responseText);
+              }
+            });
         });
       });
 
@@ -98,7 +126,7 @@
         <div class="collapse navbar-collapse" id="navbarToggle">
 
           {% if user.is_authenticated %}
-          <div class="navbar-nav mr-auto" id="nav_bell">
+          <div class="navbar-nav mr-auto" id="nav_bar">
             <img class="mr-0" style=" width: auto; height: 30px; cursor:pointer;" id="bellButton"
             src="{% static 'resources/bell.png' %}" data-toggle="modal"data-target="#notificationModalCenter"/>
             {% if notifications or requests %}
@@ -106,6 +134,11 @@
                 <span class="badge badge-danger" style="border-radius:3rem; height:100%;"> {{badge_count}}</span>
               {% endif %}
             {% endif %}
+
+            <img class="ml-2" style=" width: auto; height: 30px; cursor:pointer;" id="msgButton"
+            {% if not unread_messages %} src="{% static 'resources/message.png' %}"
+            {% else %} src="{% static 'resources/message_new.png' %}"
+            {% endif %} data-toggle="modal"data-target="#messageModalCenter"/>
           </div>
 
           <div class="" id="searchButton">
@@ -128,7 +161,7 @@
             <a class="nav-item nav-link" href="{% url 'register' %}" style="color:white;">Register</a>
             {% else %}
             <div class="dropdown">
-                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: auto; height: 40px; padding:0; margin:0; border: 3px solid #FFFFFF; cursor:pointer;"
+                <img class="dropdown-toggle rounded-circle article-img mr-2" style=" width: 40px; height: 40px; padding:0; margin:0; border: 3px solid #FFFFFF; cursor:pointer;"
                 src="{{user.profile.image.url}}" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"/>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                   <a class="dropdown-item" style="cursor:pointer" id="drop_menu" link="{% url 'user-posts' user %}">View Profile</a>
@@ -162,7 +195,7 @@
         {% if user.is_authenticated %}
         <button class="navbar-toggler mr-0" type="button" data-toggle="collapse" data-target="#navbarToggle"
         aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation" style="outline: none; float:left; padding:0; margin:0;">
-          <img class="rounded-circle article-img mr-0" style=" width: auto; height: 40px; padding:0; margin:0; border: 3px solid #FFFFFF; cursor:pointer;"
+          <img class="rounded-circle article-img mr-0" style=" width: 40px; height: 40px; padding:0; margin:0; border: 3px solid #FFFFFF; cursor:pointer;"
           src="{{user.profile.image.url}}" />
         </button>
 
@@ -204,32 +237,9 @@
     </nav>
   </header>
 
-
-
-  <header class="site-header">
-    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-bottom" style="background-color:white; border-top: 1px solid #a300cc;" >
-
-          <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'blog-home' %}">
-            <img src="{% static 'resources/mobile/home.png' %}" style="width: 50%; height: 100%; text-align:center;"/>
-          </a>
-          <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'notifications' %}">
-            <img src="{% static 'resources/mobile/bell.png' %}" style="width: 50%; height: 100%; text-align:center"/>
-          </a>
-          <a class="col" style="text-align:center; list-style-type: none;" id="hidden_interactt" href="{% url 'user-posts' request.user %}">
-            <img src="{% static 'resources/mobile/profile.png' %}" style="width: 50%; height: 100%; text-align:center"/>
-          </a>
-          {% if not hide_post %}
-          <a class="col post_new" style="text-align:center; list-style-type: none;" data-toggle="modal" data-target="#newPostModalCenter" href="{% url 'post-create' %}">
-            <img class="align-middle" src="{% static 'resources/mobile/add.png' %}" style="width: 50%; height: 100%; text-align:center"/>
-          </a>
-          {% else %}
-          <a class="col post_new" style="text-align:center; list-style-type: none;" href="{% url 'blog-home' %}">
-            <img class="align-middle" src="{% static 'resources/mobile/add.png' %}" style="width: 50%; height: 100%; text-align:center"/>
-          </a>
-          {% endif %}
-
-    </nav>
-  </header>
+  <div id="nav_bar_mobile">
+    {% include 'blog/bottom_nav.html' %}
+  </div>
   {% endif %}
 
 {% block overhead %}{% endblock %}
@@ -255,9 +265,18 @@
         {% endif %}
 
 {% endif %}
-      <div {% if request.user_agent.is_mobile and not is_dropdown %} style="margin-top: 3.5rem; margin-bottom: 3.0rem;" {% endif %}>
+
+        {% if request.user_agent.is_mobile and is_dropdown_bottom %}
+          <div style="margin-top: 0rem; margin-bottom: 0rem;">
+        {% elif request.user_agent.is_mobile and not is_dropdown %}
+          <div style="margin-top: 3.5rem; margin-bottom: 3.0rem;">
+        {% else %}
+          <div style="margin-top: 0rem; margin-bottom: 1.0rem;">
+        {% endif %}
+
         {% block content %}{% endblock %}
       </div>
+
 {% if not request.user_agent.is_mobile %}
       </div>
 

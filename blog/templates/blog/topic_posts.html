@@ -326,6 +326,15 @@ $(document).ready(function(event) {
     </div>
   </div>
 </div>
+<div class="modal fade" id="messageModalCenter" tabindex="-1" role="dialog" aria-labelledby="messageModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/messages.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
 <div class="modal fade" id="viewContentPostModalCenter" tabindex="-1" role="dialog" aria-labelledby="viewContentPostModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document" style="width:auto;">
     <div class="modal-content" style="border-radius: 0.5rem; border-color:transparent; background-color:transparent;">

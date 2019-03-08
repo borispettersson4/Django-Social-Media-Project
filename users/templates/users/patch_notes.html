@@ -13,10 +13,91 @@
     <div class="media">
 
     </div>
-    <legend class="border-bottom mb-2"><b>Pinbitt (Project Mango) Versions</b></legend>
+    <legend class="border-bottom mb-2"><b>Pinbitt Versions</b></legend>
   </fieldset>
 
+  <div class="mb-3" style="text-align:justify">
+
+    <div class="mb-3" style="text-align:justify">
+
+      <div class="media-body" style="background-color:#a300cc; border-radius:0.3rem;">
+
+      <h5 class="ml-2 mb-2"style=" color:white;"><strong>
+         <a class="ml-1">Version 0.1.9</a>
+        </strong></h5>
+        </div>
+        <a>Released in : March 4, 2019</a>
+      <div>
+      <a style="text-align: justify;"><b>New Features</b></a>
+      <ul class="mt-0" style="margin:0; list-style-type: none;">
+        <li> Added Friends Messaging (Available next to the Notifications bell icon.). </li>
+        <li> Added Friends Messaging for the mobile web version of Pinbitt.</li>
+        <li> Added 'MP3' audio support for Posts. </li>
+      <ul>
+      </div>
+
+      <div>
+      <a style="text-align: justify;"><b>Changes</b></a>
+      <ul class="mt-0" style="margin:0; list-style-type: none;">
+        <li> Changed "Add Photo or Video" to "Add Media" button when uploading a new post.</li>
+        <li> Users can now upload 'PNG' formatted images in posts.</li>
+        <li> 404 and 500 errors no longer show the application's backend log. Instead a new Error Page will load.</li>
+      <ul>
+      </div>
+
+      <div>
+      <a style="text-align: justify;"><b>Bug Fixes</b></a>
+      <ul class="mt-0" style="margin:0; list-style-type: none;">
+        <li> Fixed an issue where certain actions in the mobile version would result in images scaling improperly.</li>
+        <li> Fixed an issue where new notifications would take mora than 10 seconds to load.</li>
+        <li> Fixed an issue where clicking on a video multiple times results in it buffering again.</li>
+        <li> Fixed an issue where topics from private groups appear in the "Topics of the Day" panel.</li>
+        <li> Fixed an issue where typing strange character combinations in the search bar would cause a 400 error.</li>
+        <li> Slight improvements to refresh speeds.</li>
+      <ul>
+      </div>
+
+    </div>
+
 <div class="mb-3" style="text-align:justify">
+
+  <div class="mb-3" style="text-align:justify">
+
+    <div class="media-body" style="background-color:#a300cc; border-radius:0.3rem;">
+
+    <h5 class="ml-2 mb-2"style=" color:white;"><strong>
+       <a class="ml-1">Version 0.1.8</a>
+      </strong></h5>
+      </div>
+      <a>Released in : February 26, 2019</a>
+    <div>
+    <a style="text-align: justify;"><b>New Features</b></a>
+    <ul class="mt-0" style="margin:0; list-style-type: none;">
+      <li> Added a mobile friendly view mode when using Pinbitt in a mobile browser.</li>
+      <li> Added anonymity settings for Groups.</li>
+
+    <ul>
+    </div>
+
+    <div>
+    <a style="text-align: justify;"><b>Changes</b></a>
+    <ul class="mt-0" style="margin:0; list-style-type: none;">
+      <li> A loading animation will play when uploading images and video files.</li>
+      <li> users can now upload animated GIFs as a profile picture.</li>
+      <li> JPEG image format now supported.</li>
+    <ul>
+    </div>
+
+    <div>
+    <a style="text-align: justify;"><b>Bug Fixes</b></a>
+    <ul class="mt-0" style="margin:0; list-style-type: none;">
+      <li> Fixed an issue where the New Post pop up stretches vertically when using low resolution displays.</li>
+      <li> Fixed an issue where inviting someone to the same group multiple times in a short amount of time was possible.</li>
+      <li> Fixed an issue where clicking on the Post button multiple times when creating a new Post ends up in uploading duplicate posts.</li>
+    <ul>
+    </div>
+
+  </div>
 
   <div class="mb-3" style="text-align:justify">
 
@@ -139,6 +220,15 @@
     <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
       {# --------------------------Start----------------------------- #}
       {% include 'blog/notifications_main.html' %}
+      {# --------------------------END----------------------------- #}
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="messageModalCenter" tabindex="-1" role="dialog" aria-labelledby="messageModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document" style="width:auto;   display: flex;">
+    <div class="modal-content" style="border-radius: 0.5rem; background-color:transparent;">
+      {# --------------------------Start----------------------------- #}
+      {% include 'blog/messages.html' %}
       {# --------------------------END----------------------------- #}
     </div>
   </div>

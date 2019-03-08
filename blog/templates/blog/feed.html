@@ -31,13 +31,22 @@
 
 
   {% if post.repost %}
-  <a href="{% url 'user-posts' post.repost.author.username %}">
-  <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.repost.author.profile.image.url}}">
-  </a>
+
+    {% if not post.repost.group or post.repost.group.anonymity == "1" %}
+    <a href="{% url 'user-posts' post.repost.author.username %}">
+      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.repost.author.profile.image.url}}">
+    </a>
+    {% else %}
+    <a>
+      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{% static 'resources/ann.png' %}">
+    </a>
+    {% endif %}
+
   <div class="media-body" style="border-radius: 0.5rem;">
     <div class="article-metadata">
+      {% if not post.repost.group or post.repost.group.anonymity == "1" %}
       <a class="mr-2" href="{% url 'user-posts' post.repost.author.username %}">{{ post.repost.author.profile.nick }}</a>
-
+      {% endif %}
       <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
@@ -63,8 +72,11 @@
 
       {% if post.repost.reply != None %}
       <small>
-      <a class="mr-2 ml-0" href="{% url 'user-posts' post.repost.reply.author.username %}"
-      style="color:#a300cc">Replied to <b>@{{ post.repost.reply.author.username}}</b></a>
+        {% if not post.repost.reply.group or post.repost.reply.group.anonymity == "1" %}
+          <a class="mr-2" href="{% url 'user-posts' post.repost.reply.author.username %}" style="color:#a300cc">Replied to <b>@{{ post.repost.reply.author.username}}</b></a>
+          {% else %}
+          <a class="mr-2" href="" style="color:#a300cc">Replied to <b>@?</b></a>
+        {% endif %}
       </small>
       {% elif post.repost.group != None %}
       <small>
@@ -98,11 +110,20 @@
         {% elif post.repost.video %}
         <video width="100%" height="100%" preload="auto" loop style ="border-radius: 1rem;"
           class="mb-2" controls>
-          <source src="{{post.repost.video.url}}" type="video/mp4" style ="border-radius: 1rem;" >
+          <source src="{{post.repost.video.url}}#t=0.0" type="video/mp4" style ="border-radius: 1rem;" >
           Your browser does not support the video tag.
         </video>
         {% endif %}
         </a>
+
+        {% if post.repost.audio %}
+        <audio style="width:100%;" height="100%" preload="auto" loop
+          class="mb-2" controls>
+          <source src="{{post.repost.audio.url}}" type="audio/mpeg">
+          Your browser does not support the audio tag.
+        </audio>
+        {% endif %}
+
     <p class="article-content" id="feed_content" style="">{{ post.repost.content }}</p>
 
         <small class="float-left" style="font-size:1.4vh">
@@ -118,13 +139,21 @@
     </div>
 
     {% else %}
+
+    {% if not post.group or post.group.anonymity == "1" %}
     <a href="{% url 'user-posts' post.author.username %}">
-    <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
+      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
     </a>
+    {% else %}
+    <a>
+      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{% static 'resources/ann.png' %}">
+    </a>
+    {% endif %}
     <div class="media-body" style="border-radius: 0.5rem;">
       <div class="article-metadata">
+        {% if not post.group or post.group.anonymity == "1" %}
         <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author.profile.nick }}</a>
-
+        {% endif %}
         <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
         style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
         <img src="{% static 'resources/more.png' %}"
@@ -147,8 +176,11 @@
 
         {% if post.reply != None %}
         <small>
-        <a class="mr-2 ml-0" href="{% url 'user-posts' post.reply.author.username %}"
-        style="color:#a300cc">Replied to <b>@{{ post.reply.author.username}}</b></a>
+          {% if not post.reply.group or post.reply.group.anonymity == "1" %}
+            <a class="mr-2" href="{% url 'user-posts' post.reply.author.username %}" style="color:#a300cc">Replied to <b>@{{ post.reply.author.username}}</b></a>
+            {% else %}
+            <a class="mr-2" href="" style="color:#a300cc">Replied to <b>@?</b></a>
+          {% endif %}
         </small>
         {% elif post.group != None %}
         <small>
@@ -182,11 +214,18 @@
           {% elif post.video %}
           <video width="100%" height="100%" preload="auto" loop style ="border-radius: 1rem;"
             class="mb-2" controls>
-            <source src="{{post.video.url}}" type="video/mp4" style ="border-radius: 1rem;">
+            <source src="{{post.video.url}}#t=0.0" type="video/mp4" style ="border-radius: 1rem;">
             Your browser does not support the video tag.
           </video>
           {% endif %}
         </a>
+        {% if post.audio %}
+        <audio style="width:100%;" height="100%" preload="auto" loop
+          class="mb-2" controls>
+          <source src="{{post.audio.url}}" type="audio/mpeg">
+          Your browser does not support the audio tag.
+        </audio>
+        {% endif %}
       <p class="article-content" id="feed_content" style="text-overflow: clip;">{{ post.content }}</p>
 
       {#This is the part where the image information is done#}

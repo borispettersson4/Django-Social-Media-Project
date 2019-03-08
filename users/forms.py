@@ -54,20 +54,22 @@ class ProfileSettingsUpdateForm(forms.ModelForm):
 class GroupUpdateForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = ['name','type','members','image']
+        fields = ['name','type','members','anonymity','image']
         labels = {
         "image": "Group Image",
         "name": "Group Name",
         "members": "Group Members",
         "mods": "Group Moderators",
-        "type": "Group Type"
+        "type": "Group Type",
+        "anonymity": "Group Anonymity"
         }
         help_texts = {
         "image": ('Image will automatically be resized to 500 x 500 pixels.'),
         "name": ('Name of your group. Must be unique.'),
         "members": ('Hold down "Control", or "Command" on a Mac, to select more than one.'),
         "mods": ('Hold down "Control", or "Command" on a Mac, to select more than one.'),
-        "type": ("Once checked, only group members are able to see this group's content"),
+        "type": ("Select Group Type. Open Groups allows anyone to join and post in the group. Public Groups allow outsiders to view, like, and comment on group posts. Private Groups only allow group members to see group posts and post within the group."),
+        "anonymity": ("Change the anonymity level of the Group."),
         }
 
 class GroupSettingsUpdateForm(forms.ModelForm):

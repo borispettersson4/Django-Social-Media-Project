@@ -70,7 +70,17 @@ def getPost(request, pk=None):
     obj = Post.objects.get(id=post_id)
     post_form = NewPostForm()
 
-    context = {
+    try:
+        msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+        ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+        unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+    except:
+        msg_people = Profile.objects.none()
+        unread_messages = Message.objects.none()
+
+    if request.user.is_authenticated:
+        context = {
             'profile': request.user.profile,
             'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
             'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
@@ -89,6 +99,28 @@ def getPost(request, pk=None):
             'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
             'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
             'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
+            }
+    else:
+        context = {
+            'comments' : Comment.objects.all(),
+            'likes' : Like.objects.all(),
+            'activities' : acts,
+            'user' : request.user,
+            'obj' : Post.objects.get(id=pk),
+            'post_form' : post_form,
+            'people' : peps,
+            'topics' : tops,
+            'date' : today,
+            'page_limit' : page_limit,
+            'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+            'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+            'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
 #When user clicks on a post
@@ -100,20 +132,41 @@ def getPost(request, pk=None):
             obj = Post.objects.last()
             post_id = obj.id
 
-        sub_context = {
-            'profile': request.user.profile,
-            'comments' : Comment.objects.all(),
-            'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
-            'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
-            'likes' : Like.objects.all(),
-            'user' : request.user,
-            'obj' : obj,
-            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
-            'post_form' : post_form,
-            'page_limit' : page_limit,
-            'slice_custom' : page_limit,
-            'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
-            }
+        if request.user.is_authenticated:
+                sub_context = {
+                'profile': request.user.profile,
+                'comments' : Comment.objects.all(),
+                'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+                'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+                'likes' : Like.objects.all(),
+                'user' : request.user,
+                'obj' : obj,
+                'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+                'post_form' : post_form,
+                'page_limit' : page_limit,
+                'slice_custom' : page_limit,
+                'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
+                'msg_people' : msg_people,
+                'partner' : request.user,
+                'unread_messages': unread_messages
+                }
+        else:
+                sub_context = {
+                'comments' : Comment.objects.all(),
+                'replies' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+                'replies-reply' : Post.objects.filter(reply=obj).order_by('-date_posted'),
+                'likes' : Like.objects.all(),
+                'user' : request.user,
+                'obj' : obj,
+                'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+                'post_form' : post_form,
+                'page_limit' : page_limit,
+                'slice_custom' : page_limit,
+                'is_post_detail' : True, #Cancels modals for items not supposed to open modals in this page
+                'msg_people' : msg_people,
+                'partner' : request.user,
+                'unread_messages': unread_messages
+                }
 
         if (request.POST.get('action') == "Comment"):
             post_id = request.POST.get('id')
@@ -270,6 +323,89 @@ def getPost(request, pk=None):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     #Site Behaviour
         elif (request.POST.get('action') == "Load_Next"):
                 page_count = request.POST.get('page_count')
@@ -289,8 +425,10 @@ def getPost(request, pk=None):
             try:
                 media = request.FILES['media']
                 url = media.name.lower()
-                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png') or url.endswith('.jpeg')):
                     new_post.image = media
+                elif (url.endswith('.mp3') or url.endswith('.ogg') or url.endswith('.wav')):
+                    new_post.audio = media
                 elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
                     new_post.video = media
             except:
@@ -304,7 +442,9 @@ def getPost(request, pk=None):
                 try:
                     tag_dict = tagfield.split()
                     for tag in tag_dict:
-                        if(tag.startswith("#")):
+                        if('/' in tag or '%' in tag or '$' in tag or '&' in tag or '|' in tag):
+                            break
+                        elif(tag.startswith("#")):
                             try:
                                 try:
                                     topic = Topic.objects.get(title=tag[1:])
@@ -421,7 +561,7 @@ def home_view(request, pk=3):
     today = datetime.datetime.now()
     from django.db.models import Count
     #Get all tags
-    tops = Topic.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
+    tops = Topic.objects.filter(post__date_posted__day=today.day, post__group=None).annotate(count=Count('post__like')).order_by('-count')
     peps = User.objects.filter(post__date_posted__day=today.day).annotate(count=Count('post__like')).order_by('-count')
 
     try:
@@ -436,6 +576,11 @@ def home_view(request, pk=3):
         myGroup.followers.remove(request.user)
     except:
         pass
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     context = {
             'posts': posts,
@@ -460,6 +605,10 @@ def home_view(request, pk=3):
             'report_form' : ReportForm(instance=request.user),
             'query':"",
             'groups': groups,
+            'is_home':True,
+            'msg_people' : msg_people.distinct(),
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
 #When user clicks on a post
@@ -486,7 +635,8 @@ def home_view(request, pk=3):
             'post_form' : post_form,
             'page_limit' : page_limit,
             'slice_custom' : page_limit,
-            'report_form' : ReportForm(instance=request.user)
+            'report_form' : ReportForm(instance=request.user),
+            'partner' : request.user
             }
 
         if (request.POST.get('action') == "Comment" and request.POST.get('content')):
@@ -701,6 +851,89 @@ def home_view(request, pk=3):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     #Site Behaviour
         elif (request.POST.get('action') == "Load_Next"):
             page_count = request.POST.get('page_count')
@@ -715,6 +948,11 @@ def home_view(request, pk=3):
             new_context["page_limit"] += int(page_count)
             html = render_to_string('blog/replies.html',new_context, request=request)
             return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
@@ -731,8 +969,10 @@ def home_view(request, pk=3):
                 try:
                     media = request.FILES['media']
                     url = media.name.lower()
-                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png') or url.endswith('.jpeg')):
                         new_post.image = media
+                    elif (url.endswith('.mp3') or url.endswith('.ogg') or url.endswith('.wav')):
+                        new_post.audio = media
                     elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
                         new_post.video = media
                 except:
@@ -750,7 +990,9 @@ def home_view(request, pk=3):
                     try:
                         tag_dict = tagfield.split()
                         for tag in tag_dict:
-                            if(tag.startswith("#")):
+                            if('/' in tag or '%' in tag or '$' in tag or '&' in tag or '|' in tag):
+                                break
+                            elif(tag.startswith("#")):
                                 try:
                                     try:
                                         topic = Topic.objects.get(title=tag[1:])
@@ -791,12 +1033,18 @@ def get_post(request):
 def search(request, query_result=None):
 
     query = str(query_result);
+    posts = Post.objects.none()
+    circles = Post.objects.none()
+    groups = Group.objects.none()
 
     if(query == None):
         query = request.POST.get('query')
 
     if("[~h]" in query):
         query = query.replace("[~h]", '#')
+
+    if('/' in query or '%' in query or '$' in query or '&' in query or '|' in query):
+        query="[invalid_query]"
 
     content_search = []
     topics_search = []
@@ -806,7 +1054,7 @@ def search(request, query_result=None):
     topics_posts = None
     people_posts = None
     people_circles = None
-
+    group_circles = None
     #Media filtering
     if(query):
         tag_dict = query.split()
@@ -826,6 +1074,7 @@ def search(request, query_result=None):
             people_circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(nick__contains=x) for x in content_search))) |
                                                Q(reduce(operator.or_, (Q(user__username__contains=x) for x in content_search)))
                                                ).order_by('-date_active')
+            group_circles = Group.objects.filter(Q(reduce(operator.or_, (Q(name__contains=x) for x in content_search)))).order_by('id')
 
         if(topics_search):
             topics_posts = Post.objects.filter(Q(reduce(operator.or_, (Q(topics__title__contains=x) for x in topics_search)))).order_by('-date_posted')
@@ -834,21 +1083,16 @@ def search(request, query_result=None):
         if(people_search):
             people_posts = Post.objects.filter(Q(reduce(operator.or_, (Q(author__username__contains=x) for x in people_search)))).order_by('-date_posted')
             people_circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user__username__contains=x) for x in people_search)))).order_by('-date_active')
+            group_circles = Group.objects.filter(Q(reduce(operator.or_, (Q(Q(members__username__contains=x) | Q(owner__username__contains=x)) for x in people_search)))).order_by('members')
 
-    if(content_posts or topics_posts or people_posts):
+    if(content_posts or topics_posts or people_posts or group_circles or people_circles):
         posts = people_posts or topics_posts or content_posts
         posts = posts.distinct()
         posts = posts.filter(group=None)
-        circles = people_circles
-        circles = circles.distinct()
-    else:
-        posts = Post.objects.none()
-        circles = Post.objects.none()
 
-    print(f"TOPICS SEARCH {topics_search}")
-    print(f"PERSON SEARCH {people_search}")
-    print(f"CONTENT SEARCH {content_search}")
-    print(f"QUERY {query}")
+    if(group_circles or people_circles):
+        circles = people_circles.distinct()
+        groups = group_circles.distinct()
 
     page_limit = 10
     post_form = NewPostForm()
@@ -869,6 +1113,11 @@ def search(request, query_result=None):
 
     acts = Activity.objects.filter(post__date_posted__day=today.day, post__topics__title=topic).order_by('-date')
     last_acts = Activity.objects.filter(post__topics__title=topic).last()
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     context = {
             'posts': posts,
@@ -897,9 +1146,13 @@ def search(request, query_result=None):
             'topic_best_post' : Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count').first(),
             'query' : query,
             'circles' : circles,
+            'groups' : groups.distinct(),
             'term' : query,
             'form' : ReportForm(instance=request.user),
             'hide_post' : True,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
 #When user clicks on a post
@@ -932,9 +1185,13 @@ def search(request, query_result=None):
             'topic_best_post' : Post.objects.filter(topics__title=topic).order_by('like').first(),
             'query' : request.POST.get('query'),
             'circles' : circles,
+            'groups' : groups,
             'term' : query,
             'form' : ReportForm(instance=request.user),
             'hide_post' : True,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
         if (request.POST.get('action') == "Comment"):
@@ -1134,6 +1391,89 @@ def search(request, query_result=None):
             request_obj.save()
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
     #Site Behaviour
         elif (request.POST.get('action') == "Load_Next"):
             page_count = request.POST.get('page_count')
@@ -1150,6 +1490,11 @@ def search(request, query_result=None):
             html = render_to_string('blog/replies.html',new_context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
         try:
@@ -1165,8 +1510,10 @@ def search(request, query_result=None):
                 try:
                     media = request.FILES['media']
                     url = media.name.lower()
-                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png') or url.endswith('.jpeg')):
                         new_post.image = media
+                    elif (url.endswith('.mp3') or url.endswith('.ogg') or url.endswith('.wav')):
+                        new_post.audio = media
                     elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
                         new_post.video = media
                 except:
@@ -1184,7 +1531,9 @@ def search(request, query_result=None):
                     try:
                         tag_dict = tagfield.split()
                         for tag in tag_dict:
-                            if(tag.startswith("#")):
+                            if('/' in tag or '%' in tag or '$' in tag or '&' in tag or '|' in tag):
+                                break
+                            elif(tag.startswith("#")):
                                 try:
                                     try:
                                         topic = Topic.objects.get(title=tag[1:])
@@ -1219,6 +1568,7 @@ def search(request, query_result=None):
 
 @login_required
 def getTopic(request, topic=None):
+
     page_limit = 10
     post_form = NewPostForm()
     posts = Post.objects.filter(topics__title=topic, group=None, reply__group=None).annotate(count=Count('like')).order_by('-count')
@@ -1238,6 +1588,11 @@ def getTopic(request, topic=None):
 
     acts = Activity.objects.filter(post__date_posted__day=today.day, post__topics__title=topic).order_by('-date')
     last_acts = Activity.objects.filter(post__topics__title=topic).last()
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     context = {
             'posts': posts,
@@ -1266,6 +1621,9 @@ def getTopic(request, topic=None):
             'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
             'topic_best_post' : Post.objects.filter(topics__title=topic).annotate(count=Count('like')).order_by('-count').first(),
             'hide_post' : True,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
 #When user clicks on a post
@@ -1296,6 +1654,9 @@ def getTopic(request, topic=None):
             'topic' : topic,
             'topic_first_post' : Post.objects.filter(topics__title=topic).order_by('date_posted').first(),
             'topic_best_post' : Post.objects.filter(topics__title=topic).order_by('like').first(),
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
         if (request.POST.get('action') == "Comment"):
@@ -1496,6 +1857,89 @@ def getTopic(request, topic=None):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     #Site Behaviour
         elif (request.POST.get('action') == "Load_Next"):
             page_count = request.POST.get('page_count')
@@ -1510,6 +1954,11 @@ def getTopic(request, topic=None):
             new_context["page_limit"] += int(page_count)
             html = render_to_string('blog/replies.html',new_context, request=request)
             return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
 
     elif (request.method == 'POST'):
         post_form = NewPostForm(request.POST, request.FILES)
@@ -1526,8 +1975,10 @@ def getTopic(request, topic=None):
                 try:
                     media = request.FILES['media']
                     url = media.name.lower()
-                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png') or url.endswith('.jpeg')):
                         new_post.image = media
+                    elif (url.endswith('.mp3') or url.endswith('.ogg') or url.endswith('.wav')):
+                        new_post.audio = media
                     elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
                         new_post.video = media
                 except:
@@ -1545,7 +1996,9 @@ def getTopic(request, topic=None):
                     try:
                         tag_dict = tagfield.split()
                         for tag in tag_dict:
-                            if(tag.startswith("#")):
+                            if('/' in tag or '%' in tag or '$' in tag or '&' in tag or '|' in tag):
+                                break
+                            elif(tag.startswith("#")):
                                 try:
                                     try:
                                         topic = Topic.objects.get(title=tag[1:])
@@ -1620,7 +2073,7 @@ def get_user_information(request, username=None, view=None):
     elif(view == "following"):
         circles = Profile.objects.filter(Q(followers=profile))
     elif(view == "groups"):
-        circles = Group.objects.filter(Q(owner=profile.user) | Q(members=profile.user) | Q(mods=profile.user) | Q(followers=profile.user)).distinct()
+        circles = Group.objects.filter(Q(Q(owner=profile.user) | Q(members=profile.user) | Q(mods=profile.user)) & Q(Q(anonymity="1") | Q(owner=request.user) | Q(members=request.user))).distinct()
     elif(view == "replies"):
         posts = Post.objects.filter(Q(author=profile.user) & ~Q(reply=None)).order_by('-date_posted')
     elif(view == "likes"):
@@ -1651,8 +2104,12 @@ def get_user_information(request, username=None, view=None):
 
     def isInviteExists():
         try:
-            r = Request.objects.get(Q(recepient=profile.user,sender=request.user,type=1) & ~Q(group=None))
-            return (not r.accepted)
+            try:
+                r = Request.objects.get(Q(recepient=profile.user,sender=request.user,type=1) & ~Q(group=None))
+                return (not r.accepted)
+            except:
+                r = Request.objects.filter(Q(recepient=profile.user,sender=request.user,type=1) & ~Q(group=None))
+                return (not r.accepted)
         except:
             return False
 
@@ -1661,6 +2118,11 @@ def get_user_information(request, username=None, view=None):
             return (Group.objects.filter(owner=request.user).count() == Group.objects.filter(members=profile.user).count())
         except:
             return False
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
 
     context = {
         'posts': posts,
@@ -1672,7 +2134,7 @@ def get_user_information(request, username=None, view=None):
                                                                          + Group.objects.filter(followers=profile.user).count()
                                                                          + Group.objects.filter(owner=profile.user).count(),
         'groups_owned' : Group.objects.filter(Q(owner=request.user) & ~Q(members=profile.user)),
-        'groups' : Group.objects.filter(Q(owner=profile.user) | Q(mods=profile.user) | Q(members=profile.user) | Q(followers=profile.user)).distinct(),
+        'groups' : Group.objects.filter(Q(Q(owner=profile.user) | Q(mods=profile.user) | Q(members=profile.user)) & Q(Q(anonymity="1") | Q(owner=request.user) | Q(members=request.user))).distinct(),
         'page_obj':paginator,
         'profile': profile,
         'comments' : Comment.objects.all(),
@@ -1685,7 +2147,7 @@ def get_user_information(request, username=None, view=None):
         'existing_invite' : isInviteExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
-        'media' : Post.objects.filter(Q(author=profile.user,group=None) & ~Q(image="default.jpg", author=profile.user) | ~Q(video="")).order_by('-date_posted'),
+        'media' : Post.objects.filter(Q(author=profile.user,group=None) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted'),
         'user_posts' : Post.objects.filter(author__username=username).order_by('-date_posted').count(),
         'user_comments' : Post.objects.filter(reply__author__username=username).order_by('-date_posted').count(),
         'obj' : Post.objects.last(),
@@ -1702,6 +2164,10 @@ def get_user_information(request, username=None, view=None):
         'view' : view,
         'circles' : circles,
         'is_dropdown' : True,
+        'null' : None,
+        'msg_people' : msg_people,
+        'partner' : request.user,
+        'unread_messages': unread_messages
         }
 
     if request.is_ajax():
@@ -1724,7 +2190,7 @@ def get_user_information(request, username=None, view=None):
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
-            'media' : Post.objects.filter(Q(author__username=username) & ~Q(image="default.jpg") | ~Q(video="")).order_by('-date_posted'),
+            'media' : Post.objects.filter(Q(author=profile.user,group=None) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted'),
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
             'post_form' : post_form,
             'page_limit' : page_limit,
@@ -1734,6 +2200,10 @@ def get_user_information(request, username=None, view=None):
             'is_on_board' : isOnBoard(),
             'view' : view,
             'circles' : circles,
+            'null' : None,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
         if (request.POST.get('action') == "Follow"):
@@ -1812,8 +2282,10 @@ def get_user_information(request, username=None, view=None):
                 try:
                     media = request.FILES['media']
                     url = media.name.lower()
-                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png') or url.endswith('.jpeg')):
                         new_post.image = media
+                    elif (url.endswith('.mp3') or url.endswith('.ogg') or url.endswith('.wav')):
+                        new_post.audio = media
                     elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
                         new_post.video = media
                 except:
@@ -1831,7 +2303,9 @@ def get_user_information(request, username=None, view=None):
                     try:
                         tag_dict = tagfield.split()
                         for tag in tag_dict:
-                            if(tag.startswith("#")):
+                            if('/' in tag or '%' in tag or '$' in tag or '&' in tag or '|' in tag):
+                                break
+                            elif(tag.startswith("#")):
                                 try:
                                     try:
                                         topic = Topic.objects.get(title=tag[1:])
@@ -1900,11 +2374,20 @@ def get_group_information(request, name=None, view=None):
     elif(view == "moderators"):
         circles = Profile.objects.filter(Q(user__mods=group)).order_by('-id')
     elif(view == "members"):
-        circles = Profile.objects.filter(Q(user__members=group)).order_by('-id')
+        if(group.anonymity == "1"):
+            circles = Profile.objects.filter(Q(user__members=group)).order_by('-id')
+        else:
+            circles = Profile.objects.none()
     elif(view == "owner"):
-        circles = Profile.objects.filter(Q(user=group.owner)).order_by('-id')
+        if(group.anonymity == "1"):
+            circles = Profile.objects.filter(Q(user=group.owner)).order_by('-id')
+        else:
+            circles = Profile.objects.none()
     elif(view == "followers"):
-        circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user=x) for x in group.followers.all())))).order_by('-id').distinct()
+        if(group.anonymity == "1"):
+            circles = Profile.objects.filter(Q(reduce(operator.or_, (Q(user=x) for x in group.followers.all())))).order_by('-id').distinct()
+        else:
+            circles = Profile.objects.none()
     elif(view == "replies"):
         posts = Post.objects.filter(Q(reply__group=group)).order_by('-date_posted')
     elif(view == "likes"):
@@ -1945,6 +2428,11 @@ def get_group_information(request, name=None, view=None):
     except:
         pass
 
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     context = {
         'posts': posts,
         'pages': pages,
@@ -1961,7 +2449,7 @@ def get_group_information(request, name=None, view=None):
         'existing_request' : isRequestExists(),
         'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
         Notification.objects.filter(recepient=request.user, confirmed=False).count(),
-        'media' : Post.objects.filter(Q(group=group) & ~Q(image="default.jpg", group=group) | ~Q(video="")).order_by('-date_posted'),
+        'media' : Post.objects.filter(Q(group=group) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted'),
         'group_posts' : Post.objects.filter(group=group).order_by('-date_posted').count(),
         'group_comments' : Post.objects.filter(Q(reply__group=group)).order_by('-date_posted').count(),
         'obj' : Post.objects.last(),
@@ -1976,6 +2464,10 @@ def get_group_information(request, name=None, view=None):
         'circles' : circles,
         'hide_post' : not (isMember() or isOwner()),
         'is_dropdown' : True,
+        'null' : None,
+        'msg_people' : msg_people,
+        'partner' : request.user,
+        'unread_messages': unread_messages
         }
 
     if request.is_ajax():
@@ -1997,7 +2489,7 @@ def get_group_information(request, name=None, view=None):
             'likes' : Like.objects.all(),
             'user' : request.user,
             'obj' : obj,
-            'media' : Post.objects.filter(Q(group=group) & ~Q(image="default.jpg", group=group) | ~Q(video="")).order_by('-date_posted'),
+            'media' : Post.objects.filter(Q(group=group) & Q(~Q(image="default.jpg") | ~Q(video=""))).order_by('-date_posted'),
             'activities' : acts,
             'post_form' : post_form,
             'page_limit' : page_limit,
@@ -2007,6 +2499,10 @@ def get_group_information(request, name=None, view=None):
             'is_following' : isFollowing(),
             'view' : view,
             'circles' : circles,
+            'null' : None,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
         if (request.POST.get('action') == "Send_Request"):
@@ -2088,8 +2584,10 @@ def get_group_information(request, name=None, view=None):
                 try:
                     media = request.FILES['media']
                     url = media.name.lower()
-                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png')):
+                    if (url.endswith('.jpg') or url.endswith('.gif') or url.endswith('.png') or url.endswith('.jpeg')):
                         new_post.image = media
+                    elif (url.endswith('.mp3') or url.endswith('.ogg') or url.endswith('.wav')):
+                        new_post.audio = media
                     elif (url.endswith('.mp4') or url.endswith('.ogg') or url.endswith('.webm')):
                         new_post.video = media
                 except:
@@ -2107,7 +2605,9 @@ def get_group_information(request, name=None, view=None):
                     try:
                         tag_dict = tagfield.split()
                         for tag in tag_dict:
-                            if(tag.startswith("#")):
+                            if('/' in tag or '%' in tag or '$' in tag or '&' in tag or '|' in tag):
+                                break
+                            elif(tag.startswith("#")):
                                 try:
                                     try:
                                         topic = Topic.objects.get(title=tag[1:])
@@ -2142,6 +2642,12 @@ def get_group_information(request, name=None, view=None):
 
 @login_required
 def notifications(request):
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
     context = {
         'profile': request.user.profile,
         'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
@@ -2155,6 +2661,9 @@ def notifications(request):
         'search' : request.GET.get('search'),
         'report_form' : ReportForm(instance=request.user),
         'query':"",
+        'msg_people' : msg_people,
+        'partner' : request.user,
+        'unread_messages': unread_messages
         }
 
 #When user clicks on a post
@@ -2178,6 +2687,9 @@ def notifications(request):
             'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
             'report_form' : ReportForm(instance=request.user),
             'hide_post': True,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages
             }
 
         if (request.POST.get('action') == "Comment" and request.POST.get('content')):
@@ -2392,6 +2904,89 @@ def notifications(request):
             html = render_to_string('blog/requests_view.html', context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
     #Site Behaviour
         elif (request.POST.get('action') == "Load_Next"):
             page_count = request.POST.get('page_count')
@@ -2407,7 +3002,381 @@ def notifications(request):
             html = render_to_string('blog/replies.html',new_context, request=request)
             return JsonResponse({'form':html})
 
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
     return render(request, 'blog/notifications_main_mobile.html', context)
+
+@login_required
+def messages(request):
+
+    msg_people = Profile.objects.filter(Q(Q(user__msgrecepient__recepient=request.user) | Q(user__msgrecepient__sender=request.user)
+    ) & ~Q(user=request.user)).distinct().order_by("-user__msgrecepient__recepient") | Profile.objects.filter(friends=request.user.profile).distinct()
+
+    unread_messages = Message.objects.filter(Q(recepient=request.user, confirmed=False)).order_by('-date_posted')
+
+    context = {
+        'profile': request.user.profile,
+        'notifications' : Notification.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'requests' : Request.objects.filter(recepient=request.user).order_by('-date_posted'),
+        'badge_count' : Request.objects.filter(recepient=request.user, confirmed=False).count() +
+        Notification.objects.filter(recepient=request.user, confirmed=False).count(),
+        'comments' : Comment.objects.all(),
+        'likes' : Like.objects.all(),
+        'user' : request.user,
+        'obj' : Post.objects.last(),
+        'search' : request.GET.get('search'),
+        'report_form' : ReportForm(instance=request.user),
+        'query':"",
+        'msg_people' : msg_people,
+        'partner' : request.user,
+        'unread_messages': unread_messages,
+        }
+
+#When user clicks on a post
+    if request.is_ajax():
+        if(request.POST.get('id')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+        else:
+            obj = Post.objects.last()
+            post_id = obj.id
+
+        sub_context = {
+            'profile': request.user.profile,
+            'page_obj': paginator,
+            'comments' : Comment.objects.all(),
+            'replies' : Post.objects.filter(reply=obj),
+            'replies-reply' : Post.objects.filter(reply=obj),
+            'likes' : Like.objects.all(),
+            'user' : request.user,
+            'obj' : obj,
+            'activities' : Activity.objects.filter(post=Post.objects.get(id=post_id)),
+            'report_form' : ReportForm(instance=request.user),
+            'hide_post': True,
+            'msg_people' : msg_people,
+            'partner' : request.user,
+            'unread_messages': unread_messages,
+            }
+
+        if (request.POST.get('action') == "Comment" and request.POST.get('content')):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            cont = request.POST.get('content')
+            post = Post.objects.get(id=request.POST.get('id'))
+            author = request.user
+            post = Post(content=cont,author=author, reply=post)
+            post.save()
+            new_activity = Activity(post=obj, author=request.user, type=1)
+            new_activity.save()
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_activity = Activity(post=post, author=request.user, type=2)
+            new_activity.save()
+            ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=post, type=1)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            html3 = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2, 'post' : html3})
+
+        elif (request.POST.get('action') == "View_Post"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "View_Post_Detail"):
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "View_Content"):
+            html = render_to_string('blog/content_view.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Like_Post"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html = render_to_string('blog/post_like_comment.html', sub_context, request=request)
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Post_Reply"):
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+                    new_activity = Activity.objects.filter(post=obj, author=request.user, type=0)
+                    new_activity.delete()
+                    new_notification = Notificationobjects.filter(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    new_notification.delete()
+            except:
+                pass
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html, 'main' : html2})
+
+        elif (request.POST.get('action') == "Like_Feed"):
+            post_id = request.POST.get('id')
+            obj = Post.objects.get(id=post_id)
+            post = Post.objects.get(id=request.POST.get('id'))
+            like = None
+            try:
+                likes = Like.objects.filter(post=post, author=request.user)
+                if(not likes):
+                    new_like = Like(post=post,author=request.user)
+                    new_like.save()
+                    new_activity = Activity(post=obj, author=request.user, type=0)
+                    new_activity.save()
+                    ##Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+                    new_notification = Notification(sender=request.user, recepient=obj.author, post=obj, type=0)
+                    if(new_notification.sender != new_notification.recepient):
+                        new_notification.save()
+                else:
+                    likes.delete()
+            except:
+                pass
+
+            sub_context['replies'] = Post.objects.filter(reply=obj.reply)
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            sub_context["p"] = Post.objects.get(id=request.POST.get('id'))
+            html2 = render_to_string('blog/like_comment.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2})
+
+        elif (request.POST.get('action') == "New_Post"):
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Post"):
+
+            post = Post.objects.get(id=post_id)
+            post.delete()
+            html3 = render_to_string('blog/replies.html', sub_context, request=request)
+            html2 = render_to_string('blog/feed.html', sub_context, request=request)
+            html = render_to_string('blog/post.html', sub_context, request=request)
+            return JsonResponse({'form':html,'main':html2,'post':html3})
+
+        elif (request.POST.get('action') == "Report_Post"):
+
+            post = Post.objects.get(id=post_id)
+            report = request.POST.get('choice')
+            new_report = Report(author=request.user, report_choice=report, post=post)
+            new_report.save()
+            html = render_to_string('blog/post_confirm_report_confirmed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Copy_Link"):
+
+            url = request.build_absolute_uri()
+            url_post = request.POST.get('link').replace("LINK",str(post_id))
+            new_context = sub_context
+            new_context["link"] = str(f"{url[:-1]}{url_post}")
+            post = Post.objects.get(id=post_id)
+            html = render_to_string('blog/post_confirm_copylink.html', new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Repost"):
+
+            post = Post.objects.get(id=post_id)
+            repost = Post(author=request.user, reply=None, repost=post)
+            repost.save()
+            new_activity = Activity(post=Post.objects.get(id=post_id), author=request.user, type=3)
+            new_activity.save()
+            #Profile.objects.filter(user=request.user).update(date_active=timezone.now)
+            new_notification = Notification(sender=request.user, recepient=obj.author, post=repost, type=3)
+            if(new_notification.sender != new_notification.recepient):
+                new_notification.save()
+            html = render_to_string('blog/feed.html', sub_context, request=request)
+            return JsonResponse({'form':html})
+
+        #User Actions
+
+        elif (request.POST.get('action') == "Open_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Notifications"):
+            notifications = Notification.objects.filter(recepient=request.user)
+            notifications.delete()
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Open_Requests"):
+            requests = Request.objects.filter(recepient=request.user, confirmed=False).update(confirmed=True)
+            html = render_to_string('blog/notifications_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Clear_Requests"):
+            requets = Request.objects.filter(recepient=request.user)
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Decline_Request"):
+            requets = Request.objects.get(id=request.POST.get('request_id'))
+            requets.delete()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Accept_Request"):
+            request_obj = Request.objects.get(id=request.POST.get('request_id'))
+            if(request_obj.group != None):
+                if(request_obj.type == 0):
+                    request_obj.group.members.add(request_obj.sender)
+                elif(request_obj.type == 1):
+                    request_obj.group.members.add(request_obj.recepient)
+            else:
+                if(request_obj.type == 0):
+                    request.user.profile.friends.add(request_obj.sender.profile)
+
+            request_obj.accepted = True
+            request_obj.save()
+            html = render_to_string('blog/requests_view.html', context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Get_Chat"):
+            new = 1
+
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            if(message_list.count() > 50):
+                objects_to_keep = message_list[10:]
+                Message.objects.exclude(pk__in=objects_to_keep).delete()
+
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                last_msg = Message.objects.get(id=request.POST.get('last_message_id'))
+            except:
+                last_msg = message_list.last()
+
+            new_msg = message_list.last()
+            if(last_msg):
+                if (last_msg.id == new_msg.id):
+                    new = 1
+                else:
+                    new = 0
+            else:
+                new = 1
+
+            try:
+                if(new == 0):
+                    Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            chat = render_to_string('blog/chat.html',new_context, request=request)
+            html = render_to_string('blog/chat_feed.html',new_context, request=request)
+            return JsonResponse({'form':html, 'new': new, 'circles': chat})
+
+        elif (request.POST.get('action') == "Open_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message_list = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                   Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = message_list
+
+            try:
+                Message.objects.filter(recepient=request.user).update(confirmed=True)
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Delete_Message"):
+            new_message = Message.objects.get(id=request.POST.get('message_id'))
+            partner = User.objects.get(id=new_message.recepient.id)
+            new_message.delete()
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Send_Chat"):
+            partner = User.objects.get(id=request.POST.get('partner_id'))
+            message = request.POST.get('message')
+            new_context = sub_context
+            new_context["partner"] = partner
+            new_context["messages"] = Message.objects.filter( Q(sender=request.user, recepient=partner) |
+                                                              Q(sender=partner, recepient=request.user)).order_by('date_posted')
+
+            try:
+                new_message = Message(sender=request.user, recepient=partner, content=message)
+                new_message.save()
+            except:
+                pass
+
+            html = render_to_string('blog/chat.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+    #Site Behaviour
+        elif (request.POST.get('action') == "Load_Next"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/feed.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Next_Reply"):
+            page_count = request.POST.get('page_count')
+            new_context = sub_context
+            new_context["page_limit"] += int(page_count)
+            html = render_to_string('blog/replies.html',new_context, request=request)
+            return JsonResponse({'form':html})
+
+        elif (request.POST.get('action') == "Load_Content"):
+            nav = render_to_string('blog/bottom_nav.html',context, request=request)
+            messages = render_to_string('blog/messages_circles.html',context, request=request)
+            return JsonResponse({'nav':nav, 'msg':messages})
+
+    return render(request, 'blog/messages_mobile.html', context)
 
 class UserPostListView(ListView):
     model = Post
@@ -2490,3 +3459,6 @@ def validate_username(request):
 class SignUpView(DetailView):
     template_name = 'blog/test.html'
     form_class = UserCreationForm
+
+def test(request):
+    return render(request, 'blog/test.html')
