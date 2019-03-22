@@ -24,11 +24,19 @@
 <article class="media content-section mb-3;" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
   {% if not obj.group or obj.group.anonymity == "1" %}
   <a href="{% url 'user-posts' obj.author.username %}">
+    {% if request.user_agent.is_mobile %}
+    <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{{obj.author.profile.image.url}}">
+    {% else %}
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{obj.author.profile.image.url}}">
+    {% endif %}
   </a>
   {% else %}
   <a>
+    {% if request.user_agent.is_mobile %}
+    <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{% static 'resources/ann.png' %}">
+    {% else %}
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{% static 'resources/ann.png' %}">
+    {% endif %}
   </a>
   {% endif %}
   <div class="media-body" style="border-radius: 0.5rem;">
@@ -39,7 +47,7 @@
       <button class="dropdown" id="hidden_interact" select_id = {{obj.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      style="width: 20px; height: 20px; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -114,8 +122,13 @@
       <fieldset class="form-group" style="text-align:center; margin:1vh;">
 
           <div class="" style="">
-                <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.3vh;"
-                src="{{user.profile.image.url}}">
+            {% if request.user_agent.is_mobile %}
+            <img class="rounded-circle article-img float-left" style=" width: 30px; height: 30px; margin-left:2.3vh;"
+            src="{{user.profile.image.url}}">
+            {% else %}
+            <img class="rounded-circle article-img float-left" style=" width: 4vh; height: 4vh; margin-left:2.3vh;"
+            src="{{user.profile.image.url}}">
+            {% endif %}
                 <textarea class="textbox_big" autofocus
                 style="width:80%; height:15vh; border-radius: 0.5rem; overflow:hidden; float:left;"></textarea>
                 <textarea class="textbox_small"
@@ -143,10 +156,14 @@
         <div class="form-group" style="margin-bottom:3vh">
           <div class="">
           <label for="file_upload" class="post_image" accept="image/*" onchange="loadFile(event)" style="">
-          <a style="font-size:1.7vh; color:#a300cc; float:left; margin-left:10vh">Replying to @{{obj.author.username}}<a/>
+          <a style=" color:#a300cc; float:right; margin-left:10vh">Replying to @{{obj.author.username}}<a/>
           </label>
           <button class="btn btn-outline-info post_comment updateButton float-right"
+          {% if request.user_agent.is_mobile %}
+          style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:4%; border-radius: 10rem;"
+          {% else %}
           style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; margin-right:4vh; border-radius: 10rem;"
+          {% endif %}
           type="submit" post_id={{obj.id}} member_id = {{obj.id}}>Reply</button>
           </div>
         </div>

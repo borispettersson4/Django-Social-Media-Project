@@ -170,11 +170,10 @@
         {% endif %}
 
         {% if group.followers.count > 0 %}
-        <a class=" mr-0 mb-0" href="{% url 'user-posts' group.name 'followers' %}" style="color:black;">
+        <a class=" mr-0 mb-0" href="{% url 'group-posts' group.name 'followers' %}" style="color:black;">
           <b style="font-size:110%; color:#a300cc;;"> Followers {{group.followers.count}}</b>
         </a>
         {% endif %}
-
 
         </div>
       </div>

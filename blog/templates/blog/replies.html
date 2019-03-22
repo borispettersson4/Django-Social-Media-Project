@@ -29,7 +29,11 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
     <article id="reply_object" class="media content-section" style="margin-bottom:0vh; border-bottom-left-radius: 0.0rem; border-bottom-right-radius: 0.0rem;">
   {% endif %}
   <a href="{% url 'user-posts' comment.author.username %}">
+    {% if request.user_agent.is_mobile %}
+    <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{{comment.author.profile.image.url}}">
+    {% else %}
     <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{comment.author.profile.image.url}}">
+    {% endif %}
     </a>
     <div class="media-body">
       <div class="article-metadata">
@@ -42,7 +46,7 @@ style="margin-bottom:0vh; border-bottom-left-radius: 0.5rem; border-bottom-right
         <button class="dropdown" id="hidden_interact" select_id = {{comment.id}} aria-haspopup="true" aria-expanded="false"
         style="cursor:pointer; border-radius: 1rem; float:right;" id="dropdownMenuButton" data-toggle="dropdown">
         <img src="{% static 'resources/more.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        style="width: 20px; height: 20px; border:none; cursor:pointer; display: inline-block;"></img>
         </button>
 
         <small class="text-muted">{{ comment.date_posted|date:"M d, Y" }}</small>

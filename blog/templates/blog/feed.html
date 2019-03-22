@@ -34,11 +34,19 @@
 
     {% if not post.repost.group or post.repost.group.anonymity == "1" %}
     <a href="{% url 'user-posts' post.repost.author.username %}">
-      <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.repost.author.profile.image.url}}">
+      {% if request.user_agent.is_mobile %}
+        <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{{post.repost.author.profile.image.url}}">
+      {% else %}
+        <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.repost.author.profile.image.url}}">
+      {% endif %}
     </a>
     {% else %}
     <a>
+      {% if request.user_agent.is_mobile %}
+      <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{% static 'resources/ann.png' %}">
+      {% else %}
       <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{% static 'resources/ann.png' %}">
+      {% endif %}
     </a>
     {% endif %}
 
@@ -50,7 +58,7 @@
       <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
       style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
       <img src="{% static 'resources/more.png' %}"
-      style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+      style="width: 20px; height: 20px; border:none; cursor:pointer; display: inline-block;"></img>
       </button>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -142,11 +150,19 @@
 
     {% if not post.group or post.group.anonymity == "1" %}
     <a href="{% url 'user-posts' post.author.username %}">
+      {% if request.user_agent.is_mobile %}
+      <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{{post.author.profile.image.url}}">
+      {% else %}
       <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{{post.author.profile.image.url}}">
+      {% endif %}
     </a>
     {% else %}
     <a>
+      {% if request.user_agent.is_mobile %}
+      <img class="rounded-circle article-img" style=" width: 32px; height: 32px;" src="{% static 'resources/ann.png' %}">
+      {% else %}
       <img class="rounded-circle article-img" style=" width: 5vh; height: 5vh;" src="{% static 'resources/ann.png' %}">
+      {% endif %}
     </a>
     {% endif %}
     <div class="media-body" style="border-radius: 0.5rem;">
@@ -157,7 +173,7 @@
         <button class="dropdown" id="hidden_interact" select_id = {{post.id}} aria-haspopup="true" aria-expanded="false"
         style="cursor:pointer; border-radius: 1rem; float:right; display:inline-block;" id="dropdownMenuButton" data-toggle="dropdown">
         <img src="{% static 'resources/more.png' %}"
-        style="width: 2.5vh; height: 2.5vh; border:none; cursor:pointer; display: inline-block;"></img>
+        style="width: 20px; height: 20px; border:none; cursor:pointer; display: inline-block;"></img>
         </button>
 
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">

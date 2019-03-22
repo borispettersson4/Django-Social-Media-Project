@@ -1,171 +1,171 @@
-{% load static %}
-{% load filters %}
-{% load crispy_forms_tags %}
+  {% load static %}
+  {% load filters %}
+  {% load crispy_forms_tags %}
 
-<script>
+  <script>
 
-  $(document).ready(function(event) {
-    $("#message_image_preview").hide();
-    $("#message_video_preview").hide();
-    $("#message_audio_preview").hide();
-    $("#message_error_preview").hide();
-    $("#message_preview").hide();
-    });
-    function readURL(input) {
-            $("#message_image_preview").hide();
-            if (input.files && input.files[0]) {
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                      extvideo = e.target.result.includes("video/");
-                      extimage = e.target.result.includes("image/");
-                      extaudio = e.target.result.includes("audio/");
-                      $("#message_image_preview").hide();
-                      $("#message_video_preview").hide();
-                      $("#message_error_preview").hide();
-                      if (extimage) {
-                        $('#message_image_preview')
-                            .attr('src', e.target.result);
-                            $("#message_image_preview").show();
-                      }
-                      else if (extaudio) {
-                        $('#message_audio_preview')
-                            .attr('src', e.target.result);
-                            $("#message_audio_preview").show();
-                      }
-                      else if (extvideo) {
-                        $('#message_video_preview')
-                            .attr('src', e.target.result);
-                            $("#message_video_preview").show();
+    $(document).ready(function(event) {
+      $("#message_image_preview").hide();
+      $("#message_video_preview").hide();
+      $("#message_audio_preview").hide();
+      $("#message_error_preview").hide();
+      $("#message_preview").hide();
+      });
+      function readURL(input) {
+              $("#message_image_preview").hide();
+              if (input.files && input.files[0]) {
+                      var reader = new FileReader();
+                      reader.onload = function (e) {
+                        extvideo = e.target.result.includes("video/");
+                        extimage = e.target.result.includes("image/");
+                        extaudio = e.target.result.includes("audio/");
+                        $("#message_image_preview").hide();
+                        $("#message_video_preview").hide();
+                        $("#message_error_preview").hide();
+                        if (extimage) {
+                          $('#message_image_preview')
+                              .attr('src', e.target.result);
+                              $("#message_image_preview").show();
+                        }
+                        else if (extaudio) {
+                          $('#message_audio_preview')
+                              .attr('src', e.target.result);
+                              $("#message_audio_preview").show();
+                        }
+                        else if (extvideo) {
+                          $('#message_video_preview')
+                              .attr('src', e.target.result);
+                              $("#message_video_preview").show();
 
-                      }
-                      else{
-                        $("#message_error_preview").show();
-                      }
-                      $("#message_preview").show();
+                        }
+                        else{
+                          $("#message_error_preview").show();
+                        }
+                        $("#message_preview").show();
 
-                    };
+                      };
 
-                    reader.readAsDataURL(input.files[0]);
-                }
-            }
+                      reader.readAsDataURL(input.files[0]);
+                  }
+              }
 
-            $(document).ready(function() {
-              $("#message_form_loading").hide();
-              $("#message_send").click(function() {
-                $("#message_bottom_btns").hide();
-                $("#message_form_loading").show();
+              $(document).ready(function() {
+                $("#message_form_loading").hide();
+                $("#message_send").click(function() {
+                  $("#message_bottom_btns").hide();
+                  $("#message_form_loading").show();
+                });
               });
-            });
-</script>
+  </script>
 
-{% if not request.user_agent.is_mobile %}
-<div style=" border-radius: 0.5rem; background-color:#eedfff;">
+  {% if not request.user_agent.is_mobile %}
+  <div style=" border-radius: 0.5rem; background-color:#eedfff;">
 
-  <div class="ml-3 mr-3 " style="">
-    <form method="POST" enctype="multipart/form-data" style=" " id="message_post_form">
-      {% csrf_token %}
-      <fieldset class="form">
-        {{ message_form }}
-      </fieldset>
-<div class="mb-3 mt-3">
-        <div class="form-group" style="margin:0; padding:0">
+    <div class="ml-3 mr-3 " style="">
+      <form method="POST" enctype="multipart/form-data" style=" " id="message_post_form">
+        {% csrf_token %}
+        <fieldset class="form">
+          {{ message_form }}
+        </fieldset>
+  <div class="mb-3 mt-3">
+          <div class="form-group" style="margin:0; padding:0">
 
-          <div style="background-color:white; border:thin solid #a300cc;" id="message_preview">
-                <p id ="message_error_preview">This file is not supported.</p>
-                <img id="message_image_preview" class="img-fluid" style="min-width:100%;"
-                alt="Responsive image" src="#">
-                <video id="message_video_preview" width="100%" height="auto" preload="auto"
-                 style ="" class="video_preview" controls>
-                <source src="" type="video/mp4" style ="">
-                </video>
-                <audio id="message_audio_preview" style ="width:100%; text-align:center; padding:0; margin:0; border-radius: 3rem;" preload="auto"
-                   controls>
-                  <source src="{{post.audio.url}}" type="audio/mpeg">
-                  Your browser does not support the audio tag.
-                </audio>
+            <div style="background-color:white; border:thin solid #a300cc;" id="message_preview">
+                  <p id ="message_error_preview">This file is not supported.</p>
+                  <img id="message_image_preview" class="img-fluid" style="min-width:100%;"
+                  alt="Responsive image" src="#">
+                  <video id="message_video_preview" width="100%" height="auto" preload="auto"
+                   style ="" class="video_preview" controls>
+                  <source src="" type="video/mp4" style ="">
+                  </video>
+                  <audio id="message_audio_preview" style ="width:100%; text-align:center; padding:0; margin:0; border-radius: 3rem;" preload="auto"
+                     controls>
+                    <source src="{{post.audio.url}}" type="audio/mpeg">
+                    Your browser does not support the audio tag.
+                  </audio>
+            </div>
+
+            <a id="message_bottom_btns" style="">
+
+            <textarea name="message_content" class = "message_content mb-3"
+            placeholder=" Say Something to {{partner.profile.nick}}" maxlength="300"
+            style="width:85%; height:37px; border-radius: 0.5rem;
+            overflow:hidden; border-width:thin; border-color:#a300cc; resize:none"></textarea>
+
+              <button class="btn btn-outline-info mb-3" id="message_send" member_id={{partner.id}}
+              style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
+               float:right; border-radius: 2rem;"
+              ><b>Send</b></button>
+
+            </a>
+
+            <div class="mb-2 mt-2" style="padding:0" id="message_form_loading">
+            {% include 'blog/loading_small.html' %}
+            </div>
+
+
+          </div>
           </div>
 
-          <a id="message_bottom_btns" style="">
+          <input name="media" type="file" accept="video/* | image/* | audio/*" onchange="readURL(this);"
+          class="media" id="message_media_btn" style="display: none !important;">
+      </form>
 
-          <textarea name="message_content" class = "message_content mb-3"
-          placeholder=" Write whatever you feel like writting!" maxlength="300"
-          style="width:85%; height:37px; border-radius: 0.5rem;
-          overflow:hidden; border-width:thin; border-color:#a300cc; resize:none"></textarea>
+    </div> <!--Content Section Div-->
+  </div>
+  {% else %}
+  <div style=" border-radius: 0.0rem; background-color:#eedfff;">
 
-            <button class="btn btn-outline-info mb-3" id="message_send" member_id={{partner.id}}
-            style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
-             float:right; border-radius: 2rem;"
-            ><b>Send</b></button>
+    <div class="ml-3 mr-3 " style="">
+      <form method="POST" enctype="multipart/form-data" style=" " id="message_post_form">
+        {% csrf_token %}
+        <fieldset class="form">
+          {{ message_form }}
+        </fieldset>
+  <div class="mb-0 mt-3">
+          <div class="form-group" style="margin:0; padding:0">
 
-          </a>
+            <div style="background-color:white; border:thin solid #a300cc;" id="message_preview">
+                  <p id ="message_error_preview">This file is not supported.</p>
+                  <img id="message_image_preview" class="img-fluid" style="min-width:100%;"
+                  alt="Responsive image" src="#">
+                  <video id="message_video_preview" width="100%" height="auto" preload="auto"
+                   style ="" class="video_preview" controls>
+                  <source src="" type="video/mp4" style ="">
+                  </video>
+                  <audio id="message_audio_preview" style ="width:100%; text-align:center; padding:0; margin:0; border-radius: 3rem;" preload="auto"
+                     controls>
+                    <source src="{{post.audio.url}}" type="audio/mpeg">
+                    Your browser does not support the audio tag.
+                  </audio>
+            </div>
 
-          <div class="mb-2 mt-2" style="padding:0" id="message_form_loading">
-          {% include 'blog/loading_small.html' %}
+            <a id="message_bottom_btns" style="">
+
+            <textarea name="message_content" class = "message_content mb-3"
+            placeholder="Say Something to {{partner.profile.nick}}" maxlength="300"
+            style="width:75%; height:37px; border-radius: 0.5rem; font-size:120%;
+            overflow:hidden; border-width:thin; border-color:#a300cc; resize:none"></textarea>
+
+              <button class="btn btn-outline-info mb-3" id="message_send" member_id={{partner.id}}
+              style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
+               float:right; border-radius: 2rem;"
+              ><b>Send</b></button>
+
+            </a>
+
+            <div class="mb-2 mt-2" style="padding:0" id="message_form_loading">
+            {% include 'blog/loading_small.html' %}
+            </div>
+
+
+          </div>
           </div>
 
+          <input name="media" type="file" accept="video/* | image/* | audio/*" onchange="readURL(this);"
+          class="media" id="message_media_btn" style="display: none !important;">
+      </form>
 
-        </div>
-        </div>
-
-        <input name="media" type="file" accept="video/* | image/* | audio/*" onchange="readURL(this);"
-        class="media" id="message_media_btn" style="display: none !important;">
-    </form>
-
-  </div> <!--Content Section Div-->
-</div>
-{% else %}
-<div style=" border-radius: 0.0rem; background-color:#eedfff;">
-
-  <div class="ml-3 mr-3 " style="">
-    <form method="POST" enctype="multipart/form-data" style=" " id="message_post_form">
-      {% csrf_token %}
-      <fieldset class="form">
-        {{ message_form }}
-      </fieldset>
-<div class="mb-0 mt-3">
-        <div class="form-group" style="margin:0; padding:0">
-
-          <div style="background-color:white; border:thin solid #a300cc;" id="message_preview">
-                <p id ="message_error_preview">This file is not supported.</p>
-                <img id="message_image_preview" class="img-fluid" style="min-width:100%;"
-                alt="Responsive image" src="#">
-                <video id="message_video_preview" width="100%" height="auto" preload="auto"
-                 style ="" class="video_preview" controls>
-                <source src="" type="video/mp4" style ="">
-                </video>
-                <audio id="message_audio_preview" style ="width:100%; text-align:center; padding:0; margin:0; border-radius: 3rem;" preload="auto"
-                   controls>
-                  <source src="{{post.audio.url}}" type="audio/mpeg">
-                  Your browser does not support the audio tag.
-                </audio>
-          </div>
-
-          <a id="message_bottom_btns" style="">
-
-          <textarea name="message_content" class = "message_content mb-3"
-          placeholder="Texting {{partner.profile.nick}}" maxlength="300"
-          style="width:75%; height:37px; border-radius: 0.5rem;
-          overflow:hidden; border-width:thin; border-color:#a300cc; resize:none"></textarea>
-
-            <button class="btn btn-outline-info mb-3" id="message_send" member_id={{partner.id}}
-            style="background-color:#a300cc; color:#FFFFFF; border-color:#FFFFFF; highlight:none;
-             float:right; border-radius: 2rem;"
-            ><b>Send</b></button>
-
-          </a>
-
-          <div class="mb-2 mt-2" style="padding:0" id="message_form_loading">
-          {% include 'blog/loading_small.html' %}
-          </div>
-
-
-        </div>
-        </div>
-
-        <input name="media" type="file" accept="video/* | image/* | audio/*" onchange="readURL(this);"
-        class="media" id="message_media_btn" style="display: none !important;">
-    </form>
-
-  </div> <!--Content Section Div-->
-</div>
-{% endif %}
+    </div> <!--Content Section Div-->
+  </div>
+  {% endif %}

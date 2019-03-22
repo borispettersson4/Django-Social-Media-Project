@@ -608,7 +608,8 @@ def home_view(request, pk=3):
             'is_home':True,
             'msg_people' : msg_people.distinct(),
             'partner' : request.user,
-            'unread_messages': unread_messages
+            'unread_messages': unread_messages,
+            'post_page' : True,
             }
 
 #When user clicks on a post
@@ -2167,7 +2168,8 @@ def get_user_information(request, username=None, view=None):
         'null' : None,
         'msg_people' : msg_people,
         'partner' : request.user,
-        'unread_messages': unread_messages
+        'unread_messages': unread_messages,
+        'post_page' : True,
         }
 
     if request.is_ajax():
@@ -2467,7 +2469,8 @@ def get_group_information(request, name=None, view=None):
         'null' : None,
         'msg_people' : msg_people,
         'partner' : request.user,
-        'unread_messages': unread_messages
+        'unread_messages': unread_messages,
+        'post_page' : True,
         }
 
     if request.is_ajax():
